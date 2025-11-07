@@ -1,0 +1,8 @@
+config DRM_CX4
+	tristate "Zhaoxin CX4 DRM"
+	default m
+	depends on DRM
+	select DRM_KMS_HELPER
+	help
+	  Choose this option if you have an Zhaoxin CX4 VGA compatible controller.
+	  If M is selected the module will be called cx4.

@@ -1,0 +1,368 @@
+/*
+* Copyright 2019-2020 Shanghai Zhaoxin Semiconductor Co., Ltd. All Rights Reserved.
+*
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the "Software"),
+* to deal in the Software without restriction, including without limitation
+* the rights to use, copy, modify, merge, publish, distribute, sub license,
+* and/or sell copies of the Software, and to permit persons to whom the
+* Software is furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice (including the
+* next paragraph) shall be included in all copies or substantial portions
+* of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+* THE AUTHOR(S) OR COPYRIGHT HOLDER(S) BE LIABLE FOR ANY CLAIM, DAMAGES OR
+* OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+* DEALINGS IN THE SOFTWARE.
+*/
+
+/*****************************************************************************
+** DESCRIPTION:
+** DP hw block interface function prototype and parameter definition.
+**
+** NOTE:
+** 
+******************************************************************************/
+
+#ifndef _CBIOS_DIU_DP_H_
+#define _CBIOS_DIU_DP_H_
+
+#include "CBiosChipShare.h"
+#include "CBiosDeviceShare.h"
+#include "../HwUtil/CBiosI2C.h"
+
+#define CBIOS_DP_LINK_SPEED_1620Mbps        1620000
+#define CBIOS_DP_LINK_SPEED_2160Mbps        2160000
+#define CBIOS_DP_LINK_SPEED_2430Mbps        2430000
+#define CBIOS_DP_LINK_SPEED_2700Mbps        2700000
+#define CBIOS_DP_LINK_SPEED_3240Mbps        3240000
+#define CBIOS_DP_LINK_SPEED_4320Mbps        4320000
+#define CBIOS_DP_LINK_SPEED_5400Mbps        5400000
+#define CBIOS_DP_LINK_SPEED_6750Mbps        6750000
+#define CBIOS_DP_LINK_SPEED_8100Mbps        8100000
+
+#define DP_MODU_NUM  4
+
+#define DP_EDP_SUPPORT    0x70
+#define DP_PSR_IS_SUPPORTED    0x1
+#define DP_PSR2_IS_SUPPORTED    0x2 //eDP1.4
+#define DP_PSR2_WITH_Y_COORD_IS_SUPPORTED    0x3//eDp1.4a
+
+#define DP_PSR_CAPS     0x71
+#define DP_PSR_NO_TRAIN_ON_EXIT     1
+#define DP_PSR_SETUP_TIME_330       (0<<1)
+#define DP_PSR_SETUP_TIME_275       (1<<1)
+#define DP_PSR_SETUP_TIME_220       (2<<1)
+#define DP_PSR_SETUP_TIME_165       (3<<1)
+#define DP_PSR_SETUP_TIME_110       (4<<1)
+#define DP_PSR_SETUP_TIME_55       (5<<1)
+#define DP_PSR_SETUP_TIME_0       (6<<1)
+#define DP_PSR_SETUP_TIME_MASK       (7<<1)
+#define DP_PSR2_SU_Y_COORDINATE_REQUIRED    (1<<4) //eDp 1.4a
+#define DP_PSR2_SU_GRANULARITY_REQUIRED     (1<<5) //eDp 1.4b
+
+
+#define DP_PSR_EN_CFG    0x170
+#define DP_PSR_ENABLE    (1 << 0)
+#define DP_PSR_MAIN_LINK_ACTIVE    (1 << 1)
+#define DP_PSR_CRC_VERIFICATION    (1 << 2)
+#define DP_PSR_FRAME_CAPTURE    (1 << 3)
+#define DP_PSR_SELECTIVE_UPDATE    (1 << 4)
+#define DP_PSR_IRQ_HPD_WITH_CRC_ERRORS    (1 << 5)
+#define DP_PSR_ENABLE_PSR2    (1 << 6) //eDP 1.4a
+
+#define DP_SUPPORTED_LINK_RATES     0x10 //eDP 1.4,sink link rates as reported by DPCD Address 00010h-0001Fh
+
+#define DP_SET_POWER 0x600
+#define DP_SET_POWER_D0    0x1
+#define DP_SET_POWER_D3    0x2
+#define DP_SET_POWER_MASK 0x3
+#define DP_SET_POWER_D3_AUX_ON    0x5
+
+#define DP_EDP_DPCD_REV    0x700
+#define DP_EDP_11    0x00
+#define DP_EDP_12    0x01
+#define DP_EDP_13    0x02
+#define DP_EDP_14    0x03
+
+#define DP_EDP_GENERAL_CAP_1    0x701
+#define DP_EDP_TCON_BACKLIGHT_ADJUSTMENT_CAPABLE    (1 << 0)
+#define DP_EDP_BACKLIGHT_PIN_ENABLE_CAPABLE    (1 << 1)
+#define DP_EDP_BACKLIGHT_AUX_ENABLE_CAPABLE    (1 << 2)
+#define DP_EDP_PANEL_SELF_TEST_PIN_ENABLE_CAPABLE    (1 << 3)
+#define DP_EDP_PANEL_SELF_TEST_AUX_ENABLE_CAPABLE    (1 << 4)
+#define DP_EDP_FRC_ENABLE_CAPABLE    (1 << 5)
+#define DP_EDP_COLOR_ENGINE_CAPABLE    (1 << 6)
+#define DP_EDP_SET_POWER_CAPABLE    (1 << 7)
+
+#define DP_EDP_BACKLIGHT_ADJUSTMENT_CAP     0x702
+#define DP_EDP_BACKLIGHT_BRIGHTNESS_PWM_PIN_CAP (1 << 0)
+#define DP_EDP_BACKLIGHT_BRIGHTNESS_AUX_SET_CAP (1 << 1)
+#define DP_EDP_BACKLIGHT_BRIGHTNESS_BYTE_COUNT      (1 << 2)
+#define DP_EDP_BACKLIGHT_AUX_PWM_PRODUCT_CAP        (1 << 3)
+#define DP_EDP_BACKLIGHT_FREQ_PWM_PIN_PASSTHRU_CAP  (1 << 4)
+#define DP_EDP_BACKLIGHT_FREQ_AUX_SET_CAP       (1 << 5)
+#define DP_EDP_DYNAMIC_BACKLIGHT_CAP        (1 << 6)
+#define DP_EDP_VBLANK_BACKLIGHT_UPDATE_CAP      (1 << 7)
+
+#define DP_EDP_GENERAL_CAP_2    0x703
+#define DP_EDP_OVERDRIVE_ENGINE_ENABLED (1 << 0)
+
+#define DP_EDP_GENERAL_CAP_3     0x704    /* eDP 1.4 */
+#define DP_EDP_X_REGION_CAP_MASK    (0xf << 0)
+#define DP_EDP_X_REGION_CAP_SHIFT   0
+#define DP_EDP_Y_REGION_CAP_MASK    (0xf << 4)
+#define DP_EDP_Y_REGION_CAP_SHIFT   4
+
+#define DP_EDP_DISPLAY_CONTROL_REGISTER     0x720
+#define DP_EDP_BACKLIGHT_ENABLE (1 << 0)
+#define DP_EDP_BLACK_VIDEO_ENABLE   (1 << 1)
+#define DP_EDP_FRC_ENABLE       (1 << 2)
+#define DP_EDP_COLOR_ENGINE_ENABLE      (1 << 3)
+#define DP_EDP_VBLANK_BACKLIGHT_UPDATE_ENABLE       (1 << 7)
+
+#define DP_EDP_BACKLIGHT_MODE_SET_REGISTER  0x721
+#define DP_EDP_BACKLIGHT_CONTROL_MODE_MASK      (3 << 0)
+#define DP_EDP_BACKLIGHT_CONTROL_MODE_PWM   (0 << 0)
+#define DP_EDP_BACKLIGHT_CONTROL_MODE_PRESET    (1 << 0)
+#define DP_EDP_BACKLIGHT_CONTROL_MODE_DPCD  (2 << 0)
+#define DP_EDP_BACKLIGHT_CONTROL_MODE_PRODUCT       (3 << 0)
+#define DP_EDP_BACKLIGHT_FREQ_PWM_PIN_PASSTHRU_ENABLE   (1 << 2)
+#define DP_EDP_BACKLIGHT_FREQ_AUX_SET_ENABLE    (1 << 3)
+#define DP_EDP_DYNAMIC_BACKLIGHT_ENABLE (1 << 4)
+#define DP_EDP_REGIONAL_BACKLIGHT_ENABLE    (1 << 5)
+#define DP_EDP_UPDATE_REGION_BRIGHTNESS (1 << 6) /* eDP 1.4 */
+
+#define DP_EDP_BACKLIGHT_BRIGHTNESS_MSB     0x722
+#define DP_EDP_BACKLIGHT_BRIGHTNESS_LSB     0x723
+
+#define DP_EDP_PWMGEN_BIT_COUNT             0x724
+#define DP_EDP_PWMGEN_BIT_COUNT_CAP_MIN     0x725
+#define DP_EDP_PWMGEN_BIT_COUNT_CAP_MAX     0x726
+#define DP_EDP_PWMGEN_BIT_COUNT_MASK       (0x1f << 0)
+
+#define DP_EDP_BACKLIGHT_CONTROL_STATUS     0x727
+
+#define DP_EDP_BACKLIGHT_FREQ_SET           0x728
+#define DP_EDP_BACKLIGHT_FREQ_BASE_KHZ     27000
+
+#define DP_EDP_BACKLIGHT_FREQ_CAP_MIN_MSB   0x72a
+#define DP_EDP_BACKLIGHT_FREQ_CAP_MIN_MID   0x72b
+#define DP_EDP_BACKLIGHT_FREQ_CAP_MIN_LSB   0x72c
+
+#define DP_EDP_BACKLIGHT_FREQ_CAP_MAX_MSB   0x72d
+#define DP_EDP_BACKLIGHT_FREQ_CAP_MAX_MID   0x72e
+#define DP_EDP_BACKLIGHT_FREQ_CAP_MAX_LSB   0x72f
+
+#define DP_PSR_ERROR_STATUS    0x2006
+#define DP_PSR_LINK_CRC_ERROR   (1 << 0)
+#define DP_PSR_RFB_STORAGE_ERROR (1 << 1)
+#define DP_PSR_VSC_SDP_UNCORRECTABLE_ERROR (1 << 2) //eDP1.4a
+
+#define DP_PSR_STATUS    0x2008
+#define DP_PSR_SINK_INACTIVE    0
+#define DP_PSR_SINK_ACTIVE_SRC_SYNCED    1
+#define DP_PSR_SINK_ACTIVE_RFB    2
+#define DP_PSR_SINK_ACTIVE_SINK_SYNCED    3
+#define DP_PSR_SINK_ACTIVE_RESYNC    4
+#define DP_PSR_SINK_INTERNAL_ERROR    7
+#define DP_PSR_SINK_STATE_MASK    0x7
+
+
+extern CBIOS_U32 DP_REG_MISC1[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_LINK[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_GEN_CTRL[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_EXT_PACKET[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_ENABLE[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_HWIDTH_TU[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_HLINE_DUR[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_MISC0[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_HV_TOTAL[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_HV_START[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_HV_SYNC[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_HV_ACTIVE[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_EPHY_CTRL[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_AUX_WRITE0[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_AUX_WRITE1[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_AUX_WRITE2[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_AUX_WRITE3[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_AUX_READ0[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_AUX_READ1[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_AUX_READ2[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_AUX_READ3[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_AUX_TIMER[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_AUX_CMD[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_MUTE[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_MAUD[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_EPHY_MPLL[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_EPHY_TX[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_EPHY_MISC[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_SWING[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_EPHY_STATUS[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_LINK_CTRL[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_CTRL2[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_CTRL[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_EPHY_SETTING1[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_EPHY_SETTING2[DP_MODU_NUM];
+extern CBIOS_U32 DP_REG_EPHY_SETTING3[DP_MODU_NUM];
+
+extern CBIOS_U32 DP_REG_LTTPR_CFG0[DP_USB_MODU_NUM];
+extern CBIOS_U32 DP_REG_LTTPR_CFG1[DP_USB_MODU_NUM];
+extern CBIOS_U32 DP_REG_EPHY_MUX_HPD[DP_USB_MODU_NUM];
+extern CBIOS_U32 DP_REG_UD_EPHY_RTN[DP_USB_MODU_NUM];
+extern CBIOS_U32 DP_REG_UD_EPHY_PLL[DP_USB_MODU_NUM];
+
+#define AUX_MAX_PAYLOAD_BYTES  16
+
+typedef enum _CBIOS_DP_HPD_STATUS
+{
+    CBIOS_HPD_STATUS_INIT = 0x0,
+    CBIOS_HPD_STATUS_IN,
+    CBIOS_HPD_STATUS_OUT,
+    CBIOS_HPD_STATUS_IRQ,
+}CBIOS_DP_HPD_STATUS;
+
+typedef enum _CBIOS_DPCD_LINK_RATE
+{
+    CBIOS_DPCD_LINK_RATE_1620Mbps    = 0x6,   // 1.62Gbps per lane
+    CBIOS_DPCD_LINK_RATE_2700Mbps    = 0xA,   // 2.7 Gbps per lane
+    CBIOS_DPCD_LINK_RATE_5400Mbps    = 0x14,  // 5.4 Gbps per lane
+    CBIOS_DPCD_LINK_RATE_8100Mbps    = 0x1E,  // 8.1 Gbps per lane
+}CBIOS_DPCD_LINK_RATE;
+
+typedef enum _CBIOS_AUX_REQUEST_CMD
+{
+    CBIOS_AUX_REQUEST_I2C_WRITE    = 0,
+    CBIOS_AUX_REQUEST_I2C_READ     = 1,
+    CBIOS_AUX_REQUEST_I2C_MOT      = 4,
+    CBIOS_AUX_REQUEST_NATIVE_WRITE = 8,
+    CBIOS_AUX_REQUEST_NATIVE_READ  = 9,
+    CBIOS_AUX_REQUEST_INNER_WRITE  = 0xF,
+}CBIOS_AUX_REQUEST_CMD;
+
+typedef enum _CBIOS_AUX_REPLY_CMD
+{
+    CBIOS_AUX_REPLY_ACK      = 0,
+    CBIOS_AUX_REPLY_NACK     = 1,
+    CBIOS_AUX_REPLY_DEFER    = 2, // Not ready for the write/read request. A uPacket TX may retry later.
+    CBIOS_AUX_REPLY_RESERVED = 3,
+}CBIOS_AUX_REPLY_CMD;
+
+typedef struct _AUX_CONTROL
+{
+    CBIOS_U32   Length;
+    CBIOS_U32   Offset;   // register index
+    CBIOS_U8    Function;      // Special I2c control flag
+    CBIOS_U8    *Buffer;
+    CBIOS_U8    SlaveAddress;
+}AUX_CONTROL, *PAUX_CONTROL;
+
+typedef enum _CBIOS_EDP_CP_METHOD
+{
+    CBIOS_EDP_CP_DISABLE = 0,
+    CBIOS_EDP_CP_ASSR,
+    CBIOS_EDP_CP_AF
+}CBIOS_EDP_CP_METHOD;
+
+typedef struct _CBIOS_LINK_TRAINING_PARAMS
+{
+    // input params
+    CBIOS_U32   DpSinkVersion;
+    CBIOS_U32   MaxLaneCount;
+    CBIOS_U32   MaxLinkSpeed;
+    CBIOS_BOOL  bEnhancedMode;
+    CBIOS_BOOL  bEDP;
+    CBIOS_BOOL  bEnableTPS3;
+    CBIOS_EDP_CP_METHOD CPMethod;
+    CBIOS_U32   TrainingAuxRdInterval;
+
+    CBIOS_DP_USB_MODE  DpUsbMode;
+    CBIOS_BOOL  AltReversePlug;
+    CBIOS_U8    LttprCount;
+    CBIOS_BOOL  LttprNonTransparent;
+    CBIOS_U8    LttprAuxRDInterval[DP_MAX_LTTPR_CNT];
+    CBIOS_U8    LttprVolPELevel3[DP_MAX_LTTPR_CNT];
+
+    // output params
+    CBIOS_U32   CurrLaneCount;
+    CBIOS_U32   CurrLinkSpeed;
+
+}CBIOS_LINK_TRAINING_PARAMS, *PCBIOS_LINK_TRAINING_PARAMS;
+
+typedef struct _CBIOS_MAIN_LINK_PARAMS
+{
+    CBIOS_U32  LinkedLaneNumber;  // 1 ~ 4 lanes
+    CBIOS_U32  LinkedSpeed;   // 1.62Gbps, 2.7Gbps or 5.4Gbps
+    CBIOS_U32  bpc;              // bit per channel
+    CBIOS_U32  TUSize;           // 32 ~ 64, default to 48 
+    CBIOS_BOOL AsyncMode;        // 1 (yes), asynchronous mode
+    CBIOS_U32  ColorFormat;      // 0: RGB, 1:YCbCr422, 2:YCbCr444
+    CBIOS_U32  DynamicRange;     // 0: VESA range, 1:CEA range
+    CBIOS_U32  YCbCrCoefficients;// 0: ITU601, 1: ITU709
+    PCBIOS_TIMING_ATTRIB pTiming;
+}CBIOS_MAIN_LINK_PARAMS, *PCBIOS_MAIN_LINK_PARAMS;
+
+CBIOS_BOOL cbDIU_EDP_IsEDPSupported(PCBIOS_EXTENSION_COMMON pcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_ControlVDDSignal(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMonitorContext, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_BOOL status);
+CBIOS_VOID cbDIU_EDP_ControlVEESignal(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMonitorContext, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_BOOL status);
+CBIOS_BOOL cbDIU_EDP_WaitforSinkHPDSignal(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U16 timeout);
+CBIOS_BOOL cbDIU_EDP_EDPAuxPowerSeqCtrl(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMonitorContext, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_BOOL bOn);
+
+CBIOS_VOID cbDIU_DP_SetFreeSync(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U32 FreeSyncInsertLineNum);
+CBIOS_VOID cbDIU_DP_DPModeEnable(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_BOOL bEnable);
+CBIOS_VOID cbDIU_DP_SetHVSync(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U8 HVPolarity);
+CBIOS_VOID cbDIU_DP_SetMaudNaud(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U32 LinkSpeed, CBIOS_U32 StreamFormat);
+CBIOS_VOID cbDIU_DP_ResetLinkTraining(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_DP_VideoAudioOnOff(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_BOOL bOn);
+CBIOS_VOID cbDIU_DP_SetInterruptMode(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_BOOL isDPMode);
+
+CBIOS_BOOL cbDIU_DP_LinkTrainingHw(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, PCBIOS_LINK_TRAINING_PARAMS pLinkTrainingParams);
+CBIOS_BOOL cbDIU_DP_LT_With_DPCD115(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, PCBIOS_LINK_TRAINING_PARAMS pLinkTrainingParams);
+CBIOS_BOOL cbDIU_DP_SetUpMainLink(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, PCBIOS_MAIN_LINK_PARAMS pMainLinkParams);
+
+CBIOS_VOID cbDIU_DP_SendInfoFrame(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U32 Length);
+
+CBIOS_VOID cbDIU_DP_GetConnectStatus(PCBIOS_EXTENSION_COMMON pcbe, CBIOS_MODULE_INDEX DPModuleIndex, PCBIOS_CONNECT_STATUS pConnectStatus);
+CBIOS_U8   cbDIU_DP_GetHpdStatus(PCBIOS_EXTENSION_COMMON pcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_DP_USB_MODE DpUsbMode);
+CBIOS_VOID cbDIU_DP_ResetAUX(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_DP_HWUseAuxChannel(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_BOOL cbDIU_DP_IsOn(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_BOOL cbDIU_EDP_PsrOp0_1(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp1_0(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp1_2(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp2_0(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_BOOL cbDIU_EDP_PsrOp2_3(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp2_5(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp3_0(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp3_1(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp3_5(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp5_0(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_BOOL cbDIU_EDP_PsrOp5_1(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+//Add to disable PHY/IGA/DCLK
+CBIOS_VOID cbDIU_EDP_PsrOp3_3_1(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp3_1_3_2(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp3_2_3_3(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp3_3_3_2(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp3_2_3_1(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_VOID cbDIU_EDP_PsrOp3_1_3(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_BOOL cbDIU_Psr_Wait_Inactive(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_STATUS cbDIU_Aux_I2c_Access(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U8 Request, PCBIOS_PARAM_AUX_DATA pCBParamAuxData);
+CBIOS_BOOL cbDIU_Aux_Dpcd_Read(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U32 Offset, CBIOS_UCHAR* Buffer, CBIOS_U32 Length);
+CBIOS_BOOL cbDIU_Aux_Dpcd_Write(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U32 Offset, CBIOS_UCHAR* Buffer, CBIOS_U32 Length);
+CBIOS_BOOL cbDIU_Aux_Inner_Write(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U32 Offset, CBIOS_UCHAR* Buffer, CBIOS_U32 Length);
+CBIOS_STATUS cbDIU_EDP_SetBacklight(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U32 BacklightValue);
+CBIOS_STATUS cbDIU_EDP_GetBacklight(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U32 *pBacklightValue);
+CBIOS_STATUS cbDIU_EDP_GPIOSetBacklight(PCBIOS_VOID pvcbe,CBIOS_U32 BacklightValue);
+CBIOS_STATUS cbDIU_EDP_GPIOGetBacklight(PCBIOS_VOID pvcbe, CBIOS_U32 *pBacklightValue);
+CBIOS_STATUS cbDIU_EDP_AUXSetBacklight(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMonitorContext, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U32 BacklightValue);
+CBIOS_STATUS cbDIU_EDP_AUXGetBacklight(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMonitorContext, CBIOS_MODULE_INDEX DPModuleIndex, CBIOS_U32 *pBacklightValue);
+CBIOS_BOOL cbDIU_EDP_AUXEnableBacklight(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_BOOL cbDIU_EDP_AUXDisableBacklight(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_BOOL cbDIU_EDP_AUXSetPwmFreq(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModuleIndex);
+CBIOS_U8 cbDIU_EDP_AUXGetBacklightBitCount(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMonitorContext);
+#endif
