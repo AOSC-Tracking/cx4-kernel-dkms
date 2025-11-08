@@ -34,7 +34,7 @@
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) || \
      DRM_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)) && DRM_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
 #include <linux/pfn_t.h>
-#else
+#elif DRM_VERSION_CODE < KERNEL_VERSION(4, 5, 0)
 typedef struct {
     u64 val;
 } pfn_t;
