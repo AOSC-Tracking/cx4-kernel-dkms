@@ -76,13 +76,22 @@
 #endif
 
 static inline
+#if DRM_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+void zx_drm_helper_mode_fill_fb_struct(struct drm_device *dev,
+                                       struct drm_framebuffer *fb,
+                                       const struct drm_format_info *format_info,
+                                       struct drm_mode_fb_cmd2 *mode_cmd)
+#else
 void zx_drm_helper_mode_fill_fb_struct(struct drm_device *dev, struct drm_framebuffer *fb,
                                        struct drm_mode_fb_cmd2 *mode_cmd)
+#endif
 {
 #if DRM_VERSION_CODE < KERNEL_VERSION(4, 11, 0)
     drm_helper_mode_fill_fb_struct(fb, mode_cmd);
-#else
+#elif DRM_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
     drm_helper_mode_fill_fb_struct(dev, fb, mode_cmd);
+#else
+    drm_helper_mode_fill_fb_struct(dev, fb, format_info, mode_cmd);
 #endif
 
 }

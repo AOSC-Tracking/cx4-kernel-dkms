@@ -32,6 +32,9 @@ struct drm_zx_framebuffer
 struct drm_framebuffer *
 zx_fb_create(struct drm_device *dev,
                               struct drm_file *file_priv,
+#if DRM_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+                              const struct drm_format_info *format_info,
+#endif
                               #if DRM_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)
                               const struct drm_mode_fb_cmd2 *mode_cmd
                               #else
@@ -44,5 +47,8 @@ void zx_cleanup_fb(struct drm_plane *plane,  struct drm_plane_state *old_state);
 struct drm_zx_framebuffer*
 __zx_framebuffer_create(struct drm_device *dev,
                         struct drm_mode_fb_cmd2 *mode_cmd,
+#if DRM_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+                        const struct drm_format_info *format_info,
+#endif
                         struct drm_zx_gem_object *obj);
 #endif
