@@ -102,19 +102,21 @@ CBIOS_VOID cbDeInitDeviceArray(PCBIOS_VOID pvcbe)
     {
         if (pcbe->DeviceMgr.pDeviceArray[i] != CBIOS_NULL)
         {
-            if (pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.DisplayIdDtlTimings)
+            if(pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pDisplayIdDtlTimings)
             {
-                cb_FreePool(pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.DisplayIdDtlTimings);
-                pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.DisplayIdDtlTimings = CBIOS_NULL;
-                pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.DispIdTimingNum = 0;
-                pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.DispIdArraySize = 0;
+                cb_FreePool(pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pDisplayIdDtlTimings);
+                pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pDisplayIdDtlTimings = CBIOS_NULL;
             }
+            if(pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pHDMIFormat)
+            {
+                cb_FreePool(pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pHDMIFormat);
+                pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pHDMIFormat = CBIOS_NULL;
+            }
+            
             if(pcbe->DeviceMgr.pDeviceArray[i]->pDeviceModeList)
             {
                 cb_FreePool(pcbe->DeviceMgr.pDeviceArray[i]->pDeviceModeList);
                 pcbe->DeviceMgr.pDeviceArray[i]->pDeviceModeList = CBIOS_NULL;
-                pcbe->DeviceMgr.pDeviceArray[i]->ModeListArraySize = 0;
-                pcbe->DeviceMgr.pDeviceArray[i]->ValidModeNum = 0;
             }
             cbClearEdidData(&pcbe->DeviceMgr.pDeviceArray[i]->EdidData);
             cbClearEdidData(&pcbe->DeviceMgr.pDeviceArray[i]->FakeEdid);
@@ -190,7 +192,6 @@ CBIOS_VOID cbDevSetModeToDevice(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevComm
 CBIOS_STATUS cbDevGetModeTiming(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, PCBIOS_GET_MODE_TIMING_PARAM pGetModeTiming)
 {
     PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
-    PCBiosDestModeParams      pDestModeParams = CBIOS_NULL;
     PCBIOS_TIMING_ATTRIB      pTiming = CBIOS_NULL;
     CBIOS_STATUS              Status = CBIOS_ER_INTERNAL;
 
@@ -210,42 +211,20 @@ CBIOS_STATUS cbDevGetModeTiming(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevComm
         goto END;
     }
 
-    pDestModeParams = cb_AllocatePagedPool(sizeof(CBiosDestModeParams));
-    if(CBIOS_NULL == pDestModeParams)
-    {
-        cbDebugPrint((MAKE_LEVEL(GENERIC, ERROR), "%s: Allocat pDestModeParams fail!\n", FUNCTION_NAME));
-        Status =  CBIOS_ER_INTERNAL;
-        goto END;
-    }
-
     cb_memset(pTiming, 0, sizeof(CBIOS_TIMING_ATTRIB));
-
-    // 1. cbMode_GetHVTiming only use XRes, YRes, InterlaceFlag and RefreshRate to look for the detail timing.
-    // Therefore we init others items to 0
-    pDestModeParams->Size = sizeof(CBiosDestModeParams);
-    pDestModeParams->XRes = pGetModeTiming->pMode->XRes;
-    pDestModeParams->YRes = pGetModeTiming->pMode->YRes;
-    pDestModeParams->RefreshRate = pGetModeTiming->pMode->RefreshRate;
-    pDestModeParams->InterlaceFlag = (pGetModeTiming->pMode->InterlaceProgressiveCaps & 0x2) ? 1 : 0;
 
     // 2. Get detail timing
     cbMode_GetHVTiming(pcbe,
-                       pDestModeParams->XRes,
-                       pDestModeParams->YRes,
-                       pDestModeParams->RefreshRate,
-                       pDestModeParams->InterlaceFlag,
+                       pGetModeTiming->pMode->XRes,
+                       pGetModeTiming->pMode->YRes,
+                       pGetModeTiming->pMode->RefreshRate,
+                       pGetModeTiming->pMode->isInterlaceMode,
                        pGetModeTiming->DeviceId, 
                        pTiming);
 
     Status = CBIOS_OK;
-    
+
 END:
-    if(pDestModeParams != CBIOS_NULL)
-    {
-        cb_FreePool(pDestModeParams);
-        pDestModeParams = CBIOS_NULL;
-    }
-    
     return Status;
 }
 
@@ -471,7 +450,7 @@ CBIOS_STATUS cbGetDeviceName(PCBIOS_VOID pvcbe,   PCBIOS_GET_DEVICE_NAME  pGetNa
 CBIOS_STATUS cbDevGetDeviceModeList(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, PCBiosModeInfoExt pModeList, CBIOS_U32 *pBufferSize)
 {
     PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
-    CBIOS_U32 ulModeNum;
+    CBIOS_U32 ulModeNum = 0;
 
     if(!pModeList || *pBufferSize < sizeof(CBiosModeInfoExt))
     {
@@ -479,7 +458,7 @@ CBIOS_STATUS cbDevGetDeviceModeList(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDev
         return CBIOS_ER_INVALID_PARAMETER;
     }
 
-    if(pDevCommon->ValidModeNum)
+    if(pDevCommon->ValidModeNum && pDevCommon->pDeviceModeList)
     {
         ulModeNum = cb_min(pDevCommon->ValidModeNum, *pBufferSize/sizeof(CBiosModeInfoExt));
         cb_memcpy(pModeList, pDevCommon->pDeviceModeList, ulModeNum * sizeof(CBiosModeInfoExt));
@@ -523,12 +502,12 @@ CBIOS_U32 cbDevGetHDAFormatList(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevComm
 {
     CBIOS_U32 HDAFormatNum = 0;
 
-    if ((pDevCommon->EdidStruct.Attribute.IsCEA861Audio) || (pDevCommon->EdidStruct.TotalHDMIAudioFormatNum != 0))
+    if ((pDevCommon->EdidStruct.Attribute.IsCEA861Audio) || (pDevCommon->EdidStruct.HDAudioFormatNum != 0))
     {
-        HDAFormatNum = pDevCommon->EdidStruct.TotalHDMIAudioFormatNum;
+        HDAFormatNum = pDevCommon->EdidStruct.HDAudioFormatNum;
         if (pHDAFormatList != CBIOS_NULL)
         {
-            cb_memcpy(pHDAFormatList, pDevCommon->EdidStruct.HDMIAudioFormat, HDAFormatNum * sizeof(CBIOS_HDMI_AUDIO_INFO));
+            cb_memcpy(pHDAFormatList, pDevCommon->EdidStruct.HDAudioFormat, HDAFormatNum * sizeof(CBIOS_HDMI_AUDIO_INFO));
         }
     }
     else
@@ -540,13 +519,13 @@ CBIOS_U32 cbDevGetHDAFormatList(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevComm
     return HDAFormatNum;
 }
 
-CBIOS_STATUS cbDevSetDisplayDevicePowerState(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL bPowerOn)
+CBIOS_STATUS cbDevSetDisplayDevicePowerState(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL bPowerOn, CBIOS_U32 Flags)
 {
     PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
 
     if (pDevCommon->pfncbDeviceOnOff)
     {
-        pDevCommon->pfncbDeviceOnOff(pcbe, pDevCommon, bPowerOn);
+        pDevCommon->pfncbDeviceOnOff(pcbe, pDevCommon, bPowerOn, Flags);
     }
     else
     {
@@ -977,6 +956,7 @@ CBIOS_STATUS cbDevI2C_ReadData(PCBIOS_VOID pvcbe, PCBIOS_PARAM_I2C_DATA pCBParam
     cb_memset(&I2CParams, 0, sizeof(CBIOS_MODULE_I2C_PARAMS));
 
     I2CParams.I2CBusNum = (CBIOS_U8)pDevCommon->I2CBus;
+    I2CParams.I2CDelay = pDevCommon->I2CDelay;
     I2CParams.SlaveAddress = pCBParamI2CData->SlaveAddress;
     I2CParams.OffSet = pCBParamI2CData->OffSet;
     I2CParams.BufferLen = pCBParamI2CData->BufferLen;
@@ -1008,6 +988,7 @@ CBIOS_STATUS cbDevI2C_WriteData(PCBIOS_VOID pvcbe, PCBIOS_PARAM_I2C_DATA pCBPara
     cb_memset(&I2CParams, 0, sizeof(CBIOS_MODULE_I2C_PARAMS));
 
     I2CParams.I2CBusNum = (CBIOS_U8)pDevCommon->I2CBus;
+    I2CParams.I2CDelay = pDevCommon->I2CDelay;
     I2CParams.SlaveAddress = pCBParamI2CData->SlaveAddress;
     I2CParams.OffSet = pCBParamI2CData->OffSet;
     I2CParams.BufferLen = pCBParamI2CData->BufferLen;

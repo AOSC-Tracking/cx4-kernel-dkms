@@ -967,10 +967,7 @@ int disp_cbios_merge_modes(CBiosModeInfoExt* merge_mode_list, CBiosModeInfoExt *
                  (dev_mode_list[dev_index].RefreshRate == adapter_mode_list[adapter_index].RefreshRate))
         {
             zx_memcpy(&merge_mode_list[mode_index], &dev_mode_list[dev_index], sizeof(CBiosModeInfoExt));
-            merge_mode_list[mode_index].InterlaceProgressiveCaps |= adapter_mode_list[adapter_index].InterlaceProgressiveCaps;
-            merge_mode_list[mode_index].DeviceFlags |= adapter_mode_list[adapter_index].DeviceFlags;
             merge_mode_list[mode_index].ColorDepthCaps |= adapter_mode_list[adapter_index].ColorDepthCaps;
-            merge_mode_list[mode_index].AspectRatioCaps |= adapter_mode_list[adapter_index].AspectRatioCaps;
             mode_index++;
             dev_index++;
             adapter_index++;
@@ -1057,7 +1054,7 @@ int disp_cbios_cbmode_to_drmmode(disp_info_t *disp_info, int output, void* cbmod
         drm_mode->type |= DRM_MODE_TYPE_PREFERRED;
     }
 
-    if (cbios_mode->InterlaceProgressiveCaps & 0x02)
+    if (cbios_mode->isInterlaceMode)
     {
         drm_mode->flags |= DRM_MODE_FLAG_INTERLACE;
     }
@@ -1087,7 +1084,7 @@ int disp_cbios_3dmode_to_drmmode(disp_info_t *disp_info, int output, void* mode,
     cbios_mode.XRes = cb_3d_mode->XRes;
     cbios_mode.YRes = cb_3d_mode->YRes;
     cbios_mode.RefreshRate = cb_3d_mode->RefreshRate;
-    cbios_mode.InterlaceProgressiveCaps = (cb_3d_mode->bIsInterlace)? 2 : 1;
+    cbios_mode.isInterlaceMode = (cb_3d_mode->bIsInterlace)? 1 : 0;
 
     get_timing.DeviceId = output;
     get_timing.pMode = &cbios_mode;
@@ -1231,7 +1228,7 @@ int disp_cbios_get_mode_timing(disp_info_t *disp_info, int output, struct drm_di
     cbios_mode.YRes = drm_mode->vdisplay;
     temp = drm_mode->clock * 1000/drm_mode->htotal;
     cbios_mode.RefreshRate = temp * 100/drm_mode->vtotal;
-    cbios_mode.InterlaceProgressiveCaps = (drm_mode->flags & DRM_MODE_FLAG_INTERLACE) ? 0x02 : 0x01;
+    cbios_mode.isInterlaceMode = (drm_mode->flags & DRM_MODE_FLAG_INTERLACE) ? 1 : 0;
 
     get_timing.DeviceId = output;
     get_timing.pMode = &cbios_mode;
@@ -1433,7 +1430,6 @@ int disp_cbios_set_mode(disp_info_t *disp_info, int crtc, struct drm_display_mod
     mode_param.DestModeParams.YRes = adjusted_mode->vdisplay;
 
     mode_param.DestModeParams.InterlaceFlag = (adjusted_mode->flags & DRM_MODE_FLAG_INTERLACE)? 1 : 0;;
-    mode_param.DestModeParams.AspectRatioFlag = 0;
     mode_param.DestModeParams.OutputSignal = CBIOS_RGBOUTPUT;
 
     mode_param.ScalerSizeParams.XRes = adjusted_mode->hdisplay;
@@ -1513,11 +1509,11 @@ int disp_cbios_turn_onoff_iga(disp_info_t *disp_info, int iga, int bOn)
 
 }
 
-int disp_cbios_set_dpms(disp_info_t *disp_info, int device, int dpms_on)
+int disp_cbios_set_dpms(disp_info_t *disp_info, int device, int dpms_on, unsigned int flags)
 {
     int status = DISP_OK;
 
-    if(CBIOS_OK != CBiosSetDisplayDevicePowerState(disp_info->cbios_ext, device, dpms_on))
+    if(CBIOS_OK != CBiosSetDisplayDevicePowerState(disp_info->cbios_ext, device, dpms_on, flags))
     {
         status = DISP_FAIL;
     }

@@ -633,8 +633,11 @@ static int disp_mode_config_init(disp_info_t* disp_info)
 static void  disp_turn_off_crtc_output(disp_info_t* disp_info)
 {
     unsigned int devices[MAX_CORE_CRTCS] = {0};
-    unsigned int index, detect_devices = 0;
+    unsigned int index, detect_devices = 0, output = 0, flags = 0;
     int changed = 0;
+    zx_card_t*  zx_card = disp_info->zx_card;
+    struct drm_device*    drm = zx_card->drm_dev;
+    struct drm_connector* connector = NULL;
 
     zx_info("To turn off igas and devices.\n");
 
@@ -650,9 +653,23 @@ static void  disp_turn_off_crtc_output(disp_info_t* disp_info)
         detect_devices |= devices[index];
     }
 
-    if(detect_devices)
+    while(detect_devices)
     {
-        disp_cbios_set_dpms(disp_info, detect_devices, 0);
+        flags = 0;
+        output = GET_LAST_BIT(detect_devices);
+        list_for_each_entry(connector, &drm->mode_config.connector_list, head)
+        {
+            if(to_zx_connector(connector)->output_type == output)
+            {
+                break;
+            }
+        }
+        if(connector->connector_type == DRM_MODE_CONNECTOR_eDP)
+        {
+            flags |= SKIP_VDD_OFF;
+        }
+        disp_cbios_set_dpms(disp_info, output, 0, flags);
+        detect_devices &= (~output);
     }
 
     for(index = 0; index < disp_info->num_crtc; index++)
@@ -800,8 +817,6 @@ int  zx_init_modeset(struct drm_device *dev)
 
     disp_cbios_get_crtc_caps(disp_info);
 
-    disp_turn_off_crtc_output(disp_info);
-
     disp_irq_init(disp_info);
 
     if(disp_info->num_crtc)
@@ -825,6 +840,8 @@ int  zx_init_modeset(struct drm_device *dev)
     }
 
     disp_output_init(disp_info);
+
+    disp_turn_off_crtc_output(disp_info);
 
     disp_hotplug_init(disp_info);
 

@@ -161,6 +161,7 @@ CBIOS_STATUS cbDIU_DVO_CheckDaughterCardType(PCBIOS_VOID pvcbe, PVCP_INFO pVCP, 
             cbDIU_DVO_GetCardIDPara(pVCP->DVODevConfig[i].DVOTxType, &CardIDOffset, &CardIDValue);
             
             par.I2CBusNum = (CBIOS_U8)pDvoContext->Common.I2CBus;
+            par.I2CDelay = pDvoContext->Common.I2CDelay;
             par.SlaveAddress = pVCP->DVODevConfig[i].DVOSlaveAddr;
             par.BufferLen = 1;
             par.OffSet = CardIDOffset;

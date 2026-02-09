@@ -84,6 +84,27 @@ CBIOS_U8 AUO_B145QAN01_Edid[128] =
     0x55, 0x4F, 0x0A, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00, 0x00, 0x00, 0xFE,
     0x00, 0x4C, 0x45, 0x4E, 0x31, 0x34, 0x35, 0x57, 0x51, 0x58, 0x47, 0x41, 0x20, 0x20, 0x00, 0x29,
 };
+
+CBIOS_U8 CSW1473_Edid[256] =
+{
+    0x00,0xff,0xff,0xff,0xff,0xff,0xff,0x00,0x0e,0x77,0x73,0x14,0x00,0x00,0x00,0x00,
+    0x27,0x23,0x01,0x04,0xa5,0x1f,0x14,0x78,0x07,0xee,0x95,0xa3,0x54,0x4c,0x99,0x26,
+    0x0f,0x50,0x54,0x00,0x00,0x00,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
+    0x01,0x01,0x01,0x01,0x01,0x01,0x67,0x3e,0x80,0xa0,0x70,0xb0,0x50,0x40,0x30,0x20,
+    0x36,0x00,0x38,0xc3,0x10,0x00,0x00,0x1a,0x9a,0x5d,0x80,0xa0,0x70,0xb0,0x50,0x40,
+    0x30,0x20,0x36,0x00,0x38,0xc3,0x10,0x00,0x00,0x1a,0x00,0x00,0x00,0xfd,0x00,0x30,
+    0x5a,0x74,0x74,0x18,0x01,0x0a,0x20,0x20,0x20,0x20,0x20,0x20,0x00,0x00,0x00,0xfc,
+    0x00,0x4d,0x4e,0x45,0x35,0x30,0x37,0x51,0x53,0x32,0x2d,0x34,0x0a,0x20,0x01,0x4e,
+    0x70,0x20,0x79,0x02,0x00,0x81,0x00,0x15,0x74,0x1a,0x00,0x00,0x03,0x01,0x30,0x5a,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x5a,0x00,0x00,0x00,0x00,0xad,0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xac,0x90,
+};
+
 //RefRateIndex init to 0FFh, which means not legal index.
 CBIOS_HDMI_FORMAT_MTX CEAVideoFormatTable[] =
 {
@@ -345,6 +366,84 @@ According to CEA-861-F:
     return bRet;
 }
 
+static CBIOS_U16  cbEDIDModule_VicToTableIndex(CBIOS_U16 FmtVIC)
+{
+    return  FmtVIC-1;
+}
+
+static CBIOS_BOOL cbEDIDModule_isSvdFormatExist(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct, CBIOS_U16 FmtVIC, CBIOS_U32* DescIdx)
+{
+    CBIOS_BOOL bExist = CBIOS_FALSE;
+    CBIOS_U32 index = 0;
+
+    if(!pEDIDStruct->pHDMIFormat || !pEDIDStruct->HDMIFmtNum)
+    {
+        return bExist;
+    }
+
+    for(index = 0; index < pEDIDStruct->HDMIFmtNum; index++)
+    {
+        if(pEDIDStruct->pHDMIFormat[index].FormatVIC == FmtVIC)
+        {
+            bExist = CBIOS_TRUE;
+            break;
+        }
+    }
+
+    if(bExist && DescIdx)
+    {
+        *DescIdx = index;
+    }
+
+    return bExist;
+}
+
+#define MAX_HDMI_FMT_NUM  32
+
+static CBIOS_BOOL  cbEDIDModule_AddSvdFormat(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct, CBIOS_HDMI_FORMAT_DESC *pFmtDesc)
+{
+    CBIOS_BOOL bAdded = CBIOS_FALSE;
+
+    if(!pEDIDStruct || !pFmtDesc)
+    {
+        return bAdded;
+    }
+
+    if(cbEDIDModule_isSvdFormatExist(pEDIDStruct, pFmtDesc->FormatVIC, CBIOS_NULL))
+    {
+        return bAdded;
+    }
+
+    if(!pEDIDStruct->pHDMIFormat)
+    {
+        pEDIDStruct->HDMIFmtNum = 0;
+        pEDIDStruct->pHDMIFormat = cb_AllocatePagedPool(MAX_HDMI_FMT_NUM * sizeof(CBIOS_HDMI_FORMAT_DESC));
+        pEDIDStruct->HDMIFmtArraySize = (pEDIDStruct->pHDMIFormat)? MAX_HDMI_FMT_NUM : 0;
+    }
+
+    if(pEDIDStruct->HDMIFmtNum >= pEDIDStruct->HDMIFmtArraySize && pEDIDStruct->HDMIFmtArraySize)
+    {
+        CBIOS_U32 NewSize = pEDIDStruct->HDMIFmtArraySize + MAX_HDMI_FMT_NUM/2;
+        PCBIOS_HDMI_FORMAT_DESC  pTempTable = cb_AllocatePagedPool(NewSize * sizeof(CBIOS_HDMI_FORMAT_DESC));
+        if(pTempTable)
+        {
+            cb_memcpy(pTempTable, pEDIDStruct->pHDMIFormat, pEDIDStruct->HDMIFmtArraySize * sizeof(CBIOS_HDMI_FORMAT_DESC));
+            cb_FreePool(pEDIDStruct->pHDMIFormat);
+            pEDIDStruct->pHDMIFormat = pTempTable;
+            pEDIDStruct->HDMIFmtArraySize = NewSize;
+        }
+    }
+
+    if(pEDIDStruct->pHDMIFormat && pEDIDStruct->HDMIFmtNum < pEDIDStruct->HDMIFmtArraySize)
+    {
+        cb_memcpy(&pEDIDStruct->pHDMIFormat[pEDIDStruct->HDMIFmtNum], pFmtDesc, sizeof(CBIOS_HDMI_FORMAT_DESC));
+        pEDIDStruct->HDMIFmtNum += 1;
+        bAdded = CBIOS_TRUE;
+    }
+
+    return bAdded;
+}
+
 static CBIOS_U32 cbEDIDModule_MapMaskGetEdidInfo(CBIOS_U8* DetailedTimings, CBIOS_U32 Base, DETAILEDTIMING_TABLE* TimingTable)
 {
     CBIOS_U32 uRet = 0;
@@ -438,7 +537,7 @@ static CBIOS_BOOL cbEDIDModule_ParseDtlTiming(CBIOS_U8 *pEdidDtlData, PCBIOS_DET
     else
     {
         pDtlTiming->Valid = CBIOS_TRUE;     
-        pDtlTiming->HActive = 
+        pDtlTiming->XResolution = 
             (CBIOS_U16)cbEDIDModule_MapMaskGetEdidInfo(pEdidDtlData,0,EDIDHorizontalActive);
         pDtlTiming->HSyncOffset = 
             (CBIOS_U16)cbEDIDModule_MapMaskGetEdidInfo(pEdidDtlData,0,EDIDHorizontalSyncOffset);
@@ -447,7 +546,7 @@ static CBIOS_BOOL cbEDIDModule_ParseDtlTiming(CBIOS_U8 *pEdidDtlData, PCBIOS_DET
         pDtlTiming->HBlank =
             (CBIOS_U16)cbEDIDModule_MapMaskGetEdidInfo(pEdidDtlData,0,EDIDHorizontalBlanking);
 
-        pDtlTiming->VActive = 
+        pDtlTiming->YResolution = 
             (CBIOS_U16)cbEDIDModule_MapMaskGetEdidInfo(pEdidDtlData,0,EDIDVerticalActive);
         pDtlTiming->VSyncOffset = 
             (CBIOS_U16)cbEDIDModule_MapMaskGetEdidInfo(pEdidDtlData,0,EDIDVerticalSyncOffset);
@@ -460,7 +559,7 @@ static CBIOS_BOOL cbEDIDModule_ParseDtlTiming(CBIOS_U8 *pEdidDtlData, PCBIOS_DET
         pDtlTiming->VImageSize =
             (CBIOS_U16)cbEDIDModule_MapMaskGetEdidInfo(pEdidDtlData,0,EDIDVerticalImageSize); 
 
-        if((pDtlTiming->HActive == 0 ) || (pDtlTiming->VActive == 0))
+        if((pDtlTiming->XResolution == 0 ) || (pDtlTiming->YResolution == 0))
         {
             bRet = CBIOS_FALSE;
             goto END;
@@ -509,13 +608,13 @@ static CBIOS_BOOL cbEDIDModule_ParseDtlTiming(CBIOS_U8 *pEdidDtlData, PCBIOS_DET
             }
 
             // Prevent being divided by zero
-            if ((pDtlTiming->HActive + pDtlTiming->HBlank) == 0)
+            if ((pDtlTiming->XResolution + pDtlTiming->HBlank) == 0)
             {
                 cbDebugPrint((MAKE_LEVEL(GENERIC, DEBUG), "cbEDIDModule_ParseDtlTiming: fata error -- (pDtlTiming->HActive + pDtlTiming->HBlank) is ZERO!!!\n"));
                 bRet = CBIOS_FALSE;
                 goto END;
             }
-            if ((pDtlTiming->VActive + pDtlTiming->VBlank) == 0)
+            if ((pDtlTiming->YResolution + pDtlTiming->VBlank) == 0)
             {
                 cbDebugPrint((MAKE_LEVEL(GENERIC, DEBUG), "cbEDIDModule_ParseDtlTiming: fata error -- (pDtlTiming->VActive + pDtlTiming->VBlank) is ZERO!!!\n"));
                 bRet = CBIOS_FALSE;
@@ -523,9 +622,9 @@ static CBIOS_BOOL cbEDIDModule_ParseDtlTiming(CBIOS_U8 *pEdidDtlData, PCBIOS_DET
             }
 
             pDtlTiming->Refreshrate = cbCalcRefreshRate(pDtlTiming->PixelClock,
-                                                        pDtlTiming->HActive,
+                                                        pDtlTiming->XResolution,
                                                         pDtlTiming->HBlank,
-                                                        pDtlTiming->VActive,
+                                                        pDtlTiming->YResolution,
                                                         pDtlTiming->VBlank);
 
             //Adjust refreshrate, for CEA mode, CBIOS will add the 5994Hz mode 
@@ -535,7 +634,7 @@ static CBIOS_BOOL cbEDIDModule_ParseDtlTiming(CBIOS_U8 *pEdidDtlData, PCBIOS_DET
             if(pEdidDtlData[0x11] & 0x80)
             {
                pDtlTiming->IsInterLaced = 1;
-               pDtlTiming->VActive *= 2;
+               pDtlTiming->YResolution *= 2;
                pDtlTiming->VBlank *=2;
                pDtlTiming->VBlank += 1;
                pDtlTiming->VSyncOffset *= 2;
@@ -685,7 +784,7 @@ static CBIOS_U32 cbEDIDModule_GetDetailedMode(CBIOS_U8 *pEDID, PCBIOS_EDID_STRUC
             continue;
         }
 
-        pEDIDStruct->DtlTimings[i].IsEDIDTiming = 1;
+        pEDIDStruct->DtlTimings[i].IsDetailTiming = 1;
 
         if (!cbEDIDModule_ValidateTiming(pEDIDStruct, &pEDIDStruct->DtlTimings[i]))
         {
@@ -724,7 +823,7 @@ Return:      the number of detailed timings get in CEA extension
 static CBIOS_U32 cbEDIDModule_GetCEADetailedMode(CBIOS_U8 *pEdidBlock, CBIOS_U8 DtlOffset, PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct)
 {
     PCBIOS_DETAILED_TIMING_INFO pCEADtlMode = pEDIDStruct->DTDTimings;
-    CBIOS_U32   ulNumMode = pEDIDStruct->TotalDtdTimingNum;
+    CBIOS_U32   ulNumMode = pEDIDStruct->DtdTimingNum;
     CBIOS_U32   i, j = 0, AddedNum = 0;
     CBIOS_BOOL  isNeedPixelRep = CBIOS_FALSE, isCEAMode = CBIOS_FALSE;
     CBIOS_DETAILED_TIMING_INFO  TmpTiming = {0};
@@ -745,21 +844,21 @@ static CBIOS_U32 cbEDIDModule_GetCEADetailedMode(CBIOS_U8 *pEdidBlock, CBIOS_U8 
 
         //Check pixel repetition
         //For CEA format 6~9, 21~24, horizontal timing stored in EDID is doubled, so we should add /2 patch to get the real timing
-        if (TmpTiming.HActive == 1440)//check horizontal resolution. Since we only support 2 times pixel repetition, so xres == 1440
+        if (TmpTiming.XResolution == 1440)//check horizontal resolution. Since we only support 2 times pixel repetition, so xres == 1440
         {
-            if ((TmpTiming.IsInterLaced && (TmpTiming.VActive == 480 || TmpTiming.VActive == 576)) //720x480i & 720x576i
-                ||(!TmpTiming.IsInterLaced && (TmpTiming.VActive == 240 || TmpTiming.VActive == 288)))//720x240p & 720x288p
+            if ((TmpTiming.IsInterLaced && (TmpTiming.YResolution == 480 || TmpTiming.YResolution == 576)) //720x480i & 720x576i
+                ||(!TmpTiming.IsInterLaced && (TmpTiming.YResolution == 240 || TmpTiming.YResolution == 288)))//720x240p & 720x288p
             {
                 isNeedPixelRep = CBIOS_TRUE;
-                TmpTiming.HActive /= 2;
+                TmpTiming.XResolution /= 2;
             }
         }
 
         //check whether it's CEA mode.
         for(j = 0; j < sizeofarray(CEAVideoFormatTable); j++)
         {
-            if((TmpTiming.HActive == CEAVideoFormatTable[j].XRes) &&
-                (TmpTiming.VActive == CEAVideoFormatTable[j].YRes) &&
+            if((TmpTiming.XResolution == CEAVideoFormatTable[j].XRes) &&
+                (TmpTiming.YResolution == CEAVideoFormatTable[j].YRes) &&
                 (!!TmpTiming.IsInterLaced == !!CEAVideoFormatTable[j].Interlace) &&
                 (TmpTiming.AspectRatio == CEAVideoFormatTable[j].AspectRatio) &&
                 ((TmpTiming.Refreshrate / 100) == (CEAVideoFormatTable[j].RefRate[0] / 100)
@@ -774,7 +873,7 @@ static CBIOS_U32 cbEDIDModule_GetCEADetailedMode(CBIOS_U8 *pEdidBlock, CBIOS_U8 
         if ((!isCEAMode) && isNeedPixelRep)
         {
             isNeedPixelRep = CBIOS_FALSE;
-            TmpTiming.HActive *= 2;
+            TmpTiming.XResolution *= 2;
         }
 
         if (cbEDIDModule_ValidateTiming(pEDIDStruct, &TmpTiming))
@@ -785,8 +884,8 @@ static CBIOS_U32 cbEDIDModule_GetCEADetailedMode(CBIOS_U8 *pEdidBlock, CBIOS_U8 
         i += 18;
     }
 
-    AddedNum = ulNumMode - pEDIDStruct->TotalDtdTimingNum;
-    pEDIDStruct->TotalDtdTimingNum = ulNumMode;
+    AddedNum = ulNumMode - pEDIDStruct->DtdTimingNum;
+    pEDIDStruct->DtdTimingNum = ulNumMode;
 
     return AddedNum;
 }
@@ -806,7 +905,7 @@ Return:      the number of video format get in short video descriptor
 static CBIOS_U32 cbEDIDModule_GetSVDMode(CBIOS_U8 *pSVDDataInEDID, PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct, CBIOS_U32 BlockIndex)
 {
     CBIOS_U32   ulNumOfSVDMode = 0, PayloadLength = 0, j = 0;
-    PCBIOS_HDMI_FORMAT_DESCRIPTOR pCEAVideoFormat = CBIOS_NULL;
+    PCBIOS_HDMI_FORMAT_DESC pCEAVideoFormat = CBIOS_NULL;
     CBIOS_U8    SVD = 0;
     CBIOS_BOOL  IsNative = CBIOS_FALSE, Status = CBIOS_FALSE;
     CBIOS_CEA_SVD_DATA  *pSvdData = pEDIDStruct->Attribute.SVDData;
@@ -817,27 +916,26 @@ static CBIOS_U32 cbEDIDModule_GetSVDMode(CBIOS_U8 *pSVDDataInEDID, PCBIOS_EDID_S
     pSvdData[BlockIndex - 1].SVDCount = (CBIOS_U8)PayloadLength;
     cb_memcpy(pSvdData[BlockIndex - 1].SVD, &pSVDDataInEDID[1], cb_min(PayloadLength, MAX_SVD_COUNT));
 
-    pCEAVideoFormat = pEDIDStruct->HDMIFormat;
+    pCEAVideoFormat = pEDIDStruct->pHDMIFormat;
     for (j = 0; j < PayloadLength; j++)
     {
-        CBIOS_U8 FormatNum = 0;
+        CBIOS_U8 FormatVIC = 0;
+        CBIOS_HDMI_FORMAT_DESC FmtDesc = {0};
 
         SVD = pSVDDataInEDID[1 + j];
-        Status = cbEDIDModule_GetFmtIdxFromSVD(SVD, &FormatNum, &IsNative);
+        Status = cbEDIDModule_GetFmtIdxFromSVD(SVD, &FormatVIC, &IsNative);
         if (!Status)
         {
             continue;
         }
 
-        //for formats listed in SVD, use default refresh rate
-        pCEAVideoFormat[FormatNum - 1].RefreshIndex = CEAVideoFormatTable[FormatNum - 1].DefRateIdx;
+        FmtDesc.FormatVIC = FormatVIC;
+        FmtDesc.FormatIndex = cbEDIDModule_VicToTableIndex(FormatVIC);
+        FmtDesc.IsNative = (IsNative)? 1 : 0;
 
-        if (!pCEAVideoFormat[FormatNum - 1].IsSupported)
+        if(cbEDIDModule_AddSvdFormat(pEDIDStruct, &FmtDesc))
         {
-            pCEAVideoFormat[FormatNum - 1].BlockIndex = (CBIOS_U8)BlockIndex;
-            pCEAVideoFormat[FormatNum - 1].IsSupported = 1;
-            pCEAVideoFormat[FormatNum - 1].IsNative = (IsNative)? 1 : 0;
-            ulNumOfSVDMode++;                     
+            ulNumOfSVDMode++;   
         }
     }
 
@@ -858,8 +956,8 @@ Return:      the number of audio format get in short audio descriptor
 static CBIOS_U32 cbEDIDModule_GetHDMIAudioFormat(CBIOS_U8 *pAudioFormatDataInEDID, PCBIOS_EDID_STRUCTURE_DATA pEdidStruct)
 {
     CBIOS_U32   AudioFormatCode = 0, MaxBitRateIndex = 0, j = 0, PayloadLength = 0;
-    CBIOS_HDMI_AUDIO_INFO * pCEAAudioFormat = pEdidStruct->HDMIAudioFormat;
-    CBIOS_U32  ulNumOfAudioFormat = pEdidStruct->TotalHDMIAudioFormatNum;
+    CBIOS_HDMI_AUDIO_INFO * pCEAAudioFormat = pEdidStruct->HDAudioFormat;
+    CBIOS_U32  ulNumOfAudioFormat = pEdidStruct->HDAudioFormatNum;
     CBIOS_U32  AddedNum = 0;
     
     //decode short video descriptor
@@ -921,8 +1019,8 @@ static CBIOS_U32 cbEDIDModule_GetHDMIAudioFormat(CBIOS_U8 *pAudioFormatDataInEDI
         }
     }
 
-    AddedNum = ulNumOfAudioFormat - pEdidStruct->TotalHDMIAudioFormatNum;
-    pEdidStruct->TotalHDMIAudioFormatNum = ulNumOfAudioFormat;
+    AddedNum = ulNumOfAudioFormat - pEdidStruct->HDAudioFormatNum;
+    pEdidStruct->HDAudioFormatNum = ulNumOfAudioFormat;
 
     return AddedNum;
 }
@@ -930,8 +1028,8 @@ static CBIOS_U32 cbEDIDModule_GetHDMIAudioFormat(CBIOS_U8 *pAudioFormatDataInEDI
 static CBIOS_VOID cbEDIDPatchHDMIAudio(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct)
 {
     CBIOS_U32 i = 0;
-    CBIOS_HDMI_AUDIO_INFO *pCEAAudioFormat = pEDIDStruct->HDMIAudioFormat;
-    CBIOS_U32 AudioFormatNum = pEDIDStruct->TotalHDMIAudioFormatNum;
+    CBIOS_HDMI_AUDIO_INFO *pCEAAudioFormat = pEDIDStruct->HDAudioFormat;
+    CBIOS_U32 AudioFormatNum = pEDIDStruct->HDAudioFormatNum;
     CBIOS_BOOL PcmSupport = CBIOS_FALSE;
 
     if(!pEDIDStruct->Attribute.IsCEA861Audio)
@@ -956,7 +1054,7 @@ static CBIOS_VOID cbEDIDPatchHDMIAudio(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct)
         }
         else
         {
-            pEDIDStruct->TotalHDMIAudioFormatNum += 1;
+            pEDIDStruct->HDAudioFormatNum += 1;
         }
         pCEAAudioFormat[i].Format = CBIOS_AUDIO_FORMAT_LPCM;
         pCEAAudioFormat[i].MaxChannelNum = 2;//two channel
@@ -1529,8 +1627,8 @@ static CBIOS_U32 cbEDIDModule_ParseCEAExtBlock(CBIOS_U8 *pExtBlockDataInEDID, PC
 {
     CBIOS_U32   PayloadLen = 0;
     CBIOS_U8    ExtTagCode = 0;
-    CBIOS_U8    FormatIndex = 0;
-    PCBIOS_HDMI_FORMAT_DESCRIPTOR pCEAVideoFormat = CBIOS_NULL;
+    CBIOS_U8    FormatVIC = 0;
+    PCBIOS_HDMI_FORMAT_DESC pCEAVideoFormat = CBIOS_NULL;
     PCBIOS_CEA_SVD_DATA pSVDData = CBIOS_NULL;
     PCBIOS_CEA_EXTENED_BLOCK pCEAExtData = CBIOS_NULL;
     CBIOS_U8    SVD = 0;
@@ -1538,7 +1636,7 @@ static CBIOS_U32 cbEDIDModule_ParseCEAExtBlock(CBIOS_U8 *pExtBlockDataInEDID, PC
     CBIOS_BOOL  Status = CBIOS_FALSE;
     CBIOS_U8    i = 0, j = 0;
 
-    pCEAVideoFormat = pEDIDStruct->HDMIFormat;
+    pCEAVideoFormat = pEDIDStruct->pHDMIFormat;
     pSVDData = &pEDIDStruct->Attribute.SVDData[BlockIndex - 1];
 
     //check tag code
@@ -1618,22 +1716,30 @@ static CBIOS_U32 cbEDIDModule_ParseCEAExtBlock(CBIOS_U8 *pExtBlockDataInEDID, PC
                 A YCBCR4:2:0 Video Data Block (Y420VDB) lists Video Formats, supported by the Sink, that only allow 
                 YCBCR4:2:0 sampling mode (i.e., do not support RGB, YCBCR4:4:4, or YCBCR4:2:2 sampling modes). 
             */
+            CBIOS_U32  EntryIndex;
             for (i = 0; i < PayloadLen - 1; i++)
             {
+                CBIOS_HDMI_FORMAT_DESC FmtDesc = {0};
                 SVD = pExtBlockDataInEDID[2 + i];
-                Status = cbEDIDModule_GetFmtIdxFromSVD(SVD, &FormatIndex, &IsNative);
+                Status = cbEDIDModule_GetFmtIdxFromSVD(SVD, &FormatVIC, &IsNative);
                 if (!Status)
                 {
                     continue;
                 }
-                
-                pCEAVideoFormat[FormatIndex - 1].IsSupportYCbCr420 = 1;
-                pCEAVideoFormat[FormatIndex - 1].IsSupportOtherFormats = 0;
-                if(!pCEAVideoFormat[FormatIndex - 1].IsSupported)
+
+                if(cbEDIDModule_isSvdFormatExist(pEDIDStruct, FormatVIC, &EntryIndex))
                 {
-                    pCEAVideoFormat[FormatIndex - 1].IsSupported = 1;
-                    pCEAVideoFormat[FormatIndex - 1].BlockIndex = (CBIOS_U8)BlockIndex;
-                    pCEAVideoFormat[FormatIndex - 1].RefreshIndex= CEAVideoFormatTable[FormatIndex - 1].DefRateIdx;
+                    pCEAVideoFormat[EntryIndex].IsSupportYCbCr420 = 1;
+                    pCEAVideoFormat[EntryIndex].IsSupportOtherFormats = 0;
+                }
+                else
+                {
+                    FmtDesc.FormatVIC = FormatVIC;
+                    FmtDesc.FormatIndex = cbEDIDModule_VicToTableIndex(FormatVIC);
+                    FmtDesc.IsNative = (IsNative)? 1 : 0;
+                    FmtDesc.IsSupportYCbCr420 = 1;
+                    FmtDesc.IsSupportOtherFormats = 0;
+                    cbEDIDModule_AddSvdFormat(pEDIDStruct, &FmtDesc);
                 }
             }
         }
@@ -1646,7 +1752,7 @@ static CBIOS_U32 cbEDIDModule_ParseCEAExtBlock(CBIOS_U8 *pExtBlockDataInEDID, PC
                 addition to other modes such as RGB, YCBCR4:4:4, and/or YCBCR4:2:2. The Y420CMDB does not indicate which RGB, 
                 YCBCR 4:4:4, and/or YCBCR4:2:2 modes are supported. 
             */
-
+            CBIOS_U32  EntryIndex;
             CBIOS_U8 YCbCr420CapMap = 0;
             CBIOS_U8 Step = 0;
 
@@ -1656,15 +1762,16 @@ static CBIOS_U32 cbEDIDModule_ParseCEAExtBlock(CBIOS_U8 *pExtBlockDataInEDID, PC
                 for (i = 0; i < pSVDData->SVDCount; i++)
                 {
                     SVD = pSVDData->SVD[i];
-                    Status = cbEDIDModule_GetFmtIdxFromSVD(SVD, &FormatIndex, &IsNative);
+                    Status = cbEDIDModule_GetFmtIdxFromSVD(SVD, &FormatVIC, &IsNative);
                     if (!Status)
                     {
                         continue;
                     }
-                    if(pCEAVideoFormat[FormatIndex - 1].IsSupported)
+
+                    if(cbEDIDModule_isSvdFormatExist(pEDIDStruct, FormatVIC, &EntryIndex))
                     {
-                        pCEAVideoFormat[FormatIndex - 1].IsSupportYCbCr420 = 1;
-                        pCEAVideoFormat[FormatIndex - 1].IsSupportOtherFormats = 1;
+                        pCEAVideoFormat[EntryIndex].IsSupportYCbCr420 = 1;
+                        pCEAVideoFormat[EntryIndex].IsSupportOtherFormats = 1;
                     }
                 }
             }
@@ -1679,16 +1786,16 @@ static CBIOS_U32 cbEDIDModule_ParseCEAExtBlock(CBIOS_U8 *pExtBlockDataInEDID, PC
                         if (((YCbCr420CapMap >> j) & 0x1) && (j + Step < pSVDData->SVDCount))
                         {
                             SVD = pSVDData->SVD[j+Step];
-                            Status = cbEDIDModule_GetFmtIdxFromSVD(SVD, &FormatIndex, &IsNative);
+                            Status = cbEDIDModule_GetFmtIdxFromSVD(SVD, &FormatVIC, &IsNative);
                             if (!Status)
                             {
                                 continue;
                             }
-                            
-                            if(pCEAVideoFormat[FormatIndex - 1].IsSupported)
+
+                            if(cbEDIDModule_isSvdFormatExist(pEDIDStruct, FormatVIC, &EntryIndex))
                             {
-                                pCEAVideoFormat[FormatIndex - 1].IsSupportYCbCr420 = 1;
-                                pCEAVideoFormat[FormatIndex - 1].IsSupportOtherFormats = 1;
+                                pCEAVideoFormat[EntryIndex].IsSupportYCbCr420 = 1;
+                                pCEAVideoFormat[EntryIndex].IsSupportOtherFormats = 1;
                             }
                         }
                     }
@@ -1865,21 +1972,20 @@ Return:      the number of HDMI VIC mode
 static CBIOS_U32 cbEDIDModule_GetHDMIVICMode(PCBIOS_EDID_STRUCTURE_DATA pEdidStruct)
 {
     PCBIOS_HDMI_VSDB_EXTENTION pVSDBData = &pEdidStruct->Attribute.VSDBData;
-    PCBIOS_HDMI_FORMAT_DESCRIPTOR pCEAVideoFormat = pEdidStruct->HDMIFormat;
+    CBIOS_HDMI_FORMAT_DESC FmtDesc = {0};
     CBIOS_U32   ulNumOfHDMIVICMode = 0, i = 0;
 
     //extended VICs
     for (i = 0; i < pVSDBData->HDMIVICLen; i++)
     {
-        CBIOS_U16 FormatIndex = pVSDBData->HDMIVIC[i] + CBIOS_HDMI_NORMAL_VIC_COUNTS - 1;
-        if ((FormatIndex < CBIOS_HDMIFORMATCOUNTS) && (!pCEAVideoFormat[FormatIndex].IsSupported))
+        FmtDesc.FormatVIC = pVSDBData->HDMIVIC[i] + CBIOS_HDMI_NORMAL_VIC_COUNTS;
+        FmtDesc.FormatIndex = cbEDIDModule_VicToTableIndex(FmtDesc.FormatVIC);
+        FmtDesc.IsNative = 0;
+
+        if(cbEDIDModule_AddSvdFormat(pEdidStruct, &FmtDesc))
         {
-            pCEAVideoFormat[FormatIndex].IsSupported = 1;
-            pCEAVideoFormat[FormatIndex].BlockIndex = 0;
-            pCEAVideoFormat[FormatIndex].IsNative = 0;
-            pCEAVideoFormat[FormatIndex].RefreshIndex= CEAVideoFormatTable[FormatIndex].DefRateIdx;
             ulNumOfHDMIVICMode++;
-        }  
+        }
     }
 
     return ulNumOfHDMIVICMode;
@@ -1918,28 +2024,28 @@ static CBIOS_U32 cbEDIDModule_GetDisplayIDType1DetailedMode(CBIOS_U8 *pType1Timi
 
         TmpTiming.Valid = CBIOS_TRUE;
         TmpTiming.IsDIDTiming = 1;
-        TmpTiming.HActive = (((pType1Timing[8 + i*DescriptorLen] << 8) | (pType1Timing[7 + i*DescriptorLen])) + 1);
+        TmpTiming.XResolution = (((pType1Timing[8 + i*DescriptorLen] << 8) | (pType1Timing[7 + i*DescriptorLen])) + 1);
         TmpTiming.HBlank = (((pType1Timing[10 + i*DescriptorLen] << 8) | (pType1Timing[9 + i*DescriptorLen])) + 1);
         TmpTiming.HSyncOffset= ((((pType1Timing[12 + i*DescriptorLen] & 0x7F) << 8) | (pType1Timing[11 + i*DescriptorLen])) + 1);
         TmpTiming.HSyncPulseWidth = (((pType1Timing[14 + i*DescriptorLen] << 8) | (pType1Timing[13 + i*DescriptorLen])) + 1);
         TmpTiming.HSync = (pType1Timing[12 + i*DescriptorLen] & 0x80) ? HorPOSITIVE : HorNEGATIVE;
-        TmpTiming.VActive = (((pType1Timing[16 + i*DescriptorLen] << 8) | (pType1Timing[15 + i*DescriptorLen])) + 1);
+        TmpTiming.YResolution = (((pType1Timing[16 + i*DescriptorLen] << 8) | (pType1Timing[15 + i*DescriptorLen])) + 1);
         TmpTiming.VBlank = (((pType1Timing[18 + i*DescriptorLen] << 8) | (pType1Timing[17 + i*DescriptorLen])) + 1);
         TmpTiming.VSyncOffset = ((((pType1Timing[20 + i*DescriptorLen] & 0x7F) << 8) | (pType1Timing[19 + i*DescriptorLen])) + 1);
         TmpTiming.VSyncPulseWidth = (((pType1Timing[22 + i*DescriptorLen] << 8) | (pType1Timing[21 + i*DescriptorLen])) + 1);
         TmpTiming.VSync = (pType1Timing[20 + i*DescriptorLen] & 0x80) ? VerPOSITIVE : VerNEGATIVE;
         TmpTiming.IsInterLaced = (pType1Timing[6 + i*DescriptorLen] & 0x10) ? 1 : 0;
 
-        if((TmpTiming.HActive == 0 )|| (TmpTiming.VActive == 0))
+        if((TmpTiming.XResolution == 0 )|| (TmpTiming.YResolution == 0))
         {
             cb_memset(&TmpTiming, 0, sizeof(CBIOS_DETAILED_TIMING_INFO));
             continue;
         }
 
         TmpTiming.Refreshrate = cbCalcRefreshRate(TmpTiming.PixelClock,
-                                                                                TmpTiming.HActive,
+                                                                                TmpTiming.XResolution,
                                                                                 TmpTiming.HBlank,
-                                                                                TmpTiming.VActive,
+                                                                                TmpTiming.YResolution,
                                                                                 TmpTiming.VBlank);
         TmpTiming.Refreshrate = 100 * cbRound(TmpTiming.Refreshrate, 100, ROUND_NEAREST);
 
@@ -1981,8 +2087,8 @@ static CBIOS_U32 cbEDIDModule_GetDisplayIDType1DetailedMode(CBIOS_U8 *pType1Timi
 
         if (pEDIDStruct->DispIdArraySize == 0)
         {
-            pEDIDStruct->DisplayIdDtlTimings = cb_AllocateNonpagedPool(CBIOS_DISPLAYID_TYPE1_MODECOUNT * sizeof(CBIOS_DETAILED_TIMING_INFO));
-            if (!pEDIDStruct->DisplayIdDtlTimings)
+            pEDIDStruct->pDisplayIdDtlTimings = cb_AllocateNonpagedPool(CBIOS_DISPLAYID_TYPE1_MODECOUNT * sizeof(CBIOS_DETAILED_TIMING_INFO));
+            if (!pEDIDStruct->pDisplayIdDtlTimings)
             {
                 cbDebugPrint((MAKE_LEVEL(GENERIC, ERROR),"%s: DisplayIdDtlTimings allocate error!!!\n", FUNCTION_NAME));
                 break;
@@ -1994,10 +2100,10 @@ static CBIOS_U32 cbEDIDModule_GetDisplayIDType1DetailedMode(CBIOS_U8 *pType1Timi
             pTmpArray = cb_AllocateNonpagedPool(2 * pEDIDStruct->DispIdArraySize * sizeof(CBIOS_DETAILED_TIMING_INFO));
             if (pTmpArray)
             {
-                cb_memcpy(pTmpArray, pEDIDStruct->DisplayIdDtlTimings, pEDIDStruct->DispIdArraySize * sizeof(CBIOS_DETAILED_TIMING_INFO));
+                cb_memcpy(pTmpArray, pEDIDStruct->pDisplayIdDtlTimings, pEDIDStruct->DispIdArraySize * sizeof(CBIOS_DETAILED_TIMING_INFO));
                 pEDIDStruct->DispIdArraySize *= 2;
-                cb_FreePool(pEDIDStruct->DisplayIdDtlTimings);
-                pEDIDStruct->DisplayIdDtlTimings = pTmpArray;
+                cb_FreePool(pEDIDStruct->pDisplayIdDtlTimings);
+                pEDIDStruct->pDisplayIdDtlTimings = pTmpArray;
             }
             else
             {
@@ -2006,7 +2112,7 @@ static CBIOS_U32 cbEDIDModule_GetDisplayIDType1DetailedMode(CBIOS_U8 *pType1Timi
             }
         }
         
-        cb_memcpy(&pEDIDStruct->DisplayIdDtlTimings[pEDIDStruct->DispIdTimingNum], &TmpTiming, sizeof(CBIOS_DETAILED_TIMING_INFO));
+        cb_memcpy(&pEDIDStruct->pDisplayIdDtlTimings[pEDIDStruct->DispIdTimingNum], &TmpTiming, sizeof(CBIOS_DETAILED_TIMING_INFO));
         cb_memset(&TmpTiming, 0, sizeof(CBIOS_DETAILED_TIMING_INFO));
         
         pEDIDStruct->DispIdTimingNum++;
@@ -2072,7 +2178,6 @@ static CBIOS_U32 cbEDIDModule_GetCEA861Mode(CBIOS_EDID_DATA *pEdidData, PCBIOS_E
     CBIOS_U32   TotalBlocks = 0, BlockIndex = 0;
     CBIOS_U8    *pEDIDBlock = CBIOS_NULL;
     CBIOS_U8    DtlTimingOffset = 0, PayloadLen = 0, TagCode = 0, i = 0;
-    CBIOS_U32   CeaModeNum = 0;
 
     TotalBlocks = cbEDIDModule_GetTotalBlockNum(pEdidData);
 
@@ -2112,7 +2217,7 @@ static CBIOS_U32 cbEDIDModule_GetCEA861Mode(CBIOS_EDID_DATA *pEdidData, PCBIOS_E
             else if (TagCode == VIDEO_DATA_BLOCK_TAG)
             {
                 //decode short video descriptor
-                CeaModeNum += cbEDIDModule_GetSVDMode(&pEDIDBlock[i], pEDIDStruct, BlockIndex);
+                cbEDIDModule_GetSVDMode(&pEDIDBlock[i], pEDIDStruct, BlockIndex);
             }
             else if (TagCode == VENDOR_SPECIFIC_DATA_BLOCK_TAG)//now consider HDMI VSDB and HDMI Forum VSDB only, ignore other VSDBs
             {
@@ -2130,7 +2235,7 @@ static CBIOS_U32 cbEDIDModule_GetCEA861Mode(CBIOS_EDID_DATA *pEdidData, PCBIOS_E
                 {
                     i += cbEDIDModule_ParseAMDVSDB(&pEDIDBlock[i], &(pEDIDStruct->Attribute.AMDVSDBData));
                 }
-#endif          
+#endif
             }
             else if (TagCode == CEA_EXTENDED_BLOCK_TAG)
             {
@@ -2140,17 +2245,16 @@ static CBIOS_U32 cbEDIDModule_GetCEA861Mode(CBIOS_EDID_DATA *pEdidData, PCBIOS_E
             i += PayloadLen + 1;
         }
 
-        CeaModeNum +=cbEDIDModule_GetCEADetailedMode(pEDIDBlock, DtlTimingOffset, pEDIDStruct);
+        cbEDIDModule_GetCEADetailedMode(pEDIDBlock, DtlTimingOffset, pEDIDStruct);
     }
     
     //some monitor's AUDIO_DATA_BLOCK not support LPCM,but it indicates support basic audio, should patch here
     cbEDIDPatchHDMIAudio(pEDIDStruct);
 
     // get HDMI VIC mode
-    CeaModeNum += cbEDIDModule_GetHDMIVICMode(pEDIDStruct);
+    cbEDIDModule_GetHDMIVICMode(pEDIDStruct);
 
-    return CeaModeNum;
-
+    return (pEDIDStruct->DtdTimingNum + pEDIDStruct->HDMIFmtNum);
 }
 
 static CBIOS_U32 cbEDIDModule_GetDisplayIDMode(CBIOS_EDID_DATA *pEdidData, PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct)
@@ -2234,7 +2338,7 @@ static CBIOS_VOID cbEDIDModule_SetNativeFlag(PCBIOS_EDID_STRUCTURE_DATA pEDIDStr
     
     if (NativeModeNum > 0)
     {
-        for (i = 0; i < pEDIDStruct->TotalDtdTimingNum; i++)
+        for (i = 0; i < pEDIDStruct->DtdTimingNum; i++)
         {
             if(pEDIDStruct->DTDTimings[i].Valid)
             {
@@ -2406,6 +2510,45 @@ CBIOS_U32 cbEDIDModule_GetMonitorAttrib(CBIOS_EDID_DATA *pEdidData, PCBIOS_MONIT
             }
         }
 
+     //  the monitor descriptor block
+        if((pDtlTimingsInBaseEDID[i*18] == 0x00) &&
+           (pDtlTimingsInBaseEDID[i*18+0x1] == 0x00) &&
+           (pDtlTimingsInBaseEDID[i*18+0x2] == 0x00) &&
+           (pDtlTimingsInBaseEDID[i*18+0x3] == 0xFD))
+        {
+            pMonitorAttrib->MRLData.Flags = pDtlTimingsInBaseEDID[i*18+0x4];
+            pMonitorAttrib->MRLData.MinVerRate = pDtlTimingsInBaseEDID[i*18+0x5];   //Hz
+            pMonitorAttrib->MRLData.MaxVerRate = pDtlTimingsInBaseEDID[i*18+0x6];  //Hz
+            pMonitorAttrib->MRLData.MinHorRate = pDtlTimingsInBaseEDID[i*18+0x7];   //KHz
+            pMonitorAttrib->MRLData.MaxHorRate = pDtlTimingsInBaseEDID[i*18+0x8];  //KHz
+            pMonitorAttrib->MRLData.MaxPixelClock = pDtlTimingsInBaseEDID[i*18+0x9] * 10;  //MHz
+
+            if((pMonitorAttrib->MRLData.Flags & 0x3) == 0x2)
+            {
+                pMonitorAttrib->MRLData.MaxVerRate += 255;
+            }
+            else if((pMonitorAttrib->MRLData.Flags & 0x3) == 0x3)
+            {
+                pMonitorAttrib->MRLData.MaxVerRate += 255;
+                pMonitorAttrib->MRLData.MinVerRate += 255;
+            }
+
+            if((pMonitorAttrib->MRLData.Flags & 0xC) == 0x8)
+            {
+                pMonitorAttrib->MRLData.MaxHorRate += 255;
+            }
+            else if((pMonitorAttrib->MRLData.Flags & 0xC) == 0xC)
+            {
+                pMonitorAttrib->MRLData.MaxHorRate += 255;
+                pMonitorAttrib->MRLData.MinHorRate += 255;
+            }
+
+            if(pMonitorAttrib->MRLData.MaxVerRate > pMonitorAttrib->MRLData.MinVerRate)
+            {
+                pMonitorAttrib->MRLData.bSupportFreeSync = CBIOS_TRUE;
+            }
+        }
+
         //  the Alphanumeric data string  descriptor block
         if((pDtlTimingsInBaseEDID[i*18] == 0x00) &&
            (pDtlTimingsInBaseEDID[i*18+0x1] == 0x00) &&
@@ -2564,7 +2707,7 @@ CBIOS_STATUS cbEDIDModule_GetMonitor3DCaps(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruc
                                            PCBIOS_MONITOR_3D_CAPABILITY_PARA p3DCapability,
                                            CBIOS_U32 IsHWSupportHDMI3DVideo)
 {
-    PCBIOS_HDMI_FORMAT_DESCRIPTOR   pSupportFormat = CBIOS_NULL;
+    PCBIOS_HDMI_FORMAT_DESC   pSupportFormat = CBIOS_NULL;
     CBIOS_U32 Monitor3DModeNum = 0;
     PCBIOS_3D_VIDEO_MODE_LIST pModeList = p3DCapability->pMonitor3DModeList;
     CBIOS_U32 i;
@@ -2575,21 +2718,22 @@ CBIOS_STATUS cbEDIDModule_GetMonitor3DCaps(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruc
     if (IsHWSupportHDMI3DVideo && pEDIDStruct->Attribute.VSDBData.HDMI3DPresent)
     {
         p3DCapability->bIsSupport3DVideo = CBIOS_TRUE;
-        pSupportFormat = pEDIDStruct->HDMIFormat;
+        pSupportFormat = pEDIDStruct->pHDMIFormat;
 
-        for (i = 0; i < CBIOS_HDMIFORMATCOUNTS; i++)
+        for (i = 0; i < pEDIDStruct->HDMIFmtNum; i++)
         {
-            if ((pSupportFormat[i].IsSupported)
-                && (pSupportFormat[i].Video3DSupportCaps & CBIOS_3D_VIDEO_FORMAT_MASK))
+            CBIOS_U16  FmtIndex = pSupportFormat[i].FormatIndex;
+            if (pSupportFormat[i].Video3DSupportCaps & CBIOS_3D_VIDEO_FORMAT_MASK)
             {
                 Monitor3DModeNum++;
 
                 if (pModeList != CBIOS_NULL)
                 {
-                    pModeList->XRes = CEAVideoFormatTable[i].XRes;
-                    pModeList->YRes = CEAVideoFormatTable[i].YRes;
-                    pModeList->RefreshRate = CEAVideoFormatTable[i].RefRate[pSupportFormat[i].RefreshIndex];
-                    pModeList->bIsInterlace = (CBIOS_BOOL)CEAVideoFormatTable[i].Interlace;
+                    CBIOS_U8  RefIndex = CEAVideoFormatTable[FmtIndex].DefRateIdx;
+                    pModeList->XRes = CEAVideoFormatTable[FmtIndex].XRes;
+                    pModeList->YRes = CEAVideoFormatTable[FmtIndex].YRes;
+                    pModeList->RefreshRate = CEAVideoFormatTable[FmtIndex].RefRate[RefIndex];
+                    pModeList->bIsInterlace = (CBIOS_BOOL)CEAVideoFormatTable[FmtIndex].Interlace;
                     pModeList->SupportCaps = pSupportFormat[i].Video3DSupportCaps & CBIOS_3D_VIDEO_FORMAT_MASK;
                     pModeList->IsSupport3DOSDDisparity = pEDIDStruct->Attribute.HFSCDSData.IsSupport3DOSDDisparity;
                     pModeList->IsSupport3DDualView = pEDIDStruct->Attribute.HFSCDSData.IsSupport3DDualView;
@@ -2603,15 +2747,15 @@ CBIOS_STATUS cbEDIDModule_GetMonitor3DCaps(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruc
     /* need parse Stereo Display Interface Data Block, future TODO
     for (i = 0; i < pEDIDStruct->DispIdTimingNum; i++)
     {
-        if (pEDIDStruct->DisplayIdDtlTimings[i].IsSupportStereo)
+        if (pEDIDStruct->pDisplayIdDtlTimings[i].IsSupportStereo)
         {
             Monitor3DModeNum++;
             if (pModeList != CBIOS_NULL)
             {
-                pModeList->XRes = pEDIDStruct->DisplayIdDtlTimings[i].XResolution;
-                pModeList->YRes = pEDIDStruct->DisplayIdDtlTimings[i].YResolution;
-                pModeList->RefreshRate = pEDIDStruct->DisplayIdDtlTimings[i].Refreshrate;
-                pModeList->bIsInterlace = (CBIOS_BOOL)pEDIDStruct->DisplayIdDtlTimings[i].IsInterLaced;
+                pModeList->XRes = pEDIDStruct->pDisplayIdDtlTimings[i].XResolution;
+                pModeList->YRes = pEDIDStruct->pDisplayIdDtlTimings[i].YResolution;
+                pModeList->RefreshRate = pEDIDStruct->pDisplayIdDtlTimings[i].Refreshrate;
+                pModeList->bIsInterlace = (CBIOS_BOOL)pEDIDStruct->pDisplayIdDtlTimings[i].IsInterLaced;
                 pModeList->SupportCaps = 0;
                 pModeList->IsSupport3DOSDDisparity = 0;
                 pModeList->IsSupport3DDualView = 0;
@@ -2744,7 +2888,6 @@ CBIOS_VOID cbEDIDModule_SADPatch(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct)
 {
     CBIOS_U32 Index = 0;
     CBIOS_U8 SADCnt = pEDIDStruct->Attribute.SAD_Count;
-    CBIOS_U32 HDMIAudioFormatNum = pEDIDStruct->TotalHDMIAudioFormatNum;
     PCBIOS_MONITOR_MISC_ATTRIB pMonitorAttrib = &(pEDIDStruct->Attribute);
 
     //modify SAD to disable 24bit for L_PCM audio format
@@ -2759,11 +2902,11 @@ CBIOS_VOID cbEDIDModule_SADPatch(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct)
         }
     }
 
-    for (Index = 0; Index < HDMIAudioFormatNum; Index++)
+    for (Index = 0; Index < pEDIDStruct->HDAudioFormatNum; Index++)
     {
-        if (pEDIDStruct->HDMIAudioFormat[Index].Format == CBIOS_AUDIO_FORMAT_LPCM)
+        if (pEDIDStruct->HDAudioFormat[Index].Format == CBIOS_AUDIO_FORMAT_LPCM)
         {
-            pEDIDStruct->HDMIAudioFormat[Index].BitDepth.BD_24bit = 0;
+            pEDIDStruct->HDAudioFormat[Index].BitDepth.BD_24bit = 0;
         }
     }
 
@@ -2773,6 +2916,7 @@ CBIOS_VOID cbEDIDModule_SADPatch(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct)
 static CBIOS_BOOL cbEDIDModule_Patch(CBIOS_EDID_DATA *pEdidData, CBIOS_MONITOR_MISC_ATTRIB *pAttribute)
 {
     CBIOS_BOOL  bPatched = CBIOS_FALSE;
+    CBIOS_BOOL  bFreeSyncToSupport = CBIOS_FALSE;
 
     if(!pEdidData || !pAttribute)
     {
@@ -2792,6 +2936,29 @@ static CBIOS_BOOL cbEDIDModule_Patch(CBIOS_EDID_DATA *pEdidData, CBIOS_MONITOR_M
     {
         cbCopyBuffer2EdidData(pEdidData, AUO_B145QAN01_Edid, sizeof(AUO_B145QAN01_Edid));
         bPatched = CBIOS_TRUE;
+    }
+    else if((!cbStrnCmp(pAttribute->MonitorID, (CBIOS_UCHAR*)"CSW1473", 7)) &&
+        (!cbStrnCmp(pAttribute->MonitorName, (CBIOS_UCHAR*)"MNE507QS2-4", 11)))//set 1920x1200@60Hz as prefer mode
+    {
+        cbCopyBuffer2EdidData(pEdidData, CSW1473_Edid, sizeof(CSW1473_Edid));
+        bPatched = CBIOS_TRUE;
+    }
+
+    //only enable free sync for P1 panel
+    if((!cbStrnCmp(pAttribute->MonitorID, (CBIOS_UCHAR*)"CSW1434", 7)) &&
+        (!cbStrnCmp(pAttribute->Alphanumeric, (CBIOS_UCHAR*)"MNE507DA1-1", 11)))
+    {
+        bFreeSyncToSupport = CBIOS_TRUE;
+    }
+    else if((!cbStrnCmp(pAttribute->MonitorID, (CBIOS_UCHAR*)"TMA07E7", 7)) &&
+        (!cbStrnCmp(pAttribute->Alphanumeric, (CBIOS_UCHAR*)"TL145ADMP010", 12)))
+    {
+        bFreeSyncToSupport = CBIOS_TRUE;
+    }
+
+    if(!bFreeSyncToSupport && pAttribute->MRLData.bSupportFreeSync)
+    {
+        pAttribute->MRLData.bSupportFreeSync = CBIOS_FALSE;
     }
 
     return bPatched;
@@ -2817,9 +2984,9 @@ CBIOS_BOOL cbEDIDModule_ParseEDID(CBIOS_EDID_DATA *pEdidData, PCBIOS_EDID_STRUCT
     
     if (cbEDIDModule_IsEDIDValid(pEdidData))
     {
-        if (pEDIDStruct->DisplayIdDtlTimings)
+        if (pEDIDStruct->pDisplayIdDtlTimings)
         {
-            cb_FreePool(pEDIDStruct->DisplayIdDtlTimings);
+            cb_FreePool(pEDIDStruct->pDisplayIdDtlTimings);
         }
         cb_memset(pEDIDStruct, 0, sizeof(CBIOS_EDID_STRUCTURE_DATA));
 
@@ -2849,9 +3016,13 @@ CBIOS_BOOL cbEDIDModule_ParseEDID(CBIOS_EDID_DATA *pEdidData, PCBIOS_EDID_STRUCT
     }
     else
     {
-        if (pEDIDStruct->DisplayIdDtlTimings)
+        if (pEDIDStruct->pDisplayIdDtlTimings)
         {
-            cb_FreePool(pEDIDStruct->DisplayIdDtlTimings);
+            cb_FreePool(pEDIDStruct->pDisplayIdDtlTimings);
+        }
+        if(pEDIDStruct->pHDMIFormat)
+        {
+            cb_FreePool(pEDIDStruct->pHDMIFormat);
         }
         cb_memset(pEDIDStruct, 0, sizeof(CBIOS_EDID_STRUCTURE_DATA));
         cbDebugPrint((MAKE_LEVEL(GENERIC, WARNING), "cbEDIDModule_ParseEDID: EDID is invalid!\n"));
@@ -2896,7 +3067,8 @@ CBIOS_BOOL cbEDIDModule_SearchTmInEdidStruct(CBIOS_U32 XResolution,
             break;
         }
     }
-    if ((!bRet) && pEDIDStruct->Attribute.IsCEA861Monitor)
+    
+    if (!bRet && pEDIDStruct->Attribute.IsCEA861Monitor)
     {
         for (i = 0; i < CBIOS_DTDTIMING_BLOCK_CNT; i++)
         {
@@ -2909,61 +3081,31 @@ CBIOS_BOOL cbEDIDModule_SearchTmInEdidStruct(CBIOS_U32 XResolution,
             }
         }
     }
-    if((!bRet) && ((pEDIDStruct->Attribute.IsCEA861Monitor) || (pEDIDStruct->Attribute.IsCEA861HDMI)))
+    
+    if(!bRet && (pEDIDStruct->Attribute.IsCEA861Monitor || pEDIDStruct->Attribute.IsCEA861HDMI))
     {
-        for(i=0; i<CBIOS_HDMIFORMATCOUNTS; i++)
+        for(i = 0; i < pEDIDStruct->HDMIFmtNum; i++)
         {
-            byRefRateIndex = pEDIDStruct->HDMIFormat[i].RefreshIndex%2;
-            if((pEDIDStruct->HDMIFormat[i].IsSupported)&&
-               (CEAVideoFormatTable[i].XRes == XResolution)&&
-               (CEAVideoFormatTable[i].YRes == YResolution)&&
-               (CEAVideoFormatTable[i].Interlace == InterlaceFlag)&&
-               (CEAVideoFormatTable[i].RefRate[byRefRateIndex] == RefreshRate))
+            CBIOS_U16 FmtIndex = pEDIDStruct->pHDMIFormat[i].FormatIndex;
+            byRefRateIndex = CEAVideoFormatTable[FmtIndex].DefRateIdx;
+            if((CEAVideoFormatTable[FmtIndex].XRes == XResolution)&&
+               (CEAVideoFormatTable[FmtIndex].YRes == YResolution)&&
+               (CEAVideoFormatTable[FmtIndex].Interlace == InterlaceFlag)&&
+               (CEAVideoFormatTable[FmtIndex].RefRate[byRefRateIndex] == RefreshRate))
             {
-                *pTmIndex = i;
+                *pTmIndex = FmtIndex;
                 *pTmType = CBIOS_MODE_SVD_TIMING;
                 bRet = CBIOS_TRUE;
                 break;
             }
         }
     }
-    if(!bRet)
-    {
-        for(i=0; i<CBIOS_STDMODECOUNT; i++)
-        {
-            if((pEDIDStruct->StdTimings[i].Valid)&&
-               (pEDIDStruct->StdTimings[i].XResolution == XResolution)&&
-               (pEDIDStruct->StdTimings[i].YResolution == YResolution)&&
-               (pEDIDStruct->StdTimings[i].Refreshrate == RefreshRate))
-            {
-                *pTmIndex = i;
-                *pTmType = CBIOS_MODE_STD_TIMING;
-                bRet = CBIOS_TRUE;
-                break;
-            }
-        }
-    }
-    if(!bRet)
-    {
-        for(i=0; i<CBIOS_ESTABLISHMODECOUNT; i++)
-        {
-            if((pEDIDStruct->EstTimings[i].Valid)&&
-               (pEDIDStruct->EstTimings[i].XResolution == XResolution)&&
-               (pEDIDStruct->EstTimings[i].YResolution == YResolution)&&
-               (pEDIDStruct->EstTimings[i].Refreshrate == RefreshRate))
-            {
-                *pTmIndex = i;
-                *pTmType = CBIOS_MODE_EST_TIMING;
-                bRet = CBIOS_TRUE;
-                break;
-            }
-        }
-    }
+
     if(!bRet)
     {
         for(i=0; i<pEDIDStruct->DispIdTimingNum; i++)
         {
-            if(cbEDIDModule_MatchTiming(&pEDIDStruct->DisplayIdDtlTimings[i], XResolution, YResolution, RefreshRate, InterlaceFlag))
+            if(cbEDIDModule_MatchTiming(&pEDIDStruct->pDisplayIdDtlTimings[i], XResolution, YResolution, RefreshRate, InterlaceFlag))
             {
                 *pTmIndex = i;
                 *pTmType = CBIOS_MODE_DISP_ID_TIMING;
@@ -2994,12 +3136,12 @@ static CBIOS_VOID cbEDIDModule_FakeDetailedTiming(CBIOS_U8 *pEdid, PCBIOS_DETAIL
     CBIOS_U16 VerSyncOffset = pDtlTiming->VSyncOffset;
     CBIOS_U16 VerSyncWidth = pDtlTiming->VSyncPulseWidth;
 
-    pEdid[0x38] = (CBIOS_U8)(pDtlTiming->HActive & 0xFF);
+    pEdid[0x38] = (CBIOS_U8)(pDtlTiming->XResolution & 0xFF);
     pEdid[0x39] = (CBIOS_U8)(HorBlanking & 0xFF);
-    pEdid[0x3A] = (CBIOS_U8)(((pDtlTiming->HActive & 0xF00) >> 4) | ((HorBlanking & 0xF00) >> 8));
-    pEdid[0x3B] = (CBIOS_U8)(pDtlTiming->VActive & 0xFF);
+    pEdid[0x3A] = (CBIOS_U8)(((pDtlTiming->XResolution & 0xF00) >> 4) | ((HorBlanking & 0xF00) >> 8));
+    pEdid[0x3B] = (CBIOS_U8)(pDtlTiming->YResolution & 0xFF);
     pEdid[0x3C] = (CBIOS_U8)(VerBlanking & 0xFF);
-    pEdid[0x3D] = (CBIOS_U8)(((pDtlTiming->VActive & 0xF00) >> 4) | ((VerBlanking & 0xF00) >> 8));
+    pEdid[0x3D] = (CBIOS_U8)(((pDtlTiming->YResolution & 0xF00) >> 4) | ((VerBlanking & 0xF00) >> 8));
     pEdid[0x3E] = (CBIOS_U8)(HorSyncOffset & 0xFF);
     pEdid[0x3F] = (CBIOS_U8)(HorSyncWidth & 0xFF);
     pEdid[0x40] = (CBIOS_U8)((VerSyncOffset & 0x0F) << 4 | (VerSyncWidth & 0x0F));

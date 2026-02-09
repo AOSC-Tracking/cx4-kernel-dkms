@@ -100,6 +100,7 @@ typedef struct _CBIOS_MODULE_I2C_PARAMS {
     CBIOS_U8*             Buffer;
     CBIOS_U32             BufferLen;
     CBIOS_U32             Flags;
+    CBIOS_U16             I2CDelay;
 } CBIOS_MODULE_I2C_PARAMS, *PCBIOS_MODULE_I2C_PARAMS;
 
 //I2C module interfaces

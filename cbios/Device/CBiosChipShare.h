@@ -137,7 +137,7 @@
 
 typedef struct _CBIOS_HDMI_FORMAT_MTX
 {
-   CBIOS_U16   FormatNum;
+   CBIOS_U16   FormatVIC;
    CBIOS_U16   XRes;
    CBIOS_U16   YRes;
    CBIOS_UCHAR Interlace;
@@ -208,7 +208,6 @@ typedef struct _CBIOS_EXTENSION_COMMON
     
     /* data tables */
     PCBIOS_HDMI_FORMAT_MTX pHDMIFormatTable;
-    CBIOS_BOOL*        pHDMISupportedFormatTable;    
 
     CBIOS_UCHAR        SavedReg[128];
     

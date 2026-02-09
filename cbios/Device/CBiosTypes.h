@@ -216,7 +216,9 @@ typedef struct _Shadow_Info
         CBIOS_U32   bBLGfxMode          :1;
         CBIOS_U32   bDisableHDAudioCodec3   :1;
         CBIOS_U32   bLgaChip              :1;
-        CBIOS_U32   Reserved   :24;
+        CBIOS_U32   bBLGfxPwm           :1;
+        CBIOS_U32   bInvertPwmBL        :1;
+        CBIOS_U32   Reserved   :22;
     };
     CBIOS_U32   ECLK;
     CBIOS_U32   VCLK;

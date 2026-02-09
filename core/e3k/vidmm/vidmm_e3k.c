@@ -44,7 +44,7 @@ void vidmm_query_chip_vm_info_e3k(adapter_t *adapter, vidmm_chip_vm_info_t *vm_i
     adapter->ctl_flags.share_space_cover_local = adapter->hw_caps.system_only ? 0 : 1;
 
     if (adapter->chip_id == CHIP_CNE001)
-        adapter->private_size_of_cne001 = GPU_VA_PRIVATE_VMA_SPACE_SIZE;
+        adapter->private_size_of_cne001 = GPU_VA_PRIVATE_VMA_SPACE_SIZE * 4;
 
     adapter->shared_gpu_va_size     =  adapter->total_local_memory_size;
     if(adapter->hw_caps.share_pcie_enable)
@@ -1502,36 +1502,6 @@ void vidmm_update_private_vma_space_e3k(adapter_t *adapter, void *parent_buffer_
     entry->age = adapter->resume_age;
 }
 
-int vidmm_prepare_and_check_compress_e3k(adapter_t *adapter, vidmm_allocation_t *allocation)
-{
-    int result = 0;
-
-    result = vidmm_prepare_and_mark_unpagable(allocation);
-
-    if (result != 0)
-    {
-        return result;
-    }
-
-    if (allocation->segment_id == SEGMENT_ID_PCIE_SNOOPABLE_ELT3K && allocation->compress_format)
-    {
-        allocation->compress_format = 0;
-        if(adapter->mm_mgr->chip_func->free_bl_slot && allocation->bl_range)
-        {
-            adapter->mm_mgr->chip_func->free_bl_slot(adapter, allocation);
-            allocation->slot_index = (unsigned int)-1;
-        }
-    }
-
-    if (!allocation->flag.unpagable && (allocation->segment_id != SEGMENT_ID_LOCAL_ELT3K || 
-        (allocation->segment_id == SEGMENT_ID_LOCAL_ELT3K && !allocation->compress_format && !allocation->flag.global)))
-    {
-        vidmm_mark_pagable(allocation);
-    }
-
-    return result;
-}
-
 vidmm_chip_func_t   vidmm_chip_func =
 {
     .describe_allocation = vidmm_describe_allocation_e3k,
@@ -1552,7 +1522,6 @@ vidmm_chip_func_t   vidmm_chip_func =
     .fini_segments = vidmm_fini_segments_e3k,
     .init_private_vma_space = vidmm_init_private_vma_space_e3k, //patch for cne001
     .update_private_vma_space = vidmm_update_private_vma_space_e3k, //patch for cne001
-    .prepare_and_check_compress = vidmm_prepare_and_check_compress_e3k,
 };
 
 

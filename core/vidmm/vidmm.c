@@ -678,20 +678,3 @@ void vidmmi_dump_vm_info(vidmm_chip_vm_info_t  *vm_info)
         }
     }
 }
-
-int vidmm_prepare_and_check_compress(adapter_t *adapter,vidmm_allocation_t *allocation)
-{
-    vidmm_mgr_t *mm_mgr = adapter->mm_mgr;
-    int ret = 0;
-
-    if (allocation == NULL)
-    {
-        return ret;
-    }
-
-    if (adapter->mm_mgr->chip_func->prepare_and_check_compress)
-    {
-        ret = mm_mgr->chip_func->prepare_and_check_compress(adapter, allocation);
-    }
-    return ret;
-}

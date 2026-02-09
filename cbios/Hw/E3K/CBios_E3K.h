@@ -67,8 +67,7 @@ typedef  union  _CBIOS_FLIP_MODE_EX
 
 typedef struct _CBIOS_TIMING_REG_E3K
 {
-    CBIOS_U32    DCLK;           
-    CBIOS_U8     HVPolarity;     
+    CBIOS_U32    DCLK;              
     CBIOS_U16    HorTotal;    
     CBIOS_U16    HorDisEnd;     
     CBIOS_U8     HDERemainder;
@@ -135,7 +134,9 @@ typedef struct _SYSBIOSInfo_CX4
         CBIOS_U32   bBLGfxMode            :1;
         CBIOS_U32   bDisableHDAudioCodec3 :1;
         CBIOS_U32   bLgaChip              :1;
-        CBIOS_U32   Reserved11            :23;
+        CBIOS_U32   bBLGfxPwm             :1;
+        CBIOS_U32   bInvertPwmBL          :1;
+        CBIOS_U32   Reserved11            :21;
     };
     CBIOS_U32   ECLK;
     CBIOS_U32   VCLK;

@@ -517,8 +517,7 @@ static CBIOS_VOID cbHDMIMonitor_SetAudioInfoFrame(PCBIOS_EXTENSION_COMMON pcbe, 
 
     NumofChannels = cbDIU_HDAC_GetChannelNums(pcbe, HDACModuleIndex);
 
-    if (((pcbe->SVID == 0x3A05) && (pcbe->SSID == 0x2001)) ||
-        ((pcbe->SVID == 0x206E) && (pcbe->SSID == 0x1028)))
+    if ((pcbe->SVID == 0x3A05) && (pcbe->SSID == 0x2001))
     {
         if(NumofChannels != 1)
         {
@@ -988,6 +987,7 @@ static CBIOS_BOOL cbHDMIMonitor_HDCP_ReadData(PCBIOS_EXTENSION_COMMON pcbe, PCBI
     cb_memset(&I2CParams, 0, sizeof(CBIOS_MODULE_I2C_PARAMS));
 
     I2CParams.I2CBusNum = I2CBUSNum;
+    I2CParams.I2CDelay = pDevCommon->I2CDelay;
     I2CParams.SlaveAddress = 0x74;
     I2CParams.Buffer = Buffer;
     I2CParams.BufferLen = Num;
@@ -1014,6 +1014,7 @@ static CBIOS_BOOL cbHDMIMonitor_SCDC_ReadData(PCBIOS_EXTENSION_COMMON pcbe, PCBI
     cb_memset(&I2CParams, 0, sizeof(CBIOS_MODULE_I2C_PARAMS));
 
     I2CParams.I2CBusNum = I2CBUSNum;
+    I2CParams.I2CDelay = pDevCommon->I2CDelay;
     I2CParams.SlaveAddress = 0xA8;
     I2CParams.Buffer = Buffer;
     I2CParams.BufferLen = Num;
@@ -1040,6 +1041,7 @@ static CBIOS_BOOL cbHDMIMonitor_SCDC_WriteData(PCBIOS_EXTENSION_COMMON pcbe, PCB
     cb_memset(&I2CParams, 0, sizeof(CBIOS_MODULE_I2C_PARAMS));
 
     I2CParams.I2CBusNum = I2CBUSNum;
+    I2CParams.I2CDelay = pDevCommon->I2CDelay;
     I2CParams.SlaveAddress = 0xA8;
     I2CParams.Buffer = Buffer;
     I2CParams.BufferLen = Num;
@@ -1504,7 +1506,7 @@ CBIOS_VOID cbHDMIMonitor_SetMode(PCBIOS_VOID pvcbe, PCBIOS_HDMI_MONITOR_CONTEXT 
     PCBIOS_EXTENSION_COMMON pcbe            = (PCBIOS_EXTENSION_COMMON)pvcbe;
     PCBIOS_DEVICE_COMMON    pDevCommon      = pHDMIMonitorContext->pDevCommon;
     CBIOS_MODULE_INDEX      HDMIModuleIndex = cbGetModuleIndex(pcbe, pDevCommon->DeviceType, CBIOS_MODULE_TYPE_HDMI);
-    CBIOS_U8                HVPolarity      = pModeParams->TargetTiming.HVPolarity;
+    CBIOS_U8                HVPolarity      = (CBIOS_U8)pModeParams->TargetTiming.HVPolarity;
     CBIOS_BOOL              bHDMIDevice     = pDevCommon->EdidStruct.Attribute.IsCEA861HDMI;
     CBIOS_U32               ClockFreq       = pHDMIMonitorContext->HDMIClock;
 

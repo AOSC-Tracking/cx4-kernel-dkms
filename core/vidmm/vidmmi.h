@@ -99,7 +99,6 @@ typedef struct _vidmm_chip_func
     int (*map_shared_buffer)(adapter_t *adapter, ZX_VM_NODE_TYPE entity_type, void *buffer, unsigned long long offset, unsigned long long size, unsigned long long gpu_va);
     int  (*clear_bl_buffer)(void *dma, unsigned int dma_size, unsigned int bl_slot_index, unsigned int alloc_size, unsigned long long clear_value);
     unsigned int  (*alloc_bl_slot)(adapter_t *, vidmm_allocation_t *);
-    int  (*prepare_and_check_compress)(adapter_t *, vidmm_allocation_t *);
     int  (*free_bl_slot)(adapter_t *, vidmm_allocation_t *);
     void  (*init_bl_heap)(adapter_t *adapter);
     void  (*fini_bl_heap)(adapter_t *adapter);

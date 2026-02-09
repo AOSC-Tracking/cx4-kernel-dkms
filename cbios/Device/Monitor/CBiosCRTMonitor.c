@@ -91,7 +91,7 @@ EXIT:
 
 CBIOS_VOID cbCRTMonitor_SetMode(PCBIOS_VOID pvcbe, PCBIOS_CRT_MONITOR_CONTEXT pCrtMonitorContext, PCBIOS_DISP_MODE_PARAMS pModeParams)
 {
-    CBIOS_U8 HVPolarity = pModeParams->TargetTiming.HVPolarity;
+    CBIOS_U8 HVPolarity = (CBIOS_U8)pModeParams->TargetTiming.HVPolarity;
     CBIOS_U8 IGAIndex = (CBIOS_U8)pModeParams->IGAIndex;
 
     cbDIU_CRT_SetHVSync(pvcbe, HVPolarity, IGAIndex);

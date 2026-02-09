@@ -179,24 +179,19 @@ typedef struct _CBIOS_EDID_DETAILEDTIMING_TABLE
     CBIOS_U8   mask;
 }DETAILEDTIMING_TABLE;
 
-typedef struct _CBIOS_HDMI_FORMAT_DESCRIPTOR
+typedef struct _CBIOS_HDMI_FORMAT_DESC
 {
-    CBIOS_U8 IsNative;
-    CBIOS_U8 IsSupported;
-    CBIOS_U8 BlockIndex;    /* Currently support only 4 blocks */
-    CBIOS_U8 RefreshIndex;
-    union
-    {
-        HDMI_3D_STUCTURE_ALL    Video3DSupportStructs;
-        CBIOS_U16               Video3DSupportCaps;
-    };
+    CBIOS_U16               FormatVIC;
+    CBIOS_U16               FormatIndex;               //index in table CEAVideoFormatTable
+    CBIOS_U16               Video3DSupportCaps;
     struct
     {
-        CBIOS_U8    IsSupportYCbCr420       :1;
-        CBIOS_U8    IsSupportOtherFormats   :1; /* RGB, YCbCr4:4:4, YCbCr4:2:2 */
-        CBIOS_U8    RsvdBits                :6;
+        CBIOS_U16    IsNative                :1;
+        CBIOS_U16    IsSupportYCbCr420       :1;
+        CBIOS_U16    IsSupportOtherFormats   :1; /* RGB, YCbCr4:4:4, YCbCr4:2:2 */
+        CBIOS_U16    RsvdBits                :13;
     };
-}CBIOS_HDMI_FORMAT_DESCRIPTOR, *PCBIOS_HDMI_FORMAT_DESCRIPTOR;
+}CBIOS_HDMI_FORMAT_DESC, *PCBIOS_HDMI_FORMAT_DESC;
 
 typedef struct _CBIOS_HDMI_3D_FORMAT
 {
@@ -284,6 +279,18 @@ typedef struct _CBIOS_HDMI_VSDB_EXTENTION
     CBIOS_HDMI_3D_FORMAT    HDMI3DForamt[MAX_HDMI_3D_LEN];
     CBIOS_U32           HDMI3DFormatCount;
 }CBIOS_HDMI_VSDB_EXTENTION, *PCBIOS_HDMI_VSDB_EXTENTION;
+
+typedef struct _CBIOS_MRL
+{
+    CBIOS_BOOL bSupportFreeSync;
+    CBIOS_U8 Flags;
+    CBIOS_U16 MinVerRate;
+    CBIOS_U16 MaxVerRate;
+    CBIOS_U16 MinHorRate;
+    CBIOS_U16 MaxHorRate;
+    CBIOS_U16 MaxPixelClock;
+}CBIOS_MRL, *PCBIOS_MRL;
+
 
 typedef struct _CBIOS_HF_SCDS_DATA
 {
@@ -590,25 +597,29 @@ typedef struct _CBIOS_MONITOR_MISC_ATTRIB
     CBIOS_INFO_FRAME_SUPPORT_CAPS   InfoFrameSupCaps;
     CBIOS_SVR_DESC                  ShortVideoRef[MAX_SVR_LEN];
     CBIOS_MONITOR_CHROMATICITY      Chromaticity;          // monitor chromaticity x,y coordinates and default white point
+    CBIOS_MRL                       MRLData;
 }CBIOS_MONITOR_MISC_ATTRIB, *PCBIOS_MONITOR_MISC_ATTRIB;
 
 #define  CBIOS_DTDTIMING_BLOCK_CNT  (CBIOS_DTDTIMINGCOUNTS*2)
 
 typedef struct _CBIOS_EDID_STRUCTURE_DATA {
-    CBIOS_U8          Version;
-    CBIOS_MODE_INFO EstTimings[CBIOS_ESTABLISHMODECOUNT];
-    CBIOS_MODE_INFO StdTimings[CBIOS_STDMODECOUNT];
-    CBIOS_DETAILED_TIMING_INFO DtlTimings[CBIOS_DTLMODECOUNT];
-    CBIOS_MONITOR_MISC_ATTRIB Attribute;
-    CBIOS_HDMI_FORMAT_DESCRIPTOR HDMIFormat[CBIOS_HDMIFORMATCOUNTS];
-    CBIOS_HDMI_AUDIO_INFO HDMIAudioFormat[CBIOS_HDMI_AUDIO_FORMAT_COUNTS];
-    CBIOS_DETAILED_TIMING_INFO DTDTimings[CBIOS_DTDTIMING_BLOCK_CNT]; //may meet two CEA data block(edid has 4 block)
-    CBIOS_U32         TotalDtdTimingNum;
-    CBIOS_U32         TotalTimingNum;    // total number of modes that supported in EDID
-    CBIOS_U32         TotalHDMIAudioFormatNum; // total number of hdmi audio formats that supported in EDID
-    PCBIOS_DETAILED_TIMING_INFO  DisplayIdDtlTimings;
-    CBIOS_U32         DispIdTimingNum;
-    CBIOS_U32         DispIdArraySize;
+    CBIOS_U8                      Version;
+    CBIOS_MODE_INFO               EstTimings[CBIOS_ESTABLISHMODECOUNT];
+    CBIOS_MODE_INFO               StdTimings[CBIOS_STDMODECOUNT];
+    CBIOS_DETAILED_TIMING_INFO    DtlTimings[CBIOS_DTLMODECOUNT];
+    CBIOS_MONITOR_MISC_ATTRIB     Attribute;
+    CBIOS_U32                     HDAudioFormatNum; // valid number of hdmi audio formats in HDMIAudioFormat
+    CBIOS_HDMI_AUDIO_INFO         HDAudioFormat[CBIOS_HDMI_AUDIO_FORMAT_COUNTS];
+    CBIOS_U32                     HDMIFmtNum;
+    CBIOS_U32                     HDMIFmtArraySize;
+    PCBIOS_HDMI_FORMAT_DESC       pHDMIFormat;
+    CBIOS_U32                     DtdTimingNum;  //valid timing number in DTDTimings
+    CBIOS_DETAILED_TIMING_INFO    DTDTimings[CBIOS_DTDTIMING_BLOCK_CNT]; //may meet two CEA data block(edid has 4 block)
+    CBIOS_U32                     DispIdTimingNum; //valid timing number in pDisplayIdDtlTimings
+    CBIOS_U32                     DispIdArraySize; //malloc size in pDisplayIdDtlTimings
+    PCBIOS_DETAILED_TIMING_INFO   pDisplayIdDtlTimings;
+    CBIOS_U32                     TotalTimingNum;    // total valid number of mode/timing in above struct, some of which is duplicated. 
+                                                    //Merged modes is stored in pDevCommon->pDeviceModeList
 } CBIOS_EDID_STRUCTURE_DATA, *PCBIOS_EDID_STRUCTURE_DATA;
 
 CBIOS_U32 cbEDIDModule_GetExtBlockNum(CBIOS_U8 *pEDID);

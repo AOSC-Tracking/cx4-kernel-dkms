@@ -52,12 +52,22 @@ void zx_encoder_disable(struct drm_encoder *encoder)
     zx_encoder_t *zx_encoder = to_zx_encoder(encoder);
     zx_connector_t *zx_connector = zx_encoder_get_connector(zx_encoder);
     struct task_struct *cur_task = current;
+    unsigned int flags = 0;
+    struct drm_crtc *crtc = NULL;
 
     if (!zx_connector)
     {
         return;
     }
-
+    crtc = zx_connector->base_connector.state->crtc;
+    if(crtc && zx_connector->conn_type == CBIOS_EDP_CONN)
+    {
+        //for edp's mode-setting, called by disable_outputs, no need to off vdd, and it can save lots of time
+        if(crtc->state->mode_changed && crtc->state->enable && crtc->state->active)
+        {
+            flags |= SKIP_VDD_OFF;
+        }
+    }
     if(zx_encoder->dpms_status)
     {
         disp_cbios_set_hdac_connect_status(disp_info, zx_encoder->output_type, FALSE, FALSE);
@@ -82,7 +92,7 @@ void zx_encoder_disable(struct drm_encoder *encoder)
 
         zx_encoder->dpms_status = 0;
 
-        disp_cbios_set_dpms(disp_info, zx_encoder->output_type, 0);
+        disp_cbios_set_dpms(disp_info, zx_encoder->output_type, 0, flags);
 
         zx_mutex_unlock(zx_connector->access_lock);
     }
@@ -119,7 +129,7 @@ void zx_encoder_enable(struct drm_encoder *encoder)
 
         zx_encoder->dpms_status = 1;
 
-        disp_cbios_set_dpms(disp_info, zx_encoder->output_type, 1);
+        disp_cbios_set_dpms(disp_info, zx_encoder->output_type, 1, 0);
 
         zx_mutex_unlock(zx_connector->access_lock);
 
@@ -177,7 +187,7 @@ static bool zx_encoder_mode_fixup(struct drm_encoder *encoder,
             if((pcbios_mode->XRes == mode->hdisplay) &&
                 (pcbios_mode->YRes == mode->vdisplay) &&
                 (abs(pcbios_mode->RefreshRate - drm_mode_vrefresh(mode) * 100) < 50) &&
-                ((mode->flags & DRM_MODE_FLAG_INTERLACE) ? (pcbios_mode->InterlaceProgressiveCaps == 0x02) : (pcbios_mode->InterlaceProgressiveCaps == 0x01)))
+                ((mode->flags & DRM_MODE_FLAG_INTERLACE) ? (pcbios_mode->isInterlaceMode == 1) : (pcbios_mode->isInterlaceMode == 0)))
             {
                 //hw mode == sw mode
                 goto End;

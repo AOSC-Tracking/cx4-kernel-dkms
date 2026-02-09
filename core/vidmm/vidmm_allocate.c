@@ -283,11 +283,6 @@ void* vidmm_create_allocation(adapter_t *adapter, krnl_create_allocation_info_t 
     allocation->parent = create->parent;
     allocation->debug_gid = create->debug_gid;
 
-    if (adapter->hw_caps.snoop_only && allocation->compress_format)
-    {
-        vidmm_prepare_and_check_compress(adapter, allocation);
-    }
-
     return allocation;
 }
 
@@ -677,6 +672,7 @@ retry:
             if (paging_result == S_OK)
             {
                 --try_times;
+                zx_msleep(100);
                 goto retry;
             }
         }
@@ -728,6 +724,19 @@ static int vidmm_allocate_physical_memory(vidmm_mgr_t *mm_mgr, vidmm_allocation_
     if(!phys_mem)
         return E_OUTOFMEMORY;
 
+    if (allocation->segment_id == SEGMENT_ID_LOCAL)
+    {
+        if (allocation->compress_format && 
+            (allocation->preferred_segment[0].segment_id == mm_mgr->paging_segment_id ||
+            allocation->preferred_segment[1].segment_id == mm_mgr->paging_segment_id ||
+            allocation->preferred_segment[2].segment_id == mm_mgr->paging_segment_id))
+        { 
+            zx_debug("allocate in local but prefer in pcie! paging out may not paging in local! compress is not allowed in snoop!\
+                debug_gid=0x%08x prefer0=0x%x prefer1=0x%x prefer2=0x%x compress_format=0x%x \n",
+                allocation->debug_gid, allocation->preferred_segment[0].segment_id, allocation->preferred_segment[1].segment_id,
+                allocation->preferred_segment[2].segment_id, allocation->compress_format);
+        }
+    }
     return S_OK;
 }
 
@@ -926,6 +935,7 @@ retry:
                     if (paging_result == S_OK)
                     {
                         ++try_times;
+                        zx_msleep(100);
                         goto retry;
                     }
                 }

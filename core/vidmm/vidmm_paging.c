@@ -117,6 +117,7 @@ static vidmm_allocation_t * vidmmi_create_temp_paging_allocation(vidmm_mgr_t *mm
     temp_allocation->alignment  = allocation->alignment;
     temp_allocation->flag.unpagable = 1;
     temp_allocation->flag.global = allocation->flag.global;
+    temp_allocation->flag.continuous = allocation->flag.continuous;
 
     switch(paging_allocation_type)
     {
@@ -431,6 +432,12 @@ int vidmm_resident_one_allocation(adapter_t *adapter, vidmm_allocation_t *alloca
 
     zx_allocation_trace_event(allocation->adapter->index, allocation->parent, ALLOCATION_EVENT_RESIDENT_BEGIN, allocation->segment_id);
 
+    //global or continous allocation always need remap
+    if (allocation->flag.global || allocation->flag.continuous)
+    {
+        allocation->need_remap = 1;
+    }
+
     for (i = 0; i < ARRAY_SIZE(allocation->preferred_segment); i++)
     {
         segment_id = preferred_segment[i].segment_id;
@@ -445,11 +452,6 @@ int vidmm_resident_one_allocation(adapter_t *adapter, vidmm_allocation_t *alloca
             vidmm_add_allocation_to_segment_resident_list(adapter, allocation);
 
             ++allocation->resident_age;
-
-            if (allocation->flag.global || allocation->flag.continuous)
-            {
-                allocation->need_remap = 1;
-            }
 
             goto done;
         }
@@ -667,7 +669,7 @@ int vidmmi_segment_unresident_allocations(vidmm_mgr_t *mm_mgr, vidmm_segment_t *
 
         list_splice_init(&segment->pagable_resident_list[priority], &paging_list);
 
-        zx_mutex_unlock(segment->lock);
+        // zx_mutex_unlock(segment->lock);
 
         list_for_each_entry_safe(allocation, next, &paging_list, list_item)
         {
@@ -701,7 +703,7 @@ int vidmmi_segment_unresident_allocations(vidmm_mgr_t *mm_mgr, vidmm_segment_t *
         }
 
 done:
-        zx_mutex_lock(segment->lock);
+        //zx_mutex_lock(segment->lock);
         list_splice_init(&paging_list, &segment->pagable_resident_list[priority]);
     }
     zx_mutex_unlock(segment->lock);
@@ -1112,7 +1114,7 @@ void vidmm_fill_allocation_info(adapter_t *adapter, vidmm_allocation_t *allocati
     info->compress_format = allocation->compress_format;
     info->alignment     = allocation->alignment;
     if(segment->flags.local)
-        info->local_continuous = (allocation->fb_pages_mem->range_node_num == 1);
+        info->local_continuous = (allocation->fb_pages_mem ? allocation->fb_pages_mem->range_node_num == 1 : 0);
 
     if(allocation->fb_pages_mem)
     {

@@ -646,8 +646,6 @@ extern int vidmm_lock_allocation(gpu_device_t *device, vidmm_allocation_t *alloc
 extern void vidmm_add_allocation_to_segment_resident_list(adapter_t *adapter, vidmm_allocation_t *allocation);
 extern void vidmm_remove_allocation_from_segment_resident_list(adapter_t *adapter, vidmm_allocation_t *allocation);
 
-extern int vidmm_prepare_and_check_compress(adapter_t *adapter, vidmm_allocation_t *allocation);
-
 //vm related interface
 extern int vidmm_vm_init_vma_space(zx_vma_space_t *vma_space, adapter_t *adapter);
 extern void vidmm_vm_fini_vma_space(zx_vma_space_t *vma_space);

@@ -270,15 +270,24 @@ static CBIOS_VOID cbDPPort_CalculateInsertLineNum(PCBIOS_EXTENSION_COMMON pcbe, 
         return ;
     }
 
-    if (!(pMonitorAttrib->AMDVSDBData.IsFreeSyncSupported))
+    if (!(pMonitorAttrib->AMDVSDBData.IsFreeSyncSupported) && !(pMonitorAttrib->MRLData.bSupportFreeSync))
     {
         pDpContext->DPPortParams.InsertLineNum = 0;
         return;
     }
 
     CurRefRate = pModeParams->TargetTiming.RefreshRate / 100;
-    MinRefRate = pMonitorAttrib->AMDVSDBData.MinSupportedRefRate;
-    MaxRefRate = pMonitorAttrib->AMDVSDBData.MaxSupportedRefRate;
+
+    if(pMonitorAttrib->AMDVSDBData.IsFreeSyncSupported)
+    {
+        MinRefRate = pMonitorAttrib->AMDVSDBData.MinSupportedRefRate;
+        MaxRefRate = pMonitorAttrib->AMDVSDBData.MaxSupportedRefRate;
+    }
+    else
+    {
+        MinRefRate = pMonitorAttrib->MRLData.MinVerRate;
+        MaxRefRate = pMonitorAttrib->MRLData.MaxVerRate;
+    }
     VTotal = pModeParams->TargetTiming.VerTotal;
 
     if ((CurRefRate > MinRefRate) && (CurRefRate <= MaxRefRate))
@@ -428,7 +437,7 @@ static CBIOS_BOOL cbDPPort_DeviceDetect(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEV
          *but the newly monitor does not support freesync, then clear inerted lines.
          */
         if ((pDpContext->DPPortParams.InsertLineNum != 0)
-            &&!(pDevCommon->EdidStruct.Attribute.AMDVSDBData.IsFreeSyncSupported))
+            &&!(pDevCommon->EdidStruct.Attribute.AMDVSDBData.IsFreeSyncSupported) && !(pDevCommon->EdidStruct.Attribute.MRLData.bSupportFreeSync))
         {
             cbDIU_DP_SetFreeSync(pcbe, DPModuleIndex, 0);
         }
@@ -448,7 +457,7 @@ static CBIOS_BOOL cbDPPort_DeviceDetect(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEV
     return bConnected;
 }
 
-static CBIOS_VOID cbDPPort_OnOff(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL bOn)
+static CBIOS_VOID cbDPPort_OnOff(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL bOn, CBIOS_U32 Flags)
 {
     PCBIOS_DP_CONTEXT pDpContext = container_of(pDevCommon, PCBIOS_DP_CONTEXT, Common);
     CBIOS_MODULE_INDEX DPModuleIndex = CBIOS_MODULE_INDEX_INVALID;
@@ -504,14 +513,14 @@ static CBIOS_VOID cbDPPort_OnOff(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEVICE_COM
                 {
                     cbPHY_DP_InitEPHY(pcbe, DPModuleIndex);
                 }
-                cbDPMonitor_OnOff(pcbe, &pDpContext->DPMonitorContext, bOn);
+                cbDPMonitor_OnOff(pcbe, &pDpContext->DPMonitorContext, bOn, Flags);
             #endif
             }
         }
         else
         {
         #if DP_MONITOR_SUPPORT
-            cbDPMonitor_OnOff(pcbe, &pDpContext->DPMonitorContext, bOn);
+            cbDPMonitor_OnOff(pcbe, &pDpContext->DPMonitorContext, bOn, Flags);
         #endif
         }
     }
@@ -752,7 +761,7 @@ static CBIOS_VOID cbDPPort_UpdateModeInfo(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_D
             pModeParams->TargetTiming.PixelClock *= 2;
         }
         DiuPLLClock = pModeParams->TargetTiming.PixelClock;
-        pModeParams->TargetTiming.PLLClock = DiuPLLClock;
+        pModeParams->PLLClock = DiuPLLClock;
 
         cbDPMonitor_UpdateModeInfo(pcbe, &pDpContext->DPMonitorContext, pModeParams);
     }
@@ -838,7 +847,7 @@ static CBIOS_VOID cbDPPort_UpdateModeInfo(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_D
         {
              pDpContext->HDMIMonitorContext.HDMIClock /= 2;
         }
-        pModeParams->TargetTiming.PLLClock = DiuPLLClock;
+        pModeParams->PLLClock = DiuPLLClock;
 
         cbHDMIMonitor_UpdateModeInfo(pcbe, &pDpContext->HDMIMonitorContext, pModeParams);
 
@@ -920,7 +929,7 @@ PCBIOS_DEVICE_COMMON cbDPPort_Init(PCBIOS_VOID pvcbe, PVCP_INFO pVCP, CBIOS_ACTI
 
     if (DeviceType == CBIOS_TYPE_DP1)
     {
-        pDeviceCommon->I2CBus = pVCP->DP1DualModeCharByte & I2CBUSMASK;    
+        pDeviceCommon->I2CBus = pVCP->DP1DualModeCharByte & I2CBUSMASK;
         pDeviceCommon->DispSource.ModuleList.DPModule.Index = CBIOS_MODULE_INDEX1;
         pDeviceCommon->DispSource.ModuleList.HDMIModule.Index = CBIOS_MODULE_INDEX1;
         pDeviceCommon->DispSource.ModuleList.HDCPModule.Index = CBIOS_MODULE_INDEX1;
@@ -954,6 +963,7 @@ PCBIOS_DEVICE_COMMON cbDPPort_Init(PCBIOS_VOID pvcbe, PVCP_INFO pVCP, CBIOS_ACTI
         pDeviceCommon->DispSource.ModuleList.HDACModule.Index = CBIOS_MODULE_INDEX_INVALID;
         pDeviceCommon->PortConnType = CBIOS_NON_CONN;
     }
+    pDeviceCommon->I2CDelay = pcbe->I2CDelay;
 
     pDpContext->HDMIMonitorContext.pDevCommon = pDeviceCommon;
     pDpContext->DPMonitorContext.pDevCommon = pDeviceCommon;
@@ -972,6 +982,7 @@ PCBIOS_DEVICE_COMMON cbDPPort_Init(PCBIOS_VOID pvcbe, PVCP_INFO pVCP, CBIOS_ACTI
     pDpContext->DPMonitorContext.bUseLinkRateSet = 0;
     pDpContext->DPMonitorContext.DpUsbMode = CBIOS_DP_STANDARD;
     pDpContext->DPMonitorContext.CurrentDpUsbMode = CBIOS_DP_STANDARD;
+    pDpContext->DPMonitorContext.VddStatus = 0;
     cb_memset(pDpContext->DPMonitorContext.SupportedLinkRates, 0, DP_MAX_SUPPORTED_RATES_NUM * sizeof(CBIOS_U32));
 
     pDpContext->DPPortParams.bRunCTS = CBIOS_FALSE;

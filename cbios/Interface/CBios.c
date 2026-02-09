@@ -712,7 +712,7 @@ CBiosSetIgaOnOffState(PCBIOS_VOID pvcbe, CBIOS_BOOL status, CBIOS_U8 IGAIndex)
 }
 
 DLLEXPORTS CBIOS_STATUS
-CBiosSetDisplayDevicePowerState(PCBIOS_VOID pvcbe, CBIOS_U32 DevicesId, CBIOS_BOOL bPowerOn)
+CBiosSetDisplayDevicePowerState(PCBIOS_VOID pvcbe, CBIOS_U32 DevicesId, CBIOS_BOOL bPowerOn, CBIOS_U32 Flags)
 {
     PCBIOS_EXTENSION_COMMON pcbe = pvcbe;
     CBIOS_ACTIVE_TYPE CurDev = CBIOS_TYPE_NONE;
@@ -755,7 +755,7 @@ CBiosSetDisplayDevicePowerState(PCBIOS_VOID pvcbe, CBIOS_U32 DevicesId, CBIOS_BO
             continue;
         }
 
-        cbDevSetDisplayDevicePowerState(pcbe, pDevCommon, bPowerOn);
+        cbDevSetDisplayDevicePowerState(pcbe, pDevCommon, bPowerOn, Flags);
     }
 
     return CBIOS_OK;

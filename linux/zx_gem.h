@@ -38,15 +38,6 @@
 #include "zx_gem_debug.h"
 #include "zx_version.h"
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) || \
-    DRM_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)
-#include <linux/pfn_t.h>
-#else
-typedef struct {
-    u64 val;
-} pfn_t;
-#endif
-
 struct drm_zx_gem_object;
 
 struct drm_zx_gem_object_ops

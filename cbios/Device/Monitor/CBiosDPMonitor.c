@@ -985,6 +985,7 @@ static CBIOS_BOOL cbDPMonitor_GetSinkCaps(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_D
         // CTS: 4.2.2.7
         DPCD_00005.Value = Data[5];
         DPCD_00007.Value = Data[7];
+
         if (DPCD_00005.DWN_STRM_PORT_PRESENT)
         {
             cbDebugPrint((MAKE_LEVEL(DP, DEBUG), "%s: downstream port count = %d\n", FUNCTION_NAME, DPCD_00007.DWN_STRM_PORT_COUNT));
@@ -1537,7 +1538,10 @@ CBIOS_BOOL cbDPMonitor_Detect(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMo
     {
         if (pDevCommon->PowerState != CBIOS_PM_ON) //if eDP already power on, skip aux power sequence
         {
-            cbDIU_EDP_EDPAuxPowerSeqCtrl(pcbe, pDPMonitorContext, DPModuleIndex, CBIOS_TRUE);
+            if(!pDPMonitorContext->VddStatus)
+            {
+                cbDIU_EDP_EDPAuxPowerSeqCtrl(pcbe, pDPMonitorContext, DPModuleIndex, CBIOS_TRUE);
+            }
 
             //if eDP already power on and the panel is in PSR_State 3:PSR active-no RFB update,
             //write dpcd 600h to 1, the sink may consider that it will go to psr exit sequence
@@ -1628,14 +1632,10 @@ CBIOS_BOOL cbDPMonitor_Detect(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMo
         }
         if (pDevCommon->PowerState != CBIOS_PM_ON)
         {
-        #ifndef GOP_BUILD
-            cbDIU_EDP_EDPAuxPowerSeqCtrl(pcbe, pDPMonitorContext, DPModuleIndex, CBIOS_FALSE);
-        #else
             if(!bConnected)
             {
                 cbDIU_EDP_EDPAuxPowerSeqCtrl(pcbe, pDPMonitorContext, DPModuleIndex, CBIOS_FALSE);
             }
-        #endif
         }
     }
 
@@ -1656,6 +1656,7 @@ CBIOS_VOID cbDPMonitor_UpdateModeInfo(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTE
     PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
     PCBIOS_DEVICE_COMMON    pDevCommon      = pDPMonitorContext->pDevCommon;
     PCBIOS_AMD_VSDB_EXTENTION   pAMDVSDBData = &(pDevCommon->EdidStruct.Attribute.AMDVSDBData);
+    PCBIOS_MRL pMRLData = &(pDevCommon->EdidStruct.Attribute.MRLData);
     CBIOS_U32 IGAIndex = pModeParams->IGAIndex;
 
     if (0 == pcbe->SpecifyDestTimingSrc[IGAIndex].Flag)
@@ -1685,7 +1686,7 @@ CBIOS_VOID cbDPMonitor_UpdateModeInfo(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTE
     pDPMonitorContext->bInterlace = pModeParams->TargetModePara.bInterlace;
     pDPMonitorContext->PixelRepetition = pModeParams->PixelRepitition;
 
-    pDPMonitorContext->bSupportFreeSync = pAMDVSDBData->IsFreeSyncSupported ? CBIOS_TRUE : CBIOS_FALSE;
+    pDPMonitorContext->bSupportFreeSync = (pAMDVSDBData->IsFreeSyncSupported  | pMRLData->bSupportFreeSync) ? CBIOS_TRUE : CBIOS_FALSE;
 }
 
 CBIOS_VOID cbDPMonitor_SetMode(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMonitorContext, PCBIOS_DISP_MODE_PARAMS pModeParams)
@@ -1693,7 +1694,7 @@ CBIOS_VOID cbDPMonitor_SetMode(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPM
     PCBIOS_EXTENSION_COMMON pcbe          = (PCBIOS_EXTENSION_COMMON)pvcbe;
     PCBIOS_DEVICE_COMMON    pDevCommon    = pDPMonitorContext->pDevCommon;
     CBIOS_MODULE_INDEX      DPModuleIndex = cbGetModuleIndex(pcbe, pDevCommon->DeviceType, CBIOS_MODULE_TYPE_DP);
-    CBIOS_U8                HVPolarity    = pModeParams->TargetTiming.HVPolarity;
+    CBIOS_U8                HVPolarity    = (CBIOS_U8)pModeParams->TargetTiming.HVPolarity;
 
     if (DPModuleIndex == CBIOS_MODULE_INDEX_INVALID)
     {
@@ -1765,7 +1766,7 @@ CBIOS_VOID cbDPMonitor_UsbTunnelReset(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTE
     }
 }
 
-CBIOS_VOID cbDPMonitor_OnOff(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMonitorContext, CBIOS_BOOL bOn)
+CBIOS_VOID cbDPMonitor_OnOff(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMonitorContext, CBIOS_BOOL bOn, CBIOS_U32 Flags)
 {
     PCBIOS_EXTENSION_COMMON pcbe          = (PCBIOS_EXTENSION_COMMON)pvcbe;
     PCBIOS_DEVICE_COMMON    pDevCommon    = pDPMonitorContext->pDevCommon;
@@ -1777,7 +1778,7 @@ CBIOS_VOID cbDPMonitor_OnOff(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMon
     {
         cbDPMonitor_SetDither(pcbe, pDPMonitorContext->bpc, CBIOS_TRUE, DPModuleIndex);
         // 1. start EDP panel power supply
-        if (bEDPMode)
+        if (bEDPMode && !pDPMonitorContext->VddStatus)
         {
             cbDIU_EDP_EDPAuxPowerSeqCtrl(pcbe, pDPMonitorContext, DPModuleIndex, bOn);
         }
@@ -1904,7 +1905,10 @@ CBIOS_VOID cbDPMonitor_OnOff(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMon
         // 6. stop EDP panel power supply
         if (bEDPMode)
         {
-            cbDIU_EDP_EDPAuxPowerSeqCtrl(pcbe, pDPMonitorContext, DPModuleIndex, bOn);
+            if(!(Flags & SKIP_VDD_OFF))
+            {
+                cbDIU_EDP_EDPAuxPowerSeqCtrl(pcbe, pDPMonitorContext, DPModuleIndex, bOn);
+            }
         }
 
         cbDPMonitor_SetDither(pcbe, pDPMonitorContext->bpc, CBIOS_FALSE, DPModuleIndex);

@@ -63,7 +63,6 @@ typedef struct _CBIOS_MODE_TARGET_PARA{
     CBIOS_U32    YRes;
     CBIOS_U32    RefRate;
     CBIOS_U32    bInterlace;         /* =0, Set noninterlace mode; = 1, Set interlace mode; */
-    CBIOS_U32    AspectRatioFlag;    /* =0, Default aspect ratio */
                                      /* =1, 4:3 aspect ratio*/
                                      /* =2, 16:9 aspect ratio */
     CSC_FORMAT   DevInColorSpace;    /* device csc input color sapce*/
@@ -71,6 +70,7 @@ typedef struct _CBIOS_MODE_TARGET_PARA{
                                      /* =0x2; YCbCr422 signal */
                                      /* =0x4; YCbCr444 signal */
                                      /* DP device will also use this attribute, and is called Color format */
+    CBIOS_U32    PixelClock;
 }CBIOS_MODE_TARGET_PARA, *PCBIOS_MODE_TARGET_PARA;
 
 typedef struct _CBIOS_MODE_SCALER_PARA{
@@ -95,6 +95,7 @@ typedef struct _CBIOS_DISP_MODE_PARAMS
     CBIOS_SCALER_STATUS    ScalerStatusToUse;
     CBIOS_TIMING_ATTRIB    TargetTiming;
     CSC_FORMAT             IGAOutColorSpace;
+    CBIOS_U32              PLLClock;
     struct
     {
         CBIOS_U32 IsEnable3DVideo              :1;     // = 1: enable 3D video, = 0: normal 2D mode

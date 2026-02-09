@@ -31,17 +31,8 @@
 #include "os_interface.h"
 #include "zx_gem_debug.h"
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) || \
-    DRM_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)
-#include <linux/pfn_t.h>
-#else
-typedef struct {
-    u64 val;
-} pfn_t;
-#endif
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) || \
-    DRM_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) || \
+     DRM_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)) && DRM_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
 #include <linux/pfn_t.h>
 #else
 typedef struct {
@@ -158,7 +149,7 @@ typedef int vm_fault_t;
 
 static inline vm_fault_t vmf_insert_mixed(struct vm_area_struct *vma,
                 unsigned long addr,
-#if DRM_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)
+#if DRM_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) && DRM_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
                 pfn_t pfn)
 #else
                 unsigned long pfn)

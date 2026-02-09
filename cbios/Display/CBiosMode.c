@@ -38,10 +38,6 @@
 #define MODE_INFO_EXT_SIZE    sizeof(CBiosModeInfoExt)
 #define TIMING_ATTRIB_SIZE    sizeof(CBIOS_TIMING_ATTRIB)
 
-#define DEVICE_MODE_DEPTH_CAPS  (CBIOS_COLORDEPTH16 | CBIOS_COLORDEPTH32XRGB | \
-                              CBIOS_COLORDEPTH32ARGB | CBIOS_COLORDEPTH32ABGR | CBIOS_COLORDEPTH2101010ARGB | \
-                              CBIOS_COLORDEPTH2101010ABGR | CBIOS_COLORDEPTH16161616ABGRF)
-
 CBIOS_U8 KortekMonitorID[MONITORIDLENGTH] = 
 {
     0x2E, 0x8C, 0x19, 0x00
@@ -58,9 +54,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     640,350,
     8500,
-    315000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    315000,
     832,            /*Hor Total Time*/
     640,            /*Hor Display End*/
     640,            /*Hor Blank Start*/
@@ -79,9 +74,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     640,400,
     8500,
-    315000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    315000,
     832,
     640,
     640,
@@ -100,9 +94,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     720,400,
     8500,
-    355000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    355000,
     936,
     720,
     720,
@@ -121,9 +114,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     640,480,                               
     6000,                                  
+    VerNEGATIVE+HorNEGATIVE,    
     251750,
-    0,
-    VerNEGATIVE+HorNEGATIVE,              
     100*8,                                 
     80*8,                                 
     81*8,                                    
@@ -142,9 +134,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     640,480,
     7200,
-    315000,
-    0,
     VerNEGATIVE+HorNEGATIVE,
+    315000,
     104*8,
     80*8,
     81*8,
@@ -163,9 +154,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     640,480,
     7500,
-    315000,
-    0,
     VerNEGATIVE+HorNEGATIVE,
+    315000,
     105*8,
     80*8,
     80*8,
@@ -184,9 +174,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     640,480,
     8500,
-    360000,
-    0,
     VerNEGATIVE+HorNEGATIVE,
+    360000,
     104*8,
     80*8,
     80*8,
@@ -205,9 +194,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     800,600,
     5600,
-    360000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    360000,
     1024,
     800,
     800,
@@ -226,9 +214,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     800,600,
     6000,
-    400000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    400000,
     132*8,
     100*8,
     100*8,
@@ -247,9 +234,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     800,600,
     7200,
-    500000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    500000,
     130*8,
     100*8,
     100*8,
@@ -268,9 +254,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     800,600,
     7500,
-    495000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    495000,
     132*8,
     100*8,
     100*8,
@@ -289,9 +274,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     800,600,
     8500,
-    562500,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    562500,
     131*8,
     100*8,
     100*8,
@@ -310,9 +294,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     800,600,
     10000,
-    672500,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    672500,
     132*8,
     100*8,
     100*8,
@@ -332,9 +315,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     800,600,
     12000,
-    732500,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    732500,
     960,
     800,
     800,
@@ -354,9 +336,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     848,480,
     6000,
-    337500,
-    0,
     VerPOSITIVE + HorPOSITIVE,
+    337500,
     1088,
     848,
     848,
@@ -375,9 +356,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1024,768,
     6000,
-    650000,
-    0,
     VerNEGATIVE+HorNEGATIVE,
+    650000,
     168*8,
     128*8,
     128*8,
@@ -396,9 +376,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1024,768,
     7000,
-    750000,
-    0,
     VerNEGATIVE+HorNEGATIVE,
+    750000,
     166*8,
     128*8,
     128*8,
@@ -417,9 +396,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1024,768,
     7500,
-    787500,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    787500,
     164*8,
     128*8,
     128*8,
@@ -438,9 +416,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1024,768,
     8500,
-    945000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    945000,
     172*8,
     128*8,
     128*8,
@@ -459,9 +436,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1024,768,
     10000,
-    1122500,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    1122500,
     172*8,
     128*8,
     128*8,
@@ -481,9 +457,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1024,768,
     12000,
-    1155000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    1155000,
     1184,
     1024,
     1024,
@@ -503,9 +478,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1024,768,
     12000,
-    1390000,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    1390000,
     176*8,
     128*8,
     128*8,
@@ -524,9 +498,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1152,864,
     7500,
-    1080000,
-    0,
     VerPOSITIVE + HorPOSITIVE,
+    1080000,
     1600,
     1152,
     1152,
@@ -545,9 +518,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,720,
     5000,
-    742500,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     1980,
     1280,
     1280,
@@ -566,9 +538,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,720,
     6000,
-    742500,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     1650,
     1280,
     1280,
@@ -588,9 +559,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,768,
     6000,
-    682500,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    682500,
     1440,
     1280,
     1280,
@@ -610,9 +580,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,768,
     6000,
-    795000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    795000,
     1664,
     1280,
     1280,
@@ -631,9 +600,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,768,
     7500,
-    1022500,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1022500,
     1696,
     1280,
     1280,
@@ -652,9 +620,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,768,
     8500,
-    1175000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1175000,
     1712,
     1280,
     1280,
@@ -674,9 +641,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,768,
     12000,
-    1402500,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    1402500,
     1440,
     1280,
     1280,
@@ -697,9 +663,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,800,
     6000,
-    710000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    710000,
     1440,
     1280,
     1280,
@@ -719,9 +684,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,800,
     6000,
-    835000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    835000,
     1680,
     1280,
     1280,
@@ -740,9 +704,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,800,
     7500,
-    1065000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1065000,
     1696,
     1280,
     1280,
@@ -761,9 +724,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,800,
     8500,
-    1225000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1225000,
     1712,
     1280,
     1280,
@@ -783,9 +745,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,800,
     12000,
-    1462500,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    1462500,
     1440,
     1280,
     1280,
@@ -805,9 +766,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,960,
     6000,
-    1080000,
-    0,
     VerPOSITIVE + HorPOSITIVE,
+    1080000,
     1800,
     1280,
     1280,
@@ -826,9 +786,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,960,
     8500,
-    1485000,
-    0,
     VerPOSITIVE + HorPOSITIVE,
+    1485000,
     1728,
     1280,
     1280,
@@ -848,9 +807,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,960,
     12000,
-    1755000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    1755000,
     1440,
     1280,
     1280,
@@ -870,9 +828,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
      0,
      1280,1024,
      6000,
-     1080000,
-     0,
      VerPOSITIVE+HorPOSITIVE,
+     1080000,
      211*8,
      160*8,
      160*8,
@@ -891,9 +848,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
      0,
      1280,1024,
      7500,
-     1350000,
-     0,
      VerPOSITIVE+HorPOSITIVE,
+     1350000,
      211*8,
      160*8,
      160*8,
@@ -912,9 +868,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,1024,
     8500,
-    1575000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    1575000,
     1728,
     1280,
     1280,
@@ -934,9 +889,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1280,1024,
     12000,
-    1872500,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    1872500,
     1440,
     1280,
     1280,
@@ -956,9 +910,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1360,768,
     6000,
-    855000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    855000,
     1792,
     1360,
     1360,
@@ -978,9 +931,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1360,768,
     12000,
-    1482500,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    1482500,
     1520,
     1360,
     1360,
@@ -1001,9 +953,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1366,768,
     6000,
-    720000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    720000,
     1500,
     1366,
     1366,
@@ -1023,9 +974,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1366,768,
     6000,
-    855000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    855000,
     1792,
     1366,
     1366,
@@ -1045,9 +995,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1400,1050,
     6000,
-    1010000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    1010000,
     1560,
     1400,
     1400,
@@ -1067,9 +1016,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1400,1050,
     6000,
-    1217500,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1217500,
     1864,
     1400,
     1400,
@@ -1088,9 +1036,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1400,1050,
     7500,
-    1560000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1560000,
     1896,
     1400,
     1400,
@@ -1109,9 +1056,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1400,1050,
     8500,
-    1795000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1795000,
     1912,
     1400,
     1400,
@@ -1131,9 +1077,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1400,1050,
     12000,
-    2080000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    2080000,
     1560,
     1400,
     1400,
@@ -1155,9 +1100,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1440,900,
     6000,
-    887500,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    887500,
     1600,
     1440,
     1440,
@@ -1177,9 +1121,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1440,900,
     6000,
-    1065000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1065000,
     1904,
     1440,
     1440,
@@ -1198,9 +1141,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1440,900,
     7500,
-    1367500,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1367500,
     1936,
     1440,
     1440,
@@ -1219,9 +1161,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1440,900,
     8500,
-    1570000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1570000,
     1952,
     1440,
     1440,
@@ -1241,9 +1182,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1440,900,
     12000,
-    1827500,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    1827500,
     1600,
     1440,
     1440,
@@ -1263,9 +1203,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1600,900,
     6000,
-    1080000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    1080000,
     1800,
     1600,
     1600,
@@ -1284,9 +1223,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1600,1200,
     6000,
-    1620000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    1620000,
     2160,
     1600,
     1600,
@@ -1305,9 +1243,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1600,1200,
     6500,
-    1755000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    1755000,
     2160,
     1600,
     1600,
@@ -1326,9 +1263,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1600,1200,
     7000,
-    1890000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    1890000,
     2160,
     1600,
     1600,
@@ -1347,9 +1283,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1600,1200,
     7500,
-    2025000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    2025000,
     2160,
     1600,
     1600,
@@ -1368,9 +1303,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1600,1200,
     8500,
-    2295000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    2295000,
     2160,
     1600,
     1600,
@@ -1390,9 +1324,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1600,1200,
     12000,
-    2682500,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    2682500,
     1760,
     1600,
     1600,
@@ -1413,9 +1346,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1680,1050,
     6000,
-    1190000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    1190000,
     1840,
     1680,
     1680,
@@ -1435,9 +1367,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1680,1050,
     6000,
-    1462500,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1462500,
     2240,
     1680,
     1680,
@@ -1456,9 +1387,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1680,1050,
     7500,
-    1870000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    1870000,
     2272,
     1680,
     1680,
@@ -1477,9 +1407,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1680,1050,
     8500,
-    2147500,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    2147500,
     2288,
     1680,
     1680,
@@ -1499,9 +1428,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1680,1050,
     12000,
-    2455000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    2455000,
     1840,
     1680,
     1680,
@@ -1521,9 +1449,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1792,1344,
     6000,
-    2047500,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    2047500,
     2448,
     1792,
     1792,
@@ -1542,9 +1469,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1792,1344,
     7500,
-    2610000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    2610000,
     2456,
     1792,
     1792,
@@ -1564,9 +1490,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1792,1344,
     12000,
-    3332500,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    3332500,
     1952,
     1792,
     1792,
@@ -1586,9 +1511,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1856,1392,
     6000,
-    2182500,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    2182500,
     2528,
     1856,
     1856,
@@ -1607,9 +1531,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1856,1392,
     7500,
-    2880000,
-    0,
     VerPOSITIVE + HorNEGATIVE,
+    2880000,
     2560,
     1856,
     1856,
@@ -1629,9 +1552,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1856,1392,
     12000,
-    3565000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    3565000,
     2016,
     1856,
     1856,
@@ -1651,9 +1573,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1920,1080,
     5000,
-    1485000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     2640,
     1920,
     1920,
@@ -1672,9 +1593,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1920,1080,
     6000,
-    1485000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     2200,
     1920,
     1920,
@@ -1693,9 +1613,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1920,1080,
     12000,
-    3687000,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    3687000,
     332*8,
     240*8,
     240*8,
@@ -1715,9 +1634,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1920,1200,
     6000,
-    1540000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    1540000,
     2080,
     1920,
     1920,
@@ -1737,9 +1655,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1920,1200,
     6000,
-    1932500,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    1932500,
     2592,
     1920,
     1920,
@@ -1758,9 +1675,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1920,1200,
     7500,
-    2452500,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    2452500,
     2608,
     1920,
     1920,
@@ -1779,9 +1695,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1920,1200,
     8500,
-    2812500,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    2812500,
     2624,
     1920,
     1920,
@@ -1801,9 +1716,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1920,1200,
     12000,
-    3170000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    3170000,
     2080,
     1920,
     1920,
@@ -1823,9 +1737,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1920,1440,
     6000,
-    2340000,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    2340000,
     2600,
     1920,
     1920,
@@ -1844,9 +1757,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1920,1440,
     7500,
-    2970000,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    2970000,
     2640,
     1920,
     1920,
@@ -1866,9 +1778,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     1920,1440,
     12000,
-    3805000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    3805000,
     2080,
     1920,
     1920,
@@ -1888,9 +1799,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     2048,1152,
     6000,
-    1620000,
-    0,
     VerPOSITIVE+HorPOSITIVE,
+    1620000,
     2250,
     2048,
     2048,
@@ -1910,9 +1820,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     2560,1600,
     6000,
-    2685000,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    2685000,
     2720,
     2560,
     2560,
@@ -1932,9 +1841,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     2560,1600,
     6000,
-    3485000,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    3485000,
     3504,
     2560,
     2560,
@@ -1953,9 +1861,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     2560,1600,
     7500,
-    4432500,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    4432500,
     3536,
     2560,
     2560,
@@ -1974,9 +1881,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     2560,1600,
     8500,
-    5052500,
-    0,
     VerPOSITIVE+HorNEGATIVE,
+    5052500,
     3536,
     2560,
     2560,
@@ -1996,9 +1902,8 @@ static CBIOS_TIMING_ATTRIB AdapterTimingTbl[] =
     0,
     2560,1600,
     12000,
-    5527500,
-    0,
     VerNEGATIVE + HorPOSITIVE,
+    5527500,
     2720,
     2560,
     2560,
@@ -2022,12 +1927,10 @@ static CBiosModeInfoExt AdapterModeList[] =
     640, 
     480, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_ADAPTERMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
+    800,
+    525,
+    251750,
     {0},
 },
 {
@@ -2035,12 +1938,10 @@ static CBiosModeInfoExt AdapterModeList[] =
     800, 
     600, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_ADAPTERMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
+    1056,
+    628,
+    400000,
     {0},
 },
 {
@@ -2048,12 +1949,10 @@ static CBiosModeInfoExt AdapterModeList[] =
     1024, 
     768, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_ADAPTERMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
+    1344,
+    806,
+    650000,
     {0},
 },
 {
@@ -2061,12 +1960,10 @@ static CBiosModeInfoExt AdapterModeList[] =
     1280, 
     720, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_ADAPTERMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
+    1650,
+    750,
+    742500,
     {0},
 },
 {
@@ -2074,12 +1971,10 @@ static CBiosModeInfoExt AdapterModeList[] =
     1280, 
     800, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_ADAPTERMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
+    1680,
+    831,
+    835000,
     {0},
 },
 {
@@ -2087,25 +1982,10 @@ static CBiosModeInfoExt AdapterModeList[] =
     1280, 
     1024, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_ADAPTERMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {0},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    1366, 
-    768, 
-    6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_ADAPTERMODE,
-    CBIOS_TYPE_NONE,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
+    1688,
+    1066,
+    1080000,
     {0},
 },
 {
@@ -2113,12 +1993,10 @@ static CBiosModeInfoExt AdapterModeList[] =
     1440, 
     900, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_ADAPTERMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
+    1904,
+    934,
+    1065000,
     {0},
 },
 {
@@ -2126,12 +2004,10 @@ static CBiosModeInfoExt AdapterModeList[] =
     1680, 
     1050, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_ADAPTERMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
+    2240,
+    1089,
+    1462500,
     {0},
 },
 {
@@ -2139,12 +2015,10 @@ static CBiosModeInfoExt AdapterModeList[] =
     1920, 
     1080, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_ADAPTERMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
+    2200,
+    1125,
+    1485000,
     {0},
 },
 };
@@ -2160,9 +2034,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     1,
     640,480,                               //XResolution,  YResolution
     6000,                                  //RefreshRate
-    252000,                                 //DCLK 
-    1,
     VerNEGATIVE+HorNEGATIVE,               //HVPolarity:   Hor/Ver Sync Polarity(MISC:11000000B)
+    252000,                                 //DCLK 
     800,                                 //HorTotal:     SR66_0+SR60=Round(Value/8)-5
     640,                                  //HorDisEnd:    SR66_1+SR61=Round(Value/8)-1
     640,                                    //HorBStart:    SR66_2+SR62=Round(Value/8)
@@ -2182,9 +2055,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     2,
     720,480,
     6000,
-    270270,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    270270,
     858,
     720,
     720,
@@ -2204,9 +2076,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     3,
     720,480,
     6000,
-    270270,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    270270,
     858,
     720,
     720,
@@ -2226,9 +2097,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     4,
     1280,720,
     6000,
-    742500,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     1650,
     1280,
     1280,
@@ -2248,9 +2118,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     5,
     1920,1080,
     6000,
-    742500,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     2200,
     1920,
     1920,
@@ -2270,9 +2139,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     6,
     720,480,
     6000,
-    270270,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    270270,
     858,
     720,
     720,
@@ -2292,9 +2160,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     7,
     720,480,
     6000,
-    270270,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    270270,
     858,
     720,
     720,
@@ -2314,9 +2181,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     8,
     720,240,
     6000,
-    270270,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    270270,
     858,
     720,
     858,
@@ -2336,9 +2202,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     9,
     720,240,
     6000,
-    270270,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    270270,
     858,
     720,
     858,
@@ -2358,9 +2223,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     10,
     2880,480,
     6000,
-    540540,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    540540,
     3432,
     2880,
     2880,
@@ -2380,9 +2244,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     11,
     2880,480,
     6000,
-    540540,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    540540,
     3432,
     2880,
     2880,
@@ -2402,9 +2265,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     12,
     2880,240,
     6000,
-    540540,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    540540,
     3432,
     2880,
     2880,
@@ -2424,9 +2286,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     13,
     2880,240,
     6000,
-    540540,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    540540,
     3432,
     2880,
     2880,
@@ -2446,9 +2307,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     14,
     1440,480,
     6000,
-    540540,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    540540,
     1716,
     1440,
     1440,
@@ -2468,9 +2328,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     15,
     1440,480,
     6000,
-    540540,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    540540,
     1716,
     1440,
     1440,
@@ -2490,9 +2349,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     16,
     1920,1080,
     6000,
-    1485000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     2200,
     1920,
     1920,
@@ -2512,9 +2370,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     17,
     720,576,
     5000,
-    270000,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    270000,
     864,
     720,
     720,
@@ -2534,9 +2391,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     18,
     720,576,
     5000,
-    270000,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    270000,
     864,
     720,
     720,
@@ -2556,9 +2412,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     19,
     1280,720,
     5000,
-    742500,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     1980,
     1280,
     1280,
@@ -2578,9 +2433,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     20,
     1920,1080,
     5000,
-    742500,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     2640,
     1920,
     1920,
@@ -2600,9 +2454,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     21,
     720,576,
     5000,
-    270000,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    270000,
     864,
     720,
     720,
@@ -2622,9 +2475,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     22,
     720,576,
     5000,
-    270000,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    270000,
     864,
     720,
     720,
@@ -2644,9 +2496,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     23,
     720,288,
     5000,
-    270000,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    270000,
     864,
     720,
     720,
@@ -2666,9 +2517,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     24,
     720,288,
     5000,
-    270000,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    270000,
     864,
     720,
     720,
@@ -2688,9 +2538,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     25,
     2880,576,
     5000,
-    540000,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    540000,
     3456,
     2880,
     2880,
@@ -2710,9 +2559,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     26,
     2880,576,
     5000,
-    540000,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    540000,
     3456,
     2880,
     2880,
@@ -2732,9 +2580,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     27,
     2880,288,
     5000,
-    540000,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    540000,
     3456,
     2880,
     2880,
@@ -2754,9 +2601,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     28,
     2880,288,
     5000,
-    540000,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    540000,
     3456,
     2880,
     2880,
@@ -2776,9 +2622,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     29,
     1440,576,
     5000,
-    540000,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    540000,
     1728,
     1440,
     1440,
@@ -2798,9 +2643,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     30,
     1440,576,
     5000,
-    540000,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    540000,
     1728,
     1440,
     1440,
@@ -2820,9 +2664,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     31,
     1920,1080,
     5000,
-    1485000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     2640,
     1920,
     1920,
@@ -2842,9 +2685,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     32,
     1920,1080,
     2398,
-    742500,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     2750,
     1920,
     1920,
@@ -2864,9 +2706,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     33,
     1920,1080,
     2500,
-    742500,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     2640,
     1920,
     1920,
@@ -2886,9 +2727,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     34,
     1920,1080,
     3000,
-    742500,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     2200,//2640-5*8,
     1920,
     1920,
@@ -2908,9 +2748,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     35,
     2880, 480,
     6000,
-    1081080,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    1081080,
     3432,
     2880,
     2880,
@@ -2930,9 +2769,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     36,
     2880, 480,
     6000,
-    1081080,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    1081080,
     3432,
     2880,
     2880,
@@ -2952,9 +2790,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     37,
     2880, 576,
     5000,
-    1080000,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    1080000,
     3456,
     2880,
     2880,
@@ -2974,9 +2811,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     38,
     2880, 576,
     5000,
-    1080000,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    1080000,
     3456,
     2880,
     2880,
@@ -2996,9 +2832,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     39,
     1920, 1080,
     5000,
-    720000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    720000,
     2304,
     1920,
     1920,
@@ -3018,9 +2853,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     40,
     1920, 1080,
     10000,
-    1485000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     2640,
     1920,
     1920,
@@ -3040,9 +2874,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     41,
     1280, 720,
     10000,
-    1485000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     1980,
     1280,
     1280,
@@ -3062,9 +2895,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     42,
     720, 576,
     10000,
-    540000,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    540000,
     864,
     720,
     720,
@@ -3085,9 +2917,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     43,
     720, 576,
     10000,
-    540000,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    540000,
     864,
     720,
     720,
@@ -3107,9 +2938,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     44,
     720, 576,
     10000,
-    540000,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    540000,
     864,
     720,
     720,
@@ -3129,9 +2959,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     45,
     720, 576,
     10000,
-    540000,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    540000,
     864,
     720,
     720,
@@ -3151,9 +2980,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     46,
     1920, 1080,
     10000,
-    1485000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     2200,
     1920,
     1920,
@@ -3173,9 +3001,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     47,
     1280,720,
     12000,
-    1485000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     1650,
     1280,
     1280,
@@ -3195,9 +3022,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     48,
     720,480,
     12000,
-    540540,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    540540,
     858,
     720,
     720,
@@ -3217,9 +3043,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     49,
     720,480,
     12000,
-    540540,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    540540,
     858,
     720,
     720,
@@ -3238,10 +3063,9 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     TIMING_ATTRIB_SIZE,
     50,
     720,480,
-    12000,
-    540540,
-    1,
+    12000,    
     VerNEGATIVE+HorNEGATIVE,
+    540540,
     858,
     720,
     720,
@@ -3260,10 +3084,9 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     TIMING_ATTRIB_SIZE,
     51,
     720,480,
-    12000,
-    540540,
-    2,
+    12000,    
     VerNEGATIVE+HorNEGATIVE,
+    540540,
     858,
     720,
     720,
@@ -3283,9 +3106,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     52,
     720,576,
     20000,
-    1080000,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    1080000,
     864,
     720,
     720,
@@ -3305,9 +3127,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     53,
     720,576,
     20000,
-    1080000,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    1080000,
     864,
     720,
     720,
@@ -3327,9 +3148,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     54,
     720,576,
     20000,
-    1080000,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    1080000,
     864,
     720,
     720,
@@ -3349,9 +3169,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     55,
     720,576,
     20000,
-    1080000,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    1080000,
     864,
     720,
     720,
@@ -3371,9 +3190,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     56,
     720,480,
     24000,
-    1081080,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    1081080,
     858,
     720,
     720,
@@ -3393,9 +3211,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     57,
     720,480,
     24000,
-    1081080,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    1081080,
     858,
     720,
     720,
@@ -3415,9 +3232,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     58,
     720,480,
     24000,
-    1081080,
-    1,
     VerNEGATIVE+HorNEGATIVE,
+    1081080,
     858,
     720,
     720,
@@ -3437,9 +3253,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     59,
     720,480,
     24000,
-    1081080,
-    2,
     VerNEGATIVE+HorNEGATIVE,
+    1081080,
     858,
     720,
     720,
@@ -3459,9 +3274,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     60,
     1280,720,
     2400, 
-    594000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    594000,
     3300,
     1280,
     1280,
@@ -3481,9 +3295,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     61,
     1280,720,
     2500, 
-    742500,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     3960,
     1280,
     1280,
@@ -3503,9 +3316,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     62,
     1280,720,
     3000, 
-    742500,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     3300,
     1280,
     1280,
@@ -3525,9 +3337,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     63,
     1920,1080,
     12000, 
-    2970000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     2200,
     1920,
     1920,
@@ -3547,9 +3358,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     64,
     1920,1080,
     10000, 
-    2970000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     2640,
     1920,
     1920,
@@ -3571,9 +3381,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     65,
     1280,720,
     2400, 
-    594000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    594000,
     3300,
     1280,
     1280,
@@ -3593,9 +3402,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     66,
     1280,720,
     2500, 
-    742500,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     3960,
     1280,
     1280,
@@ -3615,9 +3423,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     67,
     1280,720,
     3000, 
-    742500,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     3300,
     1280,
     1280,
@@ -3637,9 +3444,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     68,
     1280,720,
     5000,
-    742500,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     1980,
     1280,
     1280,
@@ -3659,9 +3465,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     69,
     1280,720,
     6000,
-    742500,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     1650,
     1280,
     1280,
@@ -3681,9 +3486,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     70,
     1280, 720,
     10000,
-    1485000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     1980,
     1280,
     1280,
@@ -3703,9 +3507,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     71,
     1280,720,
     12000,
-    1485000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     1650,
     1280,
     1280,
@@ -3725,9 +3528,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     72,
     1920,1080,
     2398,
-    742500,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     2750,
     1920,
     1920,
@@ -3747,9 +3549,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     73,
     1920,1080,
     2500,
-    742500,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    742500,
     2640,
     1920,
     1920,
@@ -3769,9 +3570,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     74,
     1920,1080,
     3000,
-    741760,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    741760,
     2200,//2640-5*8,
     1920,
     1920,
@@ -3791,9 +3591,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     75,
     1920,1080,
     5000,
-    1485000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     2640,
     1920,
     1920,
@@ -3813,9 +3612,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     76,
     1920,1080,
     6000,
-    1485000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    1485000,
     2200,
     1920,
     1920,
@@ -3835,9 +3633,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     77,
     1920,1080,
     12000, 
-    2970000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     2640,
     1920,
     1920,
@@ -3857,9 +3654,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     78,
     1920,1080,
     12000, 
-    2970000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     2200,
     1920,
     1920,
@@ -3879,9 +3675,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     79,
     1680,720,
     2400, 
-    594000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    594000,
     3300,
     1680,
     1680,
@@ -3901,9 +3696,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     80,
     1680,720,
     2500, 
-    594000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    594000,
     3168,
     1680,
     1680,
@@ -3923,9 +3717,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     81,
     1680,720,
     3000, 
-    594000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    594000,
     2640,
     1680,
     1680,
@@ -3945,9 +3738,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     82,
     1680,720,
     5000, 
-    825000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    825000,
     2200,
     1680,
     1680,
@@ -3967,9 +3759,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     83,
     1680,720,
     6000, 
-    990000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    990000,
     2200,
     1680,
     1680,
@@ -3989,9 +3780,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     84,
     1680,720,
     10000, 
-    1650000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    1650000,
     2000,
     1680,
     1680,
@@ -4011,9 +3801,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     85,
     1680,720,
     12000, 
-    1980000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    1980000,
     2000,
     1680,
     1680,
@@ -4033,9 +3822,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     86,
     2560,1080,
     2400, 
-    990000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    990000,
     3750,
     2560,
     2560,
@@ -4055,9 +3843,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     87,
     2560,1080,
     2500, 
-    900000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    900000,
     3200,
     2560,
     2560,
@@ -4077,9 +3864,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     88,
     2560,1080,
     3000, 
-    1188000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    1188000,
     3520,
     2560,
     2560,
@@ -4099,9 +3885,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     89,
     2560,1080,
     5000, 
-    1856250,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    1856250,
     3300,
     2560,
     2560,
@@ -4121,9 +3906,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     90,
     2560,1080,
     6000, 
-    1980000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    1980000,
     3000,
     2560,
     2560,
@@ -4143,9 +3927,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     91,
     2560,1080,
     10000, 
-    3712500,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    3712500,
     2970,
     2560,
     2560,
@@ -4165,9 +3948,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     92,
     2560,1080,
     12000, 
-    4950000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    4950000,
     3300,
     2560,
     2560,
@@ -4187,9 +3969,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     93,
     3840, 2160,
     2400,
-    2970000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     3840+1660,
     3840,
     3840,
@@ -4209,9 +3990,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     94,
     3840, 2160,
     2500,
-    2970000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     3840+1440,
     3840,
     3840,
@@ -4231,9 +4011,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     95,
     3840, 2160,
     3000,
-    2970000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     3840+560,
     3840,
     3840,
@@ -4253,9 +4032,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     96,
     3840, 2160,
     5000,
-    5940000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    5940000,
     3840+1440,
     3840,
     3840,
@@ -4275,9 +4053,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     97,
     3840, 2160,
     6000,
-    5940000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    5940000,
     3840+560,
     3840,
     3840,
@@ -4297,9 +4074,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     98,
     4096, 2160,
     2400,
-    2970000,
-    4,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     4096+1404,
     4096,
     4096,
@@ -4319,9 +4095,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     99,
     4096, 2160,
     2500,
-    2970000,
-    4,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     5280,
     4096,
     4096,
@@ -4341,9 +4116,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     100,
     4096, 2160,
     3000,
-    2970000,
-    4,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     4400,
     4096,
     4096,
@@ -4363,9 +4137,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     101,
     4096, 2160,
     5000,
-    5940000,
-    4,
     VerPOSITIVE+HorPOSITIVE,
+    5940000,
     5280,
     4096,
     4096,
@@ -4385,9 +4158,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     102,
     4096, 2160,
     6000,
-    5940000,
-    4,
     VerPOSITIVE+HorPOSITIVE,
+    5940000,
     4400,
     4096,
     4096,
@@ -4407,9 +4179,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     103,
     3840, 2160,
     2400,
-    2970000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     3840+1660,
     3840,
     3840,
@@ -4429,9 +4200,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     104,
     3840, 2160,
     2500,
-    2970000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     3840+1440,
     3840,
     3840,
@@ -4451,9 +4221,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     105,
     3840, 2160,
     3000,
-    2970000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     3840+560,
     3840,
     3840,
@@ -4473,9 +4242,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     106,
     3840, 2160,
     5000,
-    5940000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    5940000,
     3840+1440,
     3840,
     3840,
@@ -4495,9 +4263,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     107,
     3840, 2160,
     6000,
-    5940000,
-    3,
     VerPOSITIVE+HorPOSITIVE,
+    5940000,
     3840+560,
     3840,
     3840,
@@ -4519,9 +4286,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     108,
     3840, 2160,
     3000,
-    2970000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     3840+560,
     3840,
     3840,
@@ -4541,9 +4307,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     109,
     3840, 2160,
     2500,
-    2970000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     3840+1440,
     3840,
     3840,
@@ -4563,9 +4328,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     110,
     3840, 2160,
     2400,
-    2970000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     3840+1660,
     3840,
     3840,
@@ -4585,9 +4349,8 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     111,
     4096, 2160,
     2400,
-    2970000,
-    2,
     VerPOSITIVE+HorPOSITIVE,
+    2970000,
     4096+1404,
     4096,
     4096,
@@ -4602,83 +4365,6 @@ static CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[] =
     2160+8+10
 },
 };
-
-static CBiosModeInfoExt TV_DefaultModeList[] = 
-{
-{
-    MODE_INFO_EXT_SIZE, 
-    704, 
-    576, 
-    5000, 
-    CBIOS_INTERLACECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_TV,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {0},
-},
-};
-
-static CBiosModeInfoExt HDTV_DefaultModeList[] = 
-{
-{
-    MODE_INFO_EXT_SIZE, 
-    720, 
-    576, 
-    5000, 
-    CBIOS_PROGRESSIVECAP|CBIOS_INTERLACECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_HDTV,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    1280, 
-    720, 
-    5000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_HDTV,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    1920, 
-    1080, 
-    5000, 
-    CBIOS_PROGRESSIVECAP|CBIOS_INTERLACECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_HDTV,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
-},
-};
-
-static CBiosModeInfoExt DSI_DefaultModeList[] = 
-{
-{
-    MODE_INFO_EXT_SIZE, 
-    640, 
-    480, 
-    6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_DSI,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    CBIOS_NATIVEMODE,
-    {(CBIOS_DTL_TIMING << 2)},
-},
-};
         
 static CBiosModeInfoExt DP_DefaultModeList[] = 
 {
@@ -4687,238 +4373,66 @@ static CBiosModeInfoExt DP_DefaultModeList[] =
     640, 
     480, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_DP1,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    720, 
-    480, 
-    5994, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_DP1,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    720, 
-    480, 
-    6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_DP1,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    720, 
-    576, 
-    5000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_DP1,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
+    800,
+    525,
+    251750,
+    {0},
 },
 {
     MODE_INFO_EXT_SIZE, 
     1280, 
     720, 
     5000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_DP1,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
+    1980,
+    750,
+    742500,
+    {0},
 },
 {
     MODE_INFO_EXT_SIZE, 
     1280, 
     720, 
     5994, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_DP1,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
+    1650,
+    750,
+    742500,
+    {0},
 },
 {
     MODE_INFO_EXT_SIZE, 
     1280, 
     720, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_DP1,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    1920, 
-    1080, 
-    5000, 
-    CBIOS_INTERLACECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_DP1,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
+    1650,
+    750,
+    742500,
+    {0},
 },
 {
     MODE_INFO_EXT_SIZE, 
     1920, 
     1080, 
     5994, 
-    CBIOS_INTERLACECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_DP1,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {1},
+    2200,
+    1125,
+    1485000,
+    {0},
 },
 {
     MODE_INFO_EXT_SIZE, 
     1920, 
     1080, 
     6000, 
-    CBIOS_INTERLACECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_DP1,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
+    2200,
+    1125,
+    1485000,
     {1},
-},
-};
-
-static CBiosModeInfoExt MHL_DefaultModeList[] = 
-{
-{
-    MODE_INFO_EXT_SIZE, 
-    640, 
-    480, 
-    5994, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_MHL,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {0},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    640, 
-    480, 
-    6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_MHL,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {0},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    720, 
-    480, 
-    5994, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_MHL,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {0},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    720, 
-    480, 
-    6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_MHL,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {0},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    720, 
-    576, 
-    5000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_MHL,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {0},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    1280, 
-    720, 
-    5994, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_MHL,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {0},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    1280, 
-    720, 
-    6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_MHL,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {0},
-},
-{
-    MODE_INFO_EXT_SIZE, 
-    1280, 
-    720, 
-    5000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_MHL,
-    MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {0},
 },
 };
 
@@ -4929,88 +4443,78 @@ static CBiosModeInfoExt Device_DefaultModeList[] =
     640, 
     480, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {(CBIOS_MODE_STD_TIMING << 2)},
+    800,
+    525,
+    251750,
+    {0},
 },
 {
     MODE_INFO_EXT_SIZE, 
     800, 
     600, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {(CBIOS_MODE_STD_TIMING << 2)},
+    1056,
+    628,
+    400000,
+    {0},
 },
 {
     MODE_INFO_EXT_SIZE, 
     1024, 
     768, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {(CBIOS_MODE_STD_TIMING << 2)},
+    1344,
+    806,
+    650000,
+    {0},
 },
 {
     MODE_INFO_EXT_SIZE, 
     1280, 
     1024, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {(CBIOS_MODE_STD_TIMING << 2)},
+    1688,
+    1066,
+    1080000,
+    {0},
 },
 {
     MODE_INFO_EXT_SIZE, 
     1920, 
     1080, 
     6000, 
-    CBIOS_PROGRESSIVECAP, 
-    CBIOS_DEVICEMODE,
-    CBIOS_TYPE_NONE,
     MODE_COLOR_DEPTH_CAPS,
-    0,
-    0,
-    {((CBIOS_MODE_DTL_TIMING << 2) | (1 << 18))},
+    2200,
+    1125,
+    1485000,
+    {1},
 }
 };
 
 
 static CBiosEquivalentDeviceMode Equivalent_DeviceMode_Table[] =
 {
-    {720, 480,   {5900,  6000-1},  6000},
+    {720, 480,   {5950,  6000-1},  6000},  //change 5900 to 5950, as MatchTiming( ) will compare ref with range [ref-50, ref+50]
     {720, 480,   {6000,  6000},    5994},
-    {1280, 720,  {5900,  6000-1},  6000},
+    {1280, 720,  {5950,  6000-1},  6000},
     {1280, 720,  {6000,  6000},    5994},
-    {1920, 1080, {2300,  2400-1},  2400},
+    {1920, 1080, {2350,  2400-1},  2400},
     {1920, 1080, {2400,  2400},    2398},
-    {1920, 1080, {2900,  3000-1},  3000},
+    {1920, 1080, {2950,  3000-1},  3000},
     {1920, 1080, {3000,  3000},    2997},
-    {1920, 1080, {5900,  6000-1},  6000},
+    {1920, 1080, {5950,  6000-1},  6000},
     {1920, 1080, {6000,  6000},    5994},
-    {1920, 1080, {11900, 12000-1}, 12000},
+    {1920, 1080, {11950, 12000-1}, 12000},
     {1920, 1080, {12000, 12000},   11980},
-    {3840, 2160, {2300,  2400-1},  2400},
+    {3840, 2160, {2350,  2400-1},  2400},
     {3840, 2160, {2400,  2400},    2398},
-    {3840, 2160, {2900,  3000-1},  3000},
+    {3840, 2160, {2950,  3000-1},  3000},
     {3840, 2160, {3000,  3000},    2997},
-    {3840, 2160, {5900,  6000-1},  6000},
+    {3840, 2160, {5950,  6000-1},  6000},
     {3840, 2160, {6000,  6000},    5994},
 };
 
@@ -5030,26 +4534,31 @@ Return:      Positive: if Mode1 >  Mode2
 static CBIOS_S32 cbMode_CompareMode(PCBIOS_DETAILED_TIMING_INFO pMode1, PCBIOS_DETAILED_TIMING_INFO pMode2)
 {
     CBIOS_S32 retValue;
+    CBIOS_BOOL  bCompClock = CBIOS_FALSE;
+
+    if(pMode1->PixelClock && pMode2->PixelClock)
+    {
+        bCompClock = CBIOS_TRUE;
+    }
     
-    if ((pMode1->XResolution > pMode2->XResolution)||
-       ((pMode1->XResolution == pMode2->XResolution)&&
-        (pMode1->YResolution > pMode2->YResolution))||
-       ((pMode1->XResolution == pMode2->XResolution)&&
-        (pMode1->YResolution == pMode2->YResolution)&&
-        (pMode1->Refreshrate > pMode2->Refreshrate)))
+    if ((pMode1->XResolution > pMode2->XResolution) ||
+       ((pMode1->XResolution == pMode2->XResolution) && (pMode1->YResolution > pMode2->YResolution)) ||
+       ((pMode1->XResolution == pMode2->XResolution) && (pMode1->YResolution == pMode2->YResolution) && (pMode1->Refreshrate > pMode2->Refreshrate)) ||
+        ((pMode1->XResolution == pMode2->XResolution) && (pMode1->YResolution == pMode2->YResolution) && (pMode1->Refreshrate == pMode2->Refreshrate)
+              && (!bCompClock || pMode1->PixelClock > pMode2->PixelClock)))
     {
         retValue = 1;
     }
     else if ((pMode1->XResolution == pMode2->XResolution)&&
              (pMode1->YResolution == pMode2->YResolution)&&
-             (pMode1->Refreshrate == pMode2->Refreshrate))
+             (pMode1->Refreshrate == pMode2->Refreshrate)
+             && (!bCompClock || pMode1->PixelClock == pMode2->PixelClock))
     {
         if (pMode1->IsInterLaced == pMode2->IsInterLaced)
         {
             retValue = 0;
         }
-        else if ((pMode1->IsInterLaced == 0)&&
-                 (pMode2->IsInterLaced == 1))
+        else if ((pMode1->IsInterLaced == 0) && (pMode2->IsInterLaced == 1))
         {
             retValue = 1;
         }
@@ -5066,27 +4575,26 @@ static CBIOS_S32 cbMode_CompareMode(PCBIOS_DETAILED_TIMING_INFO pMode1, PCBIOS_D
     return retValue;
 }
 
-static CBIOS_BOOL cbMode_AddMode(PCBiosModeInfoExt pModeList, PCBiosModeInfoExt pMode, CBIOS_U32 CurrentModeNum, CBIOS_ACTIVE_TYPE Device)
+static CBIOS_BOOL cbMode_AddMode(PCBiosModeInfoExt pModeList, PCBiosModeInfoExt pMode, CBIOS_U32 CurrentModeNum)
 {
     CBIOS_DETAILED_TIMING_INFO ModeList = {0}, ModeInsert = {0};
     CBIOS_BOOL          bRet = CBIOS_FALSE;
     CBIOS_U32           index = 0xFFFFFFFF, i = 0;
     CBIOS_S32           sCmp;
 
-    pMode->DeviceFlags = Device;
-
     ModeInsert.XResolution = (CBIOS_U16)pMode->XRes;
     ModeInsert.YResolution = (CBIOS_U16)pMode->YRes;
     ModeInsert.Refreshrate = (CBIOS_U16)pMode->RefreshRate;
-    ModeInsert.IsInterLaced = (pMode->InterlaceProgressiveCaps & 0x2) ? 1 : 0;
-
+    ModeInsert.IsInterLaced = pMode->isInterlaceMode;
+    ModeInsert.PixelClock = pMode->PixelClock;
 
     for(i = 0; i< CurrentModeNum; i++)
     {
         ModeList.XResolution = (CBIOS_U16)pModeList[i].XRes;
         ModeList.YResolution = (CBIOS_U16)pModeList[i].YRes;
         ModeList.Refreshrate = (CBIOS_U16)pModeList[i].RefreshRate;
-        ModeList.IsInterLaced = (pModeList[i].InterlaceProgressiveCaps & 0x2) ? 1 : 0;
+        ModeList.IsInterLaced = pModeList[i].isInterlaceMode;
+        ModeList.PixelClock = pModeList[i].PixelClock;
         sCmp = cbMode_CompareMode(&ModeList, &ModeInsert);
         if (sCmp <= 0)
         {
@@ -5113,12 +4621,7 @@ static CBIOS_BOOL cbMode_AddMode(PCBiosModeInfoExt pModeList, PCBiosModeInfoExt 
         else if (sCmp == 0)
         {
             // added mode already exists in modelist, only merge mode flags
-            pModeList[i].InterlaceProgressiveCaps |= pMode->InterlaceProgressiveCaps;
-            pModeList[i].AdapterDeviceFlags |= pMode->AdapterDeviceFlags;
-            pModeList[i].DeviceFlags |= pMode->DeviceFlags;
             pModeList[i].ColorDepthCaps |= pMode->ColorDepthCaps;
-            pModeList[i].AspectRatioCaps |= pMode->AspectRatioCaps;
-            pModeList[i].NativeModeFlags |= pMode->NativeModeFlags;
             pModeList[i].ModeFlags |= pMode->ModeFlags;            
             bRet= CBIOS_FALSE;
         }
@@ -5138,8 +4641,8 @@ static CBIOS_BOOL cbMode_DeleteMode(PCBiosModeInfoExt pModeList, CBIOS_U16 XRes,
             (pModeList[i].YRes == YRes) && 
             (pModeList[i].RefreshRate == RefRate))
         {
-            if (((pModeList[i].InterlaceProgressiveCaps == CBIOS_INTERLACECAP) && isInterlace) ||
-                ((pModeList[i].InterlaceProgressiveCaps == CBIOS_PROGRESSIVECAP) && (!isInterlace)))
+            if (((pModeList[i].isInterlaceMode == 1) && isInterlace) ||
+                ((pModeList[i].isInterlaceMode == 0) && (!isInterlace)))
             {
                 index = i;
                 bFound = CBIOS_TRUE;
@@ -5184,14 +4687,16 @@ static CBIOS_BOOL cbMode_DeleteMode(PCBiosModeInfoExt pModeList, CBIOS_U16 XRes,
 }
 
 
-static CBIOS_BOOL cbMode_FindModeInModeList(PCBiosModeInfoExt pModeList, CBIOS_U32 ModeNum, CBIOS_U32 XRes, CBIOS_U32 YRes, CBIOS_U32 RefRate, CBIOS_U32 InterlaceProgressiveCaps)
+static CBIOS_BOOL cbMode_FindModeInModeList(PCBiosModeInfoExt pModeList, CBIOS_U32 ModeNum, CBIOS_U32 XRes, CBIOS_U32 YRes, 
+                CBIOS_U32 RefRate, CBIOS_U32 InterlaceMode, CBIOS_U32 PixelClock)
 {
     CBIOS_BOOL  bRet = CBIOS_FALSE;
     CBIOS_U32   index = 0;
 
     for(index = 0; index < ModeNum; index++)
     {
-        if((pModeList[index].XRes == XRes) && (pModeList[index].YRes == YRes) && (pModeList[index].RefreshRate == RefRate) && (pModeList[index].InterlaceProgressiveCaps == InterlaceProgressiveCaps))
+        if((pModeList[index].XRes == XRes) && (pModeList[index].YRes == YRes) && (pModeList[index].RefreshRate == RefRate) && 
+            (pModeList[index].isInterlaceMode == InterlaceMode) && (pModeList[index].PixelClock == PixelClock))
         {
             bRet = CBIOS_TRUE;
             break;
@@ -5215,7 +4720,7 @@ here Add 5994(6000) for 720X480,  add 5994(6000) for 1280X720, add 5994(6000)  a
 *********/
 
 
-CBIOS_BOOL cbMode_AddEquivalentDeviceMode(PCBiosModeInfoExt pModeList, PCBiosModeInfoExt pDeviceMode, CBIOS_U32 ModeNum, CBIOS_ACTIVE_TYPE  Device)
+CBIOS_BOOL cbMode_AddEquivalentDeviceMode(PCBiosModeInfoExt pModeList, PCBiosModeInfoExt pDeviceMode, CBIOS_U32 ModeNum)
 {
     CBiosModeInfoExt ModeToInsert = {0};
     CBIOS_U32        XRes, YRes, MinRefreshRate, MaxRefreshRate;
@@ -5241,14 +4746,14 @@ CBIOS_BOOL cbMode_AddEquivalentDeviceMode(PCBiosModeInfoExt pModeList, PCBiosMod
     {   
         cb_memcpy(&ModeToInsert, pDeviceMode, sizeof(CBiosModeInfoExt));
         ModeToInsert.RefreshRate = Equivalent_DeviceMode_Table[index].RefRateToAdd;
-        ModeToInsert.isAddedDevMode = 1;
 
         //The added mode's isPreferredMode flag should set to 0.
         ModeToInsert.isPreferredMode = 0;
 
-        if(!cbMode_FindModeInModeList(pModeList, ModeNum, ModeToInsert.XRes, ModeToInsert.YRes, ModeToInsert.RefreshRate, ModeToInsert.InterlaceProgressiveCaps))
+        if(!cbMode_FindModeInModeList(pModeList, ModeNum, ModeToInsert.XRes, ModeToInsert.YRes, ModeToInsert.RefreshRate, 
+                                   ModeToInsert.isInterlaceMode, ModeToInsert.PixelClock))
         {
-            bInsert = cbMode_AddMode(pModeList, &ModeToInsert, ModeNum, Device);
+            bInsert = cbMode_AddMode(pModeList, &ModeToInsert, ModeNum);
         }
     }
 
@@ -5280,6 +4785,11 @@ CBIOS_BOOL cbMode_GetHVTiming(PCBIOS_VOID pvcbe,
     pEdidStruct = &(pDevCommon->EdidStruct);
     pMonitorAttr = &(pEdidStruct->Attribute);   
 
+    if(!XRes || !YRes)
+    {
+        return bFound;
+    }
+
     // Set the default refresh rate to 60Hz.
     if((Refresh == 0) || (Refresh == 1))
     {
@@ -5294,14 +4804,14 @@ CBIOS_BOOL cbMode_GetHVTiming(PCBIOS_VOID pvcbe,
         if(ulTimingType == CBIOS_MODE_SVD_TIMING) // Means CEA861B format block
         {
             CBIOS_BOOL  byRefIndex = 0;
-            byRefIndex = pEdidStruct->HDMIFormat[ulTmIdx].RefreshIndex;
+            byRefIndex = pcbe->pHDMIFormatTable[ulTmIdx].DefRateIdx;
 
             cb_memcpy(pTiming, &HDMIFormatTimingTbl[ulTmIdx], sizeof(CBIOS_TIMING_ATTRIB));
 
             if (byRefIndex == 1)
             {
+                pTiming->RefreshRate = pcbe->pHDMIFormatTable[ulTmIdx].RefRate[1];
                 pTiming->PixelClock = pTiming->PixelClock / 1001UL * 1000UL;
-                pTiming->RefreshRate = (CBIOS_U16)((CBIOS_U32)pTiming->RefreshRate * 1000 / 1001);
             }
             bFound = CBIOS_TRUE;
         }
@@ -5328,7 +4838,7 @@ CBIOS_BOOL cbMode_GetHVTiming(PCBIOS_VOID pvcbe,
         }
         else if(ulTimingType == CBIOS_MODE_DISP_ID_TIMING)
         {
-            pModeInfo = &(pDevCommon->EdidStruct.DisplayIdDtlTimings[ulTmIdx]);
+            pModeInfo = &(pDevCommon->EdidStruct.pDisplayIdDtlTimings[ulTmIdx]);
             cbConvertEdidTimingToTableTiming(pcbe, pModeInfo,  pTiming);
             bFound = CBIOS_TRUE;
         }
@@ -5347,11 +4857,6 @@ CBIOS_BOOL cbMode_GetHVTiming(PCBIOS_VOID pvcbe,
             pTimingTbl = HDMIFormatTimingTbl;
             NumOfTimings = sizeofarray(HDMIFormatTimingTbl);
         }
-    }
- 
-    
-    if((!bFound) && (pTimingTbl != CBIOS_NULL))
-    {
 
         for(i=0; i<NumOfTimings; i++)
         {            
@@ -5368,73 +4873,55 @@ CBIOS_BOOL cbMode_GetHVTiming(PCBIOS_VOID pvcbe,
         {
             cb_memcpy(pTiming, &pTimingTbl[i],sizeof(CBIOS_TIMING_ATTRIB));
         }
-        else if(!(Device & CBIOS_TYPE_CRT))
+    }
+    
+    if(!bFound && !(Device & CBIOS_TYPE_CRT) && pTimingTbl != HDMIFormatTimingTbl)
+    {
+        CBIOS_U32 RefRateIndex = 0;
+        CBIOS_U32 RefRate = 0;
+        
+        pTimingTbl = HDMIFormatTimingTbl;
+        NumOfTimings = sizeofarray(HDMIFormatTimingTbl);
+
+        for (i = 0; i < NumOfTimings; i++)
         {
-            pTimingTbl = HDMIFormatTimingTbl;
-            NumOfTimings = sizeofarray(HDMIFormatTimingTbl);
-
-            if (pTimingTbl != CBIOS_NULL)
-            {
-                CBIOS_U32 RefRateIndex = 0;
-                CBIOS_U32 RefRate = 0;
-
-                for (i = 0; i < NumOfTimings; i++)
+            if((pTimingTbl[i].XRes == XRes) &&
+                (pTimingTbl[i].YRes == YRes) &&
+                (pcbe->pHDMIFormatTable[i].Interlace == isInterlace))
+            {          
+                if(Refresh / 100 == pcbe->pHDMIFormatTable[i].RefRate[0]/100)
                 {
-                    if((pTimingTbl[i].XRes == XRes) &&
-                        (pTimingTbl[i].YRes == YRes) &&
-                        (pcbe->pHDMIFormatTable[i].Interlace == isInterlace))
-                    {
-                        if (Refresh == 0) //default refrate
-                        {
-                            RefRateIndex = pcbe->pHDMIFormatTable[i].DefRateIdx;
-                            bFound = CBIOS_TRUE;
-                        }
-                        else 
-                        {            
-                            for (RefRateIndex = 0; RefRateIndex < 2; RefRateIndex++)
-                            {
-                                RefRate = pcbe->pHDMIFormatTable[i].RefRate[RefRateIndex];
-                                if ((RefRate / 100) == (Refresh / 100))
-                                {
-                                    bFound = CBIOS_TRUE;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (bFound)
-                        {
-                            break; //for (i = 0; i < NumOfTimings; i++)
-                        }
-                    }//if((pTiming[i].XResolution == pTmParam->XRes)... 
-                }//for (i = 0; i < NumOfTimings; i++)
-
-                if (bFound)
+                    RefRateIndex = 0;
+                    bFound = CBIOS_TRUE;
+                    break;
+                }
+                else if(Refresh / 100 == pcbe->pHDMIFormatTable[i].RefRate[1]/100)
                 {
-                    cb_memcpy(pTiming, &pTimingTbl[i], sizeof(CBIOS_TIMING_ATTRIB));
-
-                    if ((RefRateIndex % 2) == 1)//fractional refreshrate
-                    {
-                        pTiming->PixelClock = pTiming->PixelClock / 1001UL * 1000UL;
-                        pTiming->RefreshRate = (CBIOS_U16)((CBIOS_U32)pTiming->RefreshRate * 1000 / 1001);
-                    }
+                    RefRateIndex = 1;
+                    bFound = CBIOS_TRUE;
+                    break;
                 }
             }
+        }
 
+        if (bFound)
+        {
+            cb_memcpy(pTiming, &pTimingTbl[i], sizeof(CBIOS_TIMING_ATTRIB));
+
+            if (RefRateIndex == 1)//fractional refreshrate
+            {
+                pTiming->RefreshRate = pcbe->pHDMIFormatTable[i].RefRate[1];
+                pTiming->PixelClock = pTiming->PixelClock / 1001UL * 1000UL;
+            }
         }
     }
 
-    if((!bFound) && (XRes != 0) && (YRes != 0) && (Refresh != 0))
+    if(!bFound)
     {   
         //Customize timing not support interlace mode.
         //Timing value has no difference between interlace mode and non-interlace mode.
         cbCalcCustomizedTiming(pcbe, XRes, YRes, Refresh, pTiming); 
         bFound = CBIOS_TRUE;                                   
-    }
-
-    if(!bFound)
-    {
-        cbDebugPrint((MAKE_LEVEL(GENERIC, ERROR),"cbMode_GetHVTiming:Funtion failure!\n"));
     }
 
     cbTraceExit(GENERIC);
@@ -5450,39 +4937,6 @@ CBIOS_U32 cbMode_GetDefaultModeList(PCBIOS_VOID pvcbe, PCBiosModeInfoExt pModeLi
 
     switch(Device)
     {
-    case CBIOS_TYPE_TV:
-        ulModeNum = sizeofarray(TV_DefaultModeList);
-        if (pModeList != CBIOS_NULL)
-        {
-            for (i = 0; i < ulModeNum; i++)
-            {
-                cbMode_AddMode(pModeList, &(TV_DefaultModeList[i]), i, Device);
-            }
-        }
-        break;
-        
-    case CBIOS_TYPE_HDTV:
-        ulModeNum = sizeofarray(HDTV_DefaultModeList);
-        if (pModeList != CBIOS_NULL)
-        {
-            for (i = 0; i < ulModeNum; i++)
-            {
-                cbMode_AddMode(pModeList, &(HDTV_DefaultModeList[i]), i, Device);
-            }
-        }
-        break;
-        
-    case CBIOS_TYPE_DSI:
-        ulModeNum = sizeofarray(DSI_DefaultModeList);
-        if (pModeList != CBIOS_NULL)
-        {
-            for (i = 0; i < ulModeNum; i++)
-            {
-                cbMode_AddMode(pModeList, &(DSI_DefaultModeList[i]), i, Device);
-            }
-        }
-        break;
-            
     case CBIOS_TYPE_DP1:
     case CBIOS_TYPE_DP2:
     case CBIOS_TYPE_DP3:
@@ -5492,22 +4946,11 @@ CBIOS_U32 cbMode_GetDefaultModeList(PCBIOS_VOID pvcbe, PCBiosModeInfoExt pModeLi
         {
             for (i = 0; i < ulModeNum; i++)
             {
-                cbMode_AddMode(pModeList, &(DP_DefaultModeList[i]), i, Device);
+                cbMode_AddMode(pModeList, &(DP_DefaultModeList[i]), i);
             }
         }
         break;
-
-    case CBIOS_TYPE_MHL:
-        ulModeNum = sizeofarray(MHL_DefaultModeList);
-        if (pModeList != CBIOS_NULL)
-        {
-            for (i = 0; i < ulModeNum; i++)
-            {
-                cbMode_AddMode(pModeList, &(MHL_DefaultModeList[i]), i, Device);
-            }
-        }
-        break;
-
+        
     case CBIOS_TYPE_DVO:
     case CBIOS_TYPE_CRT:
     default:
@@ -5516,7 +4959,7 @@ CBIOS_U32 cbMode_GetDefaultModeList(PCBIOS_VOID pvcbe, PCBiosModeInfoExt pModeLi
         {
             for (i = 0; i < ulModeNum; i++)
             {
-                cbMode_AddMode(pModeList, &(Device_DefaultModeList[i]), i, Device);
+                cbMode_AddMode(pModeList, &(Device_DefaultModeList[i]), i);
             }
         }
         break;
@@ -5563,9 +5006,7 @@ CBIOS_STATUS cbMode_FillAdapterModeList(PCBIOS_VOID pvcbe, PCBiosModeInfoExt pMo
         pModeList[i].XRes = pAdapterModeList[i].XRes;
         pModeList[i].YRes = pAdapterModeList[i].YRes;
         pModeList[i].RefreshRate = pAdapterModeList[i].RefreshRate;
-        pModeList[i].InterlaceProgressiveCaps = CBIOS_PROGRESSIVECAP;
-
-        pModeList[i].AdapterDeviceFlags = CBIOS_ADAPTERMODE;
+        pModeList[i].isInterlaceMode = 0;
         pModeList[i].ColorDepthCaps =  DEVICE_MODE_DEPTH_CAPS;
 
         ulModeCount++;
@@ -5756,7 +5197,7 @@ static CBIOS_BOOL  cbMode_NeedFilterMode(PCBIOS_EXTENSION_COMMON    pcbe,
 #define STD_BASE  (EST_BASE + CBIOS_ESTABLISHMODECOUNT)
 #define DTL_BASE  (STD_BASE + CBIOS_STDMODECOUNT)
 #define SVD_BASE  (DTL_BASE + CBIOS_DTLMODECOUNT)
-#define DTD_BASE  (SVD_BASE + CBIOS_HDMIFORMATCOUNTS)
+#define DTD_BASE  (SVD_BASE + pEdidStruct->HDMIFmtNum)
 #define DID_BASE  (DTD_BASE + CBIOS_DTDTIMING_BLOCK_CNT)
 
 #define INVALID_TM_INDEX  0xFF
@@ -5797,15 +5238,14 @@ static CBIOS_U8 cbMode_GetTimingIndex(PCBIOS_EXTENSION_COMMON    pcbe,
     }
     else if(TmType == CBIOS_MODE_DISP_ID_TIMING)
     {
-        pTmType2List = pEdidStruct->DisplayIdDtlTimings;
+        pTmType2List = pEdidStruct->pDisplayIdDtlTimings;
         LoopCnt = pEdidStruct->DispIdTimingNum;
     }
     else if(TmType == CBIOS_MODE_SVD_TIMING)
     {
-        if((pEdidStruct->Attribute.IsCEA861Monitor) || 
-            (pEdidStruct->Attribute.IsCEA861HDMI))
+        if((pEdidStruct->Attribute.IsCEA861Monitor) || (pEdidStruct->Attribute.IsCEA861HDMI))
         {
-            LoopCnt = CBIOS_HDMIFORMATCOUNTS;
+            LoopCnt = pEdidStruct->HDMIFmtNum;
         }
         else
         {
@@ -5819,10 +5259,11 @@ static CBIOS_U8 cbMode_GetTimingIndex(PCBIOS_EXTENSION_COMMON    pcbe,
 
     for(i = 0; i < LoopCnt; i++)
     {   
+        CBIOS_U16 FmtIndex = 0;
         if(TmType == CBIOS_MODE_SVD_TIMING)
         {
-            bValid = (pEdidStruct->HDMIFormat[i].IsSupported && 
-                           pcbe->pHDMISupportedFormatTable[i])? CBIOS_TRUE : CBIOS_FALSE;
+            FmtIndex = pEdidStruct->pHDMIFormat[i].FormatIndex;
+            bValid = CBIOS_TRUE;
         }
         else if(pTmType1List)
         {
@@ -5840,11 +5281,14 @@ static CBIOS_U8 cbMode_GetTimingIndex(PCBIOS_EXTENSION_COMMON    pcbe,
 
         if(TmType == CBIOS_MODE_SVD_TIMING)
         {
-            CBIOS_U8 RefRateIndex = pEdidStruct->HDMIFormat[i].RefreshIndex % 2;
-            TempTm.XResolution = pcbe->pHDMIFormatTable[i].XRes;
-            TempTm.YResolution = pcbe->pHDMIFormatTable[i].YRes;
-            TempTm.Refreshrate = pcbe->pHDMIFormatTable[i].RefRate[RefRateIndex];
-            TempTm.IsInterLaced = pcbe->pHDMIFormatTable[i].Interlace;
+            CBIOS_U8 RefRateIndex = pcbe->pHDMIFormatTable[FmtIndex].DefRateIdx;
+            TempTm.XResolution = HDMIFormatTimingTbl[FmtIndex].XRes;
+            TempTm.YResolution = HDMIFormatTimingTbl[FmtIndex].YRes;
+            TempTm.Refreshrate = pcbe->pHDMIFormatTable[FmtIndex].RefRate[RefRateIndex];
+            TempTm.IsInterLaced = pcbe->pHDMIFormatTable[FmtIndex].Interlace;
+            TempTm.PixelClock = HDMIFormatTimingTbl[FmtIndex].PixelClock;
+            TempTm.HBlank = HDMIFormatTimingTbl[FmtIndex].HorTotal - HDMIFormatTimingTbl[FmtIndex].XRes;
+            TempTm.VBlank = HDMIFormatTimingTbl[FmtIndex].VerTotal - HDMIFormatTimingTbl[FmtIndex].YRes;
         }
         else if(pTmType1List)
         {
@@ -5852,6 +5296,7 @@ static CBIOS_U8 cbMode_GetTimingIndex(PCBIOS_EXTENSION_COMMON    pcbe,
             TempTm.YResolution = pTmType1List[i].YResolution;
             TempTm.Refreshrate = pTmType1List[i].Refreshrate;
             TempTm.IsInterLaced = 0;
+            TempTm.PixelClock = TempTm.HBlank = TempTm.VBlank = 0;
         }
         else if(pTmType2List)
         {
@@ -5859,14 +5304,14 @@ static CBIOS_U8 cbMode_GetTimingIndex(PCBIOS_EXTENSION_COMMON    pcbe,
             TempTm.YResolution = pTmType2List[i].YResolution;
             TempTm.Refreshrate = pTmType2List[i].Refreshrate;
             TempTm.IsInterLaced = pTmType2List[i].IsInterLaced;
+            TempTm.PixelClock = pTmType2List[i].PixelClock;
+            TempTm.HBlank = pTmType2List[i].HBlank;
+            TempTm.VBlank = pTmType2List[i].VBlank;
         }
         
         if(cbMode_CompareMode(&TempTm, pMaxMode) > 0)
         {
-            pMaxMode->XResolution = TempTm.XResolution;
-            pMaxMode->YResolution = TempTm.YResolution;
-            pMaxMode->Refreshrate = TempTm.Refreshrate;
-            pMaxMode->IsInterLaced = TempTm.IsInterLaced;
+            cb_memcpy(pMaxMode, &TempTm, sizeof(TempTm));
             bBigger = CBIOS_TRUE;
             index = i;
         }
@@ -5876,8 +5321,14 @@ static CBIOS_U8 cbMode_GetTimingIndex(PCBIOS_EXTENSION_COMMON    pcbe,
             {
                 //We have already find a valid timing in current timing list, 
                 //now another timing with the same type is equal to previous one,
-                //mark previous one as used as it's duplicated.
-                pUsedArray[index] = 1;
+                //mark current one as used as it's duplicated.
+                pUsedArray[i] = 1;
+                continue;
+            } 
+            //if PixelClock != 0, then TempTm is a detailed timing info, use this full timing
+            if(TempTm.PixelClock)
+            {
+                cb_memcpy(pMaxMode, &TempTm, sizeof(TempTm));
             }
             bEqual = CBIOS_TRUE;
             index = i;
@@ -5895,13 +5346,8 @@ static CBIOS_U8 cbMode_GetTimingIndex(PCBIOS_EXTENSION_COMMON    pcbe,
         Ret = (CBIOS_U8)index;
     }
 
-    if(Ret != INVALID_TM_INDEX && pTmType2List)
-    {
-        pMaxMode->PixelClock = pTmType2List[Ret].PixelClock;
-    }
-
     return Ret;
-}
+}               
 
 CBIOS_U32 cbMode_GenerateDeviceModeList(PCBIOS_VOID pvcbe,
                                    CBIOS_ACTIVE_TYPE  Device)
@@ -5914,18 +5360,21 @@ CBIOS_U32 cbMode_GenerateDeviceModeList(PCBIOS_VOID pvcbe,
     CBIOS_U8  EstIndex = 0, StdIndex = 0, DtlIndex = 0, CEAIndex = 0, DTDIndex = 0, DIDT1Index = 0;
     CBIOS_U32  ulModeNum = 0, MaxModeNum = 0, TotalTimingCount = 0;
 
-    CBIOS_U32  AspectRatioCaps = 0, IntProgCaps = 0, NativeModeFlags = 0;
-    CBIOS_BOOL  IsCEAMode = CBIOS_FALSE, PreferredModeFlags = CBIOS_FALSE;
+    CBIOS_BOOL  PreferredModeFlags = CBIOS_FALSE;
 
     CBIOS_U8 *pbTimingUsed = CBIOS_NULL;
 
     CBIOS_DETAILED_TIMING_INFO MaxMode;
-    CBiosModeInfoExt    ModeToInsert = {0}, *pModeList = CBIOS_NULL;
+    CBiosModeInfoExt  ModeToInsert = {0}, *pModeList = CBIOS_NULL;
     CBIOS_TIMING_ATTRIB Timing = {0};
     CBIOS_U32  tempType, curType, TimingMask;
 
     if(!pEdidStruct->TotalTimingNum)
     {
+        cb_FreePool(pDevCommon->pDeviceModeList);
+        pDevCommon->pDeviceModeList = CBIOS_NULL;
+        pDevCommon->ModeListArraySize = 0;
+        pDevCommon->ValidModeNum = 0;
         goto END;
     }
 
@@ -5956,7 +5405,7 @@ CBIOS_U32 cbMode_GenerateDeviceModeList(PCBIOS_VOID pvcbe,
 
     pModeList = pDevCommon->pDeviceModeList;
 
-    TotalTimingCount = CBIOS_ESTABLISHMODECOUNT+CBIOS_STDMODECOUNT+CBIOS_DTLMODECOUNT+CBIOS_HDMIFORMATCOUNTS+CBIOS_DTDTIMING_BLOCK_CNT+pEdidStruct->DispIdTimingNum;
+    TotalTimingCount = CBIOS_ESTABLISHMODECOUNT+CBIOS_STDMODECOUNT+CBIOS_DTLMODECOUNT+pEdidStruct->HDMIFmtNum+CBIOS_DTDTIMING_BLOCK_CNT+pEdidStruct->DispIdTimingNum;
     pbTimingUsed = cb_AllocatePagedPool(TotalTimingCount * sizeof(CBIOS_U8));
     if(pbTimingUsed == CBIOS_NULL)
     {
@@ -5970,12 +5419,10 @@ CBIOS_U32 cbMode_GenerateDeviceModeList(PCBIOS_VOID pvcbe,
 
     while(CBIOS_TRUE)
     {
-        NativeModeFlags = CBIOS_NONNATIVEMODE;
         PreferredModeFlags = CBIOS_FALSE;
-        AspectRatioCaps = CBIOS_DEFAULTRATIO;
         TimingMask = 0;
-        IsCEAMode = CBIOS_FALSE;
         cb_memset(&MaxMode, 0, sizeof(CBIOS_DETAILED_TIMING_INFO));
+        cb_memset(&Timing, 0, sizeof(CBIOS_TIMING_ATTRIB));
 
         EstIndex = cbMode_GetTimingIndex(pcbe, pEdidStruct, CBIOS_MODE_EST_TIMING, &MaxMode, pbTimingUsed+EST_BASE, &TimingMask);
         StdIndex = cbMode_GetTimingIndex(pcbe, pEdidStruct, CBIOS_MODE_STD_TIMING, &MaxMode, pbTimingUsed+STD_BASE, &TimingMask);
@@ -5999,9 +5446,9 @@ CBIOS_U32 cbMode_GenerateDeviceModeList(PCBIOS_VOID pvcbe,
                Device, 
                &Timing);
             MaxMode.PixelClock = Timing.PixelClock;
+            MaxMode.HBlank = Timing.HorTotal - Timing.XRes;
+            MaxMode.VBlank = Timing.VerTotal - Timing.YRes;
         }
-
-        IntProgCaps = (MaxMode.IsInterLaced)? CBIOS_INTERLACECAP : CBIOS_PROGRESSIVECAP;
         
         tempType = TimingMask;
         while(tempType)
@@ -6011,41 +5458,12 @@ CBIOS_U32 cbMode_GenerateDeviceModeList(PCBIOS_VOID pvcbe,
             switch (curType)
             {
             case CBIOS_MODE_DTD_TIMING:
-                if (pEdidStruct->DTDTimings[DTDIndex].IsNativeMode)
-                {
-                    NativeModeFlags |= CBIOS_NATIVEMODE;
-                }
-                                        
                 *(pbTimingUsed + DTD_BASE + DTDIndex) = 1;
                 break;
             case CBIOS_MODE_SVD_TIMING:
-                NativeModeFlags |= pEdidStruct->HDMIFormat[CEAIndex].IsNative;
-                
-                IsCEAMode = CBIOS_TRUE;     //Means is a CE mode.
-                
-                if(pcbe->pHDMIFormatTable[CEAIndex].AspectRatio == 1)
-                {
-                    AspectRatioCaps = CBIOS_ASPECTRATIOCAP4B3;
-                }
-                else if(pcbe->pHDMIFormatTable[CEAIndex].AspectRatio == 3)
-                {
-                    AspectRatioCaps = CBIOS_ASPECTRATIOCAP64B27;
-                }
-                else if(pcbe->pHDMIFormatTable[CEAIndex].AspectRatio == 4)
-                {
-                    AspectRatioCaps = CBIOS_ASPECTRATIOCAP256B135;
-                }
-                else
-                {
-                    AspectRatioCaps = CBIOS_ASPECTRATIOCAP16B9;                
-                }
                 *(pbTimingUsed + SVD_BASE + CEAIndex) = 1;
                 break;
             case CBIOS_MODE_DTL_TIMING:
-                if (pEdidStruct->DtlTimings[DtlIndex].IsNativeMode)
-                {
-                    NativeModeFlags |= CBIOS_NATIVEMODE; 
-                }
                 if (DtlIndex == 0 && pEdidStruct->DtlTimings[DtlIndex].IsPreferMode)
                 {
                     PreferredModeFlags = CBIOS_TRUE;
@@ -6060,7 +5478,7 @@ CBIOS_U32 cbMode_GenerateDeviceModeList(PCBIOS_VOID pvcbe,
                 *(pbTimingUsed + EST_BASE + EstIndex) = 1;
                 break;
             case CBIOS_MODE_DISP_ID_TIMING:
-                if (!pEdidStruct->DtlTimings[0].IsPreferMode && pEdidStruct->DisplayIdDtlTimings[DIDT1Index].IsPreferMode)
+                if (!pEdidStruct->DtlTimings[0].IsPreferMode && pEdidStruct->pDisplayIdDtlTimings[DIDT1Index].IsPreferMode)
                 {
                     PreferredModeFlags = CBIOS_TRUE;
                 }
@@ -6078,15 +5496,12 @@ CBIOS_U32 cbMode_GenerateDeviceModeList(PCBIOS_VOID pvcbe,
             ModeToInsert.XRes = MaxMode.XResolution;
             ModeToInsert.YRes = MaxMode.YResolution;
             ModeToInsert.RefreshRate = MaxMode.Refreshrate;
-            ModeToInsert.InterlaceProgressiveCaps = IntProgCaps;
-            ModeToInsert.AdapterDeviceFlags = CBIOS_DEVICEMODE;
-            ModeToInsert.DeviceFlags = Device;
+            ModeToInsert.isInterlaceMode = MaxMode.IsInterLaced;
+            ModeToInsert.XTotal = MaxMode.HBlank + MaxMode.XResolution;
+            ModeToInsert.YTotal = MaxMode.VBlank + MaxMode.YResolution;
+            ModeToInsert.PixelClock = MaxMode.PixelClock;
             ModeToInsert.ColorDepthCaps = DEVICE_MODE_DEPTH_CAPS;
-            ModeToInsert.AspectRatioCaps = AspectRatioCaps;
-            ModeToInsert.NativeModeFlags = NativeModeFlags;
-            ModeToInsert.isCEAMode = (IsCEAMode)? 1 : 0;
             ModeToInsert.isPreferredMode = (PreferredModeFlags)? 1 : 0;
-            ModeToInsert.ModeFlags |= (TimingMask << 2);
 
             if((ulModeNum + 1) >= MaxModeNum)  //reserve space for Insert mode and equivalent mode
             {
@@ -6106,7 +5521,7 @@ CBIOS_U32 cbMode_GenerateDeviceModeList(PCBIOS_VOID pvcbe,
                 }
             }
 
-            if (!cbMode_AddMode(pModeList, &ModeToInsert, ulModeNum, Device))
+            if (!cbMode_AddMode(pModeList, &ModeToInsert, ulModeNum))
             {
                 continue;
             }
@@ -6124,7 +5539,7 @@ CBIOS_U32 cbMode_GenerateDeviceModeList(PCBIOS_VOID pvcbe,
             *********/
             if(Device & ALL_DP_TYPES)
             {     
-                if(cbMode_AddEquivalentDeviceMode(pModeList, &ModeToInsert, ulModeNum, Device))
+                if(cbMode_AddEquivalentDeviceMode(pModeList, &ModeToInsert, ulModeNum))
                 {
                     ulModeNum++;
                 }

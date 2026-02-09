@@ -166,124 +166,6 @@ static CBIOS_U32 CursorEndPixelIndex[CBIOS_IGACOUNTS] = {0x33728, 0x33bc4, 0x342
 
 static CBIOS_U16 LUTBitWidthIndex[CBIOS_IGACOUNTS] = {CR_E4, CR_E5, CR_E6, CR_B_CD};
 
-//HDMI support table
-//CBIOS_TRUE: support, CBIOS_FALSE: not support
-CBIOS_BOOL HDMIFormatSupportTable[] =
-{
-    CBIOS_TRUE,     //640,  480, p, 5994,6000
-    CBIOS_TRUE,     //720,  480, p, 5994,6000
-    CBIOS_TRUE,     //720,  480, p, 5994,6000
-    CBIOS_TRUE,     //1280,  720, p, 5994,6000
-    CBIOS_TRUE,     //5,  1920, 1080, i, 5994,6000
-    CBIOS_TRUE,     //6,   720,  480, i, 5994,6000
-    CBIOS_TRUE,     //7,   720,  480, i, 5994,6000
-    CBIOS_TRUE,     //8,   720,  240, p, 5994,6000
-    CBIOS_TRUE,     //9,   720,  240, p, 5994,6000
-    CBIOS_FALSE,    //10, 2880,  480, i, 5994,6000
-    CBIOS_FALSE,    //11, 2880,  480, i, 5994,6000
-    CBIOS_FALSE,    //12, 2880,  240, p, 5994,6000
-    CBIOS_FALSE,    //13, 2880,  240, p, 5994,6000
-    CBIOS_FALSE,    //14, 1440,  480, p, 5994,6000
-    CBIOS_FALSE,    //15, 1440,  480, p, 5994,6000
-    CBIOS_TRUE,     //16, 1920, 1080, p, 5994,6000
-    CBIOS_TRUE,     //17,  720,  576, p, 5000,0000
-    CBIOS_TRUE,     //18,  720,  576, p, 5000,0000
-    CBIOS_TRUE,     //19, 1280,  720, p, 5000,0000
-    CBIOS_TRUE,     //20, 1920, 1080, i, 5000,0000
-    CBIOS_TRUE,     //21,  720,  576, i, 5000,0000
-    CBIOS_TRUE,     //22,  720,  576, i, 5000,0000
-    CBIOS_TRUE,     //23,  720,  288, p, 5000,0000
-    CBIOS_TRUE,     //24,  720,  288, p, 5000,0000
-    CBIOS_FALSE,    //25, 2880,  576, i, 5000,0000
-    CBIOS_FALSE,    //26, 2880,  576, i, 5000,0000
-    CBIOS_FALSE,    //27, 2880,  288, p, 5000,0000
-    CBIOS_FALSE,    //28, 2880,  288, p, 5000,0000
-    CBIOS_FALSE,    //29, 1440,  576, p, 5000,0000
-    CBIOS_FALSE,    //30, 1440,  576, p, 5000,0000
-    CBIOS_TRUE,     //31, 1920, 1080, p, 5000,0000
-    CBIOS_TRUE,     //32, 1920, 1080, p, 2398,2400
-    CBIOS_TRUE,     //33, 1920, 1080, p, 2500,0000
-    CBIOS_TRUE,     //34, 1920, 1080, p, 2997,3000
-    CBIOS_FALSE,    //35, 2880,  480, p, 5994,6000
-    CBIOS_FALSE,    //36, 2880,  480, p, 5994,6000
-    CBIOS_FALSE,    //37, 2880,  576, p, 5000,0000
-    CBIOS_FALSE,    //38, 2880,  576, p, 5000,0000
-    CBIOS_FALSE,    //39, 1920, 1080, i, 5000,0000
-    CBIOS_FALSE,    //40, 1920, 1080, i, 10000,0000
-    CBIOS_FALSE,    //41, 1280,  720, p, 10000,0000
-    CBIOS_FALSE,    //42,  720,  576, p, 10000,0000
-    CBIOS_FALSE,    //43,  720,  576, p, 10000,0000
-    CBIOS_FALSE,    //44,  720,  576, i, 10000,0000
-    CBIOS_FALSE,    //45,  720,  576, i, 10000,0000
-    CBIOS_FALSE,    //46, 1920, 1080, i, 11988,12000
-    CBIOS_FALSE,    //47, 1280,  720, p, 11988,12000
-    CBIOS_FALSE,    //48,  720,  480, p, 11988,12000
-    CBIOS_FALSE,    //49,  720,  480, p, 11988,12000
-    CBIOS_FALSE,    //50,  720,  480, i, 11988,12000
-    CBIOS_FALSE,    //51,  720,  480, i, 11988,12000
-    CBIOS_FALSE,    //52,  720,  576, p, 20000,0000
-    CBIOS_FALSE,    //53,  720,  576, p, 20000,0000
-    CBIOS_FALSE,    //54,  720,  576, i, 20000,0000
-    CBIOS_FALSE,    //55,  720,  576, i, 20000,0000
-    CBIOS_FALSE,    //56,  720,  480, p, 23976,24000
-    CBIOS_FALSE,    //57,  720,  480, p, 23976,24000
-    CBIOS_FALSE,    //58,  720,  480, i, 23976,24000
-    CBIOS_FALSE,    //59,  720,  480, i, 23976,24000
-    CBIOS_FALSE,    //60   1280, 720, p,  2398, 2400
-    CBIOS_FALSE,    //61,  1280, 720, p,  2500, 0000
-    CBIOS_FALSE,    //62,  1280, 720, p,  2997, 3000
-    CBIOS_TRUE,     //63,  1920,1080, p, 11988,12000
-    CBIOS_TRUE,     //64,  1920,1080, p, 10000, 0000
-    CBIOS_FALSE,    //65,  1280, 720, p,  2398, 2400
-    CBIOS_FALSE,    //66,  1280, 720, p,  2500, 0000
-    CBIOS_FALSE,    //67   1280, 720, p,  3000, 2997
-    CBIOS_FALSE,    //68,  1280, 720, p,  5000, 0000
-    CBIOS_FALSE,    //69,  1280, 720, p,  5994, 6000
-    CBIOS_FALSE,    //70,  1280, 720, p, 10000, 0000
-    CBIOS_FALSE,    //71,  1280, 720, p, 11988,12000
-    CBIOS_FALSE,    //72,  1920,1080, p,  2398, 2400
-    CBIOS_FALSE,    //73,  1920,1080, p,  2500, 0000
-    CBIOS_FALSE,    //74,  1920,1080, p,  3000, 2997
-    CBIOS_FALSE,    //75,  1920,1080, p,  5000, 0000
-    CBIOS_FALSE,    //76,  1920,1080, p,  5994, 6000
-    CBIOS_FALSE,    //77,  1920,1080, p, 10000, 0000
-    CBIOS_FALSE,    //78,  1920,1080, p, 11988,12000
-    CBIOS_FALSE,    //79,  1680, 720, p,  2398, 2400
-    CBIOS_FALSE,    //80,  1680, 720, p,  2500, 0000
-    CBIOS_FALSE,    //81   1680, 720, p,  3000, 2997
-    CBIOS_FALSE,    //82,  1680, 720, p,  5000, 0000
-    CBIOS_FALSE,    //83,  1680, 720, p,  5994, 6000
-    CBIOS_FALSE,    //84,  1680, 720, p, 10000, 0000
-    CBIOS_FALSE,    //85,  1680, 720, p, 11988,12000
-    CBIOS_FALSE,    //86,  2560,1080, p,  2398, 2400
-    CBIOS_FALSE,    //87,  2560,1080, p,  2500, 0000
-    CBIOS_FALSE,    //88,  2560,1080, p,  3000, 2997
-    CBIOS_FALSE,    //89,  2560,1080, p,  5000, 0000
-    CBIOS_FALSE,    //90,  2560,1080, p,  5994, 6000
-    CBIOS_FALSE,    //91,  2560,1080, p, 10000, 0000
-    CBIOS_FALSE,    //92,  2560,1080, p, 11988,12000
-    CBIOS_TRUE,     //93,  3840,2160, p,  2398, 2400
-    CBIOS_TRUE,     //94,  3840,2160, p,  2500, 0000
-    CBIOS_TRUE,     //95,  3840,2160, p,  3000, 2997
-    CBIOS_TRUE,    //96,  3840,2160, p,  5000, 0000
-    CBIOS_TRUE,     //97,  3840,2160, p, 5994, 6000
-    CBIOS_TRUE,     //98,  3840,2160, p,  2398, 2400
-    CBIOS_TRUE,    //99,  3840,2160, p,  2500, 0000
-    CBIOS_TRUE,    //100, 3840,2160, p,  3000, 2997
-    CBIOS_TRUE,    //101, 3840,2160, p,  5000, 0000
-    CBIOS_TRUE,    //102, 3840,2160, p,  5994, 6000
-    CBIOS_TRUE,     //103, 3840,2160, p,  2398, 2400
-    CBIOS_TRUE,     //104, 3840,2160, p,  2500, 0000
-    CBIOS_TRUE,     //105, 3840,2160, p,  3000, 2997
-    CBIOS_TRUE,    //106, 3840,2160, p,  5000, 0000
-    CBIOS_TRUE,     //107, 3840,2160, p,  5994, 6000
-    // VSDB VIC
-    CBIOS_TRUE,     //108, 3840,2160, p,  3000, 0000
-    CBIOS_TRUE,     //109, 3840,2160, p,  2500, 0000
-    CBIOS_TRUE,     //110, 3840,2160, p,  2400, 0000
-    CBIOS_TRUE,     //111, 4096,2160, p,  2400, 0000
-}; 
-
 
 /******** The following tables are for HDTV encoders ********/
 /*
@@ -541,9 +423,6 @@ CBIOS_VOID cbInitChipAttribute_E3K(PCBIOS_EXTENSION_COMMON pcbe)
     {
         pFuncTbl->pfncbUpdateShadowInfo =(PFN_cbUpdateShadowInfo)cbUpdateShadowInfo_CX4;
     }
-    
-    //tables
-    pcbe->pHDMISupportedFormatTable = HDMIFormatSupportTable;
 }
 
 CBIOS_VOID cbSetSRTimingReg_E3K(PCBIOS_EXTENSION_COMMON pcbe,
@@ -872,7 +751,7 @@ CBIOS_VOID cbGetCRTimingReg_E3K(PCBIOS_EXTENSION_COMMON pcbe,
 {
     CBIOS_U32 temp = 0;
     CBIOS_U8 ClockType = CBIOS_DCLK1TYPE;
-    CBIOS_U32 CurrentFreq = 0;
+    CBIOS_U32 CurrentFreq = 0, CurrPLLClock = 0;
     CBIOS_U32   remainder = 0;
 
     cb_memset(pTiming, 0, sizeof(CBIOS_TIMING_ATTRIB));
@@ -895,7 +774,7 @@ CBIOS_VOID cbGetCRTimingReg_E3K(PCBIOS_EXTENSION_COMMON pcbe,
         ClockType = CBIOS_DCLK4TYPE;
     }
     cbGetProgClock(pcbe, &CurrentFreq, ClockType);
-    pTiming->PLLClock = CurrentFreq;
+    CurrPLLClock = CurrentFreq;
 
     //================================================================//
     //************Start Getting Horizontal Timing Registers***********//
@@ -981,8 +860,8 @@ CBIOS_VOID cbGetCRTimingReg_E3K(PCBIOS_EXTENSION_COMMON pcbe,
     pTiming->YRes = pTiming->VerDisEnd;
 
     temp = (CBIOS_U32)pTiming->HorTotal * (CBIOS_U32)pTiming->VerTotal;
-    pTiming->RefreshRate = pTiming->PLLClock * 100 / temp;
-    remainder = (pTiming->PLLClock * 100) % temp;
+    pTiming->RefreshRate = CurrPLLClock * 100 / temp;
+    remainder = (CurrPLLClock * 100) % temp;
     pTiming->RefreshRate = pTiming->RefreshRate * 100 + remainder * 100 / temp;
 }
 
@@ -993,7 +872,7 @@ CBIOS_VOID cbGetSRTimingReg_E3K(PCBIOS_EXTENSION_COMMON pcbe,
 {
     CBIOS_U32 temp = 0;
     CBIOS_U8 ClockType = CBIOS_DCLK1TYPE;
-    CBIOS_U32 CurrentFreq = 0;
+    CBIOS_U32 CurrentFreq = 0, CurrPLLClock = 0;
     CBIOS_U32   remainder = 0;
     CBIOS_U32 HSSRemainder = 0;
     CBIOS_U32 HSyncRemainder = 0;
@@ -1022,7 +901,7 @@ CBIOS_VOID cbGetSRTimingReg_E3K(PCBIOS_EXTENSION_COMMON pcbe,
     }
 
     cbGetProgClock(pcbe, &CurrentFreq, ClockType);
-    pTiming->PLLClock = CurrentFreq;
+    CurrPLLClock = CurrentFreq;
 
     //================================================================//
     //************Start Getting Horizontal Timing Registers***********//
@@ -1127,8 +1006,8 @@ CBIOS_VOID cbGetSRTimingReg_E3K(PCBIOS_EXTENSION_COMMON pcbe,
     pTiming->YRes = pTiming->VerDisEnd;
 
     temp = (CBIOS_U32)pTiming->HorTotal * (CBIOS_U32)pTiming->VerTotal;
-    pTiming->RefreshRate = pTiming->PLLClock * 100 / temp;
-    remainder = (pTiming->PLLClock * 100) % temp;
+    pTiming->RefreshRate = CurrPLLClock * 100 / temp;
+    remainder = (CurrPLLClock * 100) % temp;
     pTiming->RefreshRate = pTiming->RefreshRate * 100 + remainder * 100 / temp;
 }
 
@@ -3276,6 +3155,8 @@ CBIOS_BOOL cbUpdateShadowInfo_CX4(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_PARAM_SHA
                 pcbe->SysBiosInfo.bInvertPanelSignal = pSysInfo->bInvertPanelSignal;
                 pcbe->SysBiosInfo.bBLGfxMode = pSysInfo->bBLGfxMode;
                 pcbe->SysBiosInfo.bLgaChip = pSysInfo->bLgaChip;
+                pcbe->SysBiosInfo.bBLGfxPwm = pSysInfo->Header.Version >= 0x12 ? pSysInfo->bBLGfxPwm : 0;
+                pcbe->SysBiosInfo.bInvertPwmBL  = pSysInfo->Header.Version >= 0x12 ? pSysInfo->bInvertPwmBL : 0;
                 pcbe->SysBiosInfo.ECLK = pSysInfo->ECLK;
                 pcbe->SysBiosInfo.VCLK = pSysInfo->VCLK;
                 pcbe->SysBiosInfo.ICLK = pSysInfo->ICLK;
@@ -3325,7 +3206,8 @@ CBIOS_BOOL cbUpdateShadowInfo_CX4(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_PARAM_SHA
                 }
                 
                 cbGetSysBiosInfo(pcbe);
-                cbDebugPrint((MAKE_LEVEL(GENERIC, INFO),  "ShadowInfo: bBLGfxMode = %d, bInvertPanelSignal = %d, bLgaChip = %d\n", pcbe->SysBiosInfo.bBLGfxMode, pcbe->SysBiosInfo.bInvertPanelSignal, pcbe->SysBiosInfo.bLgaChip));
+                cbDebugPrint((MAKE_LEVEL(GENERIC, INFO),  "ShadowInfo: bBLGfxMode = %d, bBLGfxPwm = %d, bInvertPwmBL = %d, bInvertPanelSignal = %d, bLgaChip = %d\n", 
+                    pcbe->SysBiosInfo.bBLGfxMode, pcbe->SysBiosInfo.bBLGfxPwm, pcbe->SysBiosInfo.bInvertPwmBL, pcbe->SysBiosInfo.bInvertPanelSignal, pcbe->SysBiosInfo.bLgaChip));
                 cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "ShadowInfo: FBSize = %dM DRAMMode = %d bSnoopOnly = %d\n", (1 << (pcbe->SysBiosInfo.FBSize & 0x0F)), (pcbe->SysBiosInfo.DRAMMode & BIT0),pcbe->SysBiosInfo.SnoopOnly));
                 cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "Ver:0x%x, VgaPort:%d, Dp1Port:%d, Dp2Port:%d, Dp3Port:%d.\n", pSysInfo->Header.Version, pcbe->SysBiosInfo.VgaPortConnType, pcbe->SysBiosInfo.Dp1PortConnType, 
                     pcbe->SysBiosInfo.Dp2PortConnType, pcbe->SysBiosInfo.Dp3PortConnType));

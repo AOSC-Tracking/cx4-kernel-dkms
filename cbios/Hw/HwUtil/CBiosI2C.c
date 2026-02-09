@@ -197,7 +197,7 @@ static CBIOS_BOOL cbI2CModule_Start(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_MODULE_
     CBIOS_U8  bySCL = 0, bySDL = 0;
     CBIOS_U32 i = 0;
     CBIOS_U32 MaxLoop = MAXI2CWAITLOOP;
-    CBIOS_U8  I2CDELAY = pcbe->I2CDelay;
+    CBIOS_U16  I2CDELAY = pCBModuleI2CParams->I2CDelay;
     CBIOS_BOOL bAck = CBIOS_FALSE;
     PCBIOS_I2C_REG_PARAMS pI2CRegParams = &(pCBModuleI2CParams->I2CRegParams);
 
@@ -302,7 +302,7 @@ static CBIOS_BOOL cbI2CModule_Stop(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_MODULE_I
     CBIOS_U8  byTemp = 0;
     CBIOS_U32 i = 0;
     CBIOS_U32 MaxLoop = MAXI2CWAITLOOP;
-    CBIOS_U8  I2CDELAY = pcbe->I2CDelay;
+    CBIOS_U16  I2CDELAY = pCBModuleI2CParams->I2CDelay;
     PCBIOS_I2C_REG_PARAMS pI2CRegParams = &(pCBModuleI2CParams->I2CRegParams);
 
     //check I2CBusNum
@@ -350,7 +350,7 @@ Return:
 ***************************************************************/
 static CBIOS_VOID cbI2CModule_Enable(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_MODULE_I2C_PARAMS pCBModuleI2CParams)
 {
-    CBIOS_U8  I2CDELAY = pcbe->I2CDelay;
+    CBIOS_U16  I2CDELAY = pCBModuleI2CParams->I2CDelay;
     PCBIOS_I2C_REG_PARAMS pI2CRegParams = &(pCBModuleI2CParams->I2CRegParams);
 
     //check I2CBusNum
@@ -432,7 +432,7 @@ static CBIOS_BOOL cbI2CModule_AckRead(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_MODUL
     CBIOS_U32 j = 0;
     CBIOS_U32 MaxLoop = MAXI2CWAITLOOP;
     CBIOS_BOOL bAck = CBIOS_FALSE;
-    CBIOS_U8  I2CDELAY = pcbe->I2CDelay;
+    CBIOS_U16  I2CDELAY = pCBModuleI2CParams->I2CDelay;
     PCBIOS_I2C_REG_PARAMS pI2CRegParams = &(pCBModuleI2CParams->I2CRegParams);
 
     //check I2CBusNum
@@ -506,7 +506,7 @@ static CBIOS_BOOL cbI2CModule_AckWrite(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_MODU
     CBIOS_U32 i = 0;
     CBIOS_U32 MaxLoop = MAXI2CWAITLOOP;
     CBIOS_BOOL bStatus = CBIOS_FALSE;
-    CBIOS_U8  I2CDELAY = pcbe->I2CDelay;
+    CBIOS_U16  I2CDELAY = pCBModuleI2CParams->I2CDelay;
     PCBIOS_I2C_REG_PARAMS pI2CRegParams = &(pCBModuleI2CParams->I2CRegParams);
 
     //check I2CBusNum
@@ -571,7 +571,7 @@ static CBIOS_VOID cbI2CModule_NackWrite(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_MOD
     CBIOS_U8  byTemp   = 0;
     CBIOS_U32 j = 0;
     CBIOS_U32 MaxLoop = MAXI2CWAITLOOP;
-    CBIOS_U8  I2CDELAY = pcbe->I2CDelay;
+    CBIOS_U16  I2CDELAY = pCBModuleI2CParams->I2CDelay;
     PCBIOS_I2C_REG_PARAMS pI2CRegParams = &(pCBModuleI2CParams->I2CRegParams);
 
     //check I2CBusNum
@@ -631,7 +631,7 @@ static CBIOS_BOOL cbI2CModule_ReadByte(PCBIOS_EXTENSION_COMMON pcbe,
     CBIOS_U8  data = 0;
     CBIOS_U32 i = 0, j = 0, MaxLoop = MAXI2CWAITLOOP;
     CBIOS_BOOL bStatus = CBIOS_TRUE;
-    CBIOS_U8  I2CDELAY = pcbe->I2CDelay;
+    CBIOS_U16  I2CDELAY = pCBModuleI2CParams->I2CDelay;
     PCBIOS_I2C_REG_PARAMS pI2CRegParams = &(pCBModuleI2CParams->I2CRegParams);
 
     //check I2CBusNum
@@ -730,7 +730,7 @@ static CBIOS_BOOL cbI2CModule_WriteByte(PCBIOS_EXTENSION_COMMON pcbe,
     CBIOS_S32 i, value;
     CBIOS_U32 j = 0;
     CBIOS_U32 MaxLoop = MAXI2CWAITLOOP;
-    CBIOS_U8  I2CDELAY = pcbe->I2CDelay;
+    CBIOS_U16  I2CDELAY = pCBModuleI2CParams->I2CDelay;
     CBIOS_BOOL bRet = CBIOS_TRUE;
     PCBIOS_I2C_REG_PARAMS pI2CRegParams = &(pCBModuleI2CParams->I2CRegParams);
 

@@ -1832,11 +1832,7 @@ vm_fault_t zx_gem_io_insert(struct vm_area_struct *vma, unsigned long address, z
         {
             pfn = (map->phys_addr + offset) >> PAGE_SHIFT;
             retval = vmf_insert_pfn(vma, address, pfn);
-            if (unlikely((retval == VM_FAULT_NOPAGE && i > 0)))
-            {
-                break;
-            }
-            else if (unlikely(retval & VM_FAULT_ERROR))
+            if (unlikely(retval & VM_FAULT_ERROR))
             {
                 goto done;
             }
@@ -1870,11 +1866,7 @@ vm_fault_t zx_gem_io_insert(struct vm_area_struct *vma, unsigned long address, z
             pfn = (map->phys_addrs[node_idx] + current_offset) / PAGE_SIZE;
 
             retval = vmf_insert_pfn(vma, address, pfn);
-            if (unlikely((retval == VM_FAULT_NOPAGE && i > 0)))
-            {
-                break;
-            }
-            else if (unlikely(retval & VM_FAULT_ERROR))
+            if (unlikely(retval & VM_FAULT_ERROR))
             {
                 goto done;
             }
@@ -1903,9 +1895,7 @@ static vm_fault_t zx_gem_ram_insert(struct vm_area_struct *vma, unsigned long ad
     {
         pfn  = page_to_pfn(map->memory->pages[i]);
         retval = vmf_insert_pfn(vma, address, pfn);
-        if (unlikely((retval == VM_FAULT_NOPAGE && i > start_page)))
-            break;
-        else if (unlikely(retval & VM_FAULT_ERROR))
+        if (unlikely(retval & VM_FAULT_ERROR))
         {
             return retval;
         }

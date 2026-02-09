@@ -51,7 +51,7 @@ static CBIOS_BOOL cbCRTPort_DeviceDetect(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DE
     return bConnected;
 }
 
-static CBIOS_VOID cbCRTPort_OnOff(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL bOn)
+static CBIOS_VOID cbCRTPort_OnOff(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL bOn, CBIOS_U32 Flags)
 {
     PCBIOS_CRT_CONTEXT pCrtContext = container_of(pDevCommon, PCBIOS_CRT_CONTEXT, Common);
     CBIOS_U32          IGAIndex = pDevCommon->DispSource.ModuleList.IGAModule.Index;
@@ -105,6 +105,7 @@ PCBIOS_DEVICE_COMMON cbCRTPort_Init(PCBIOS_VOID pvcbe, PVCP_INFO pVCP, CBIOS_ACT
     pDeviceCommon->PortConnType = pcbe->SysBiosInfo.VgaPortConnType;
     pDeviceCommon->SupportMonitorType = cbGetSupportMonitorType(pcbe, DeviceType);
     pDeviceCommon->I2CBus = pVCP->CRTCharByte & I2CBUSMASK;
+    pDeviceCommon->I2CDelay = pcbe->I2CDelay;
     pDeviceCommon->pBusLock = cb_CreateLock(CBIOS_OS_MUTEX_LOCK);
     pDeviceCommon->CurrentMonitorType = CBIOS_MONITOR_TYPE_NONE;
     pDeviceCommon->PowerState = CBIOS_PM_INVALID;

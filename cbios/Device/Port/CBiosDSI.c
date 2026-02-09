@@ -2998,8 +2998,8 @@ static CBIOS_BOOL cbDSIPort_PanelDetect(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEV
 
         FakeEdidParams.bProvideDtlTimingEDID = CBIOS_FALSE;
         FakeEdidParams.DtlTiming.PixelClock = pDSIPanelTbl->PanelTiming.DCLK;
-        FakeEdidParams.DtlTiming.HActive = (CBIOS_U16)pDSIPanelTbl->PanelTiming.HorDisEnd;
-        FakeEdidParams.DtlTiming.VActive = (CBIOS_U16)pDSIPanelTbl->PanelTiming.VerDisEnd;
+        FakeEdidParams.DtlTiming.XResolution = (CBIOS_U16)pDSIPanelTbl->PanelTiming.HorDisEnd;
+        FakeEdidParams.DtlTiming.YResolution = (CBIOS_U16)pDSIPanelTbl->PanelTiming.VerDisEnd;
         FakeEdidParams.DtlTiming.HBlank = pDSIPanelTbl->PanelTiming.HorBEnd - pDSIPanelTbl->PanelTiming.HorBStart;
         FakeEdidParams.DtlTiming.VBlank = pDSIPanelTbl->PanelTiming.VerBEnd - pDSIPanelTbl->PanelTiming.VerBStart;
         FakeEdidParams.DtlTiming.HSyncOffset = pDSIPanelTbl->PanelTiming.HorSyncStart - pDSIPanelTbl->PanelTiming.HorBStart;
@@ -3183,7 +3183,7 @@ static CBIOS_VOID cbDSIPort_UpdateModeInfo(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_
     cbTraceEnter(DSI);
 
     pDSIParams = &(pDevCommon->DeviceParas.DSIDevice);
-    pTiming->PLLClock = cbDSIPort_CalPLLCLK(pcbe, pDevCommon, pTiming->PixelClock);
+    pModeParams->PLLClock = cbDSIPort_CalPLLCLK(pcbe, pDevCommon, pTiming->PixelClock);
     // save target timing
     cb_memcpy(&(pDSIParams->TargetTiming), pTiming, sizeof(CBIOS_TIMING_ATTRIB));
 
@@ -3221,7 +3221,7 @@ CBIOS_BOOL cbDSIPort_DeviceDetect(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEVICE_CO
     return bConnected;
 }
 
-CBIOS_VOID cbDSIPort_OnOff(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL bOn)
+CBIOS_VOID cbDSIPort_OnOff(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL bOn, CBIOS_U32 Flags)
 {
     PCBIOS_DSI_PANEL_DESC pPanelDesc = CBIOS_NULL;
     cbTraceEnter(DSI);

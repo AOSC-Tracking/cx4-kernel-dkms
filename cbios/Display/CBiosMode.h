@@ -33,23 +33,6 @@
 #ifndef _CBIOS_MODE_H_
 #define _CBIOS_MODE_H_
 
-#define CBIOS_PROGRESSIVECAP                                   0x01
-#define CBIOS_INTERLACECAP                                     0x02
-#define CBIOS_PROGRESSIVEVALUE                                 0x01
-#define CBIOS_INTERLACEVALUE                                   0x00
-
-#define CBIOS_ADAPTERMODE                                      0
-#define CBIOS_DEVICEMODE                                       1
-
-#define CBIOS_ASPECTRATIOCAP4B3                                0x01
-#define CBIOS_ASPECTRATIOCAP16B9                               0x02
-#define CBIOS_ASPECTRATIOCAP64B27                              0x03
-#define CBIOS_ASPECTRATIOCAP256B135                            0x04
-#define CBIOS_DEFAULTRATIO                                     0x00
-
-#define CBIOS_NATIVEMODE                                       1
-#define CBIOS_NONNATIVEMODE                                    0
-
 #define  CBIOS_MODE_BUFFER_INCRE         8
 
 typedef enum _CBIOS_MODE_TIMING_TYPE{  //can extend to support 14 different types  
@@ -75,47 +58,15 @@ typedef enum _CBIOS_MODE_ASPECTRATIO{
 }CBIOS_MODE_ASPECTRATIO;
 
 typedef struct _CBIOS_MODE_INFO {
-    union {
-        struct {
-#ifdef __BIG_ENDIAN__
-            CBIOS_U16 XResolution;
-            CBIOS_U16 YResolution;
-#else
-            CBIOS_U16 YResolution;
-            CBIOS_U16 XResolution;
-#endif
-        };
-        CBIOS_U32 XYResolution;
-    };
+    CBIOS_U16 XResolution;
+    CBIOS_U16 YResolution;
     CBIOS_U16 Refreshrate;
     CBIOS_BOOL Valid;
 }CBIOS_MODE_INFO, *PCBIOS_MODE_INFO;
 
 typedef struct _CBIOS_DETAILED_TIMING_INFO {
-    union{
-        struct{
-#ifdef __BIG_ENDIAN__
-            union{
-                CBIOS_U16 XResolution;
-                CBIOS_U16 HActive;
-            };
-            union{
-                CBIOS_U16 YResolution;
-                CBIOS_U16 VActive;
-            };
-#else            
-            union{
-                CBIOS_U16 YResolution;
-                CBIOS_U16 VActive;
-            };
-            union{
-                CBIOS_U16 XResolution;
-                CBIOS_U16 HActive;
-            };
-#endif            
-        };
-        CBIOS_U32 XYResolution;
-    };
+    CBIOS_U16 XResolution;
+    CBIOS_U16 YResolution;
     CBIOS_U16 HBlank;
     CBIOS_U16 HSyncOffset;
     CBIOS_U16 HSyncPulseWidth;
@@ -138,7 +89,7 @@ typedef struct _CBIOS_DETAILED_TIMING_INFO {
         CBIOS_U32 TimingFlags; /* the TimingType flags can be used for patch, if IsPreferMode=1, need check the first EDID detailed timing is invalid */
         struct
         {
-            CBIOS_U32   IsEDIDTiming            :1; /*    bit0 = 1, the timing is from base EDID Detailed timing block */
+            CBIOS_U32   IsDetailTiming          :1; /*    bit0 = 1, the timing is from base EDID Detailed timing block */
             CBIOS_U32   IsCEATiming             :1; /*    bit1 = 1, the timing is from CEA Detailed timing Descriptor */
             CBIOS_U32   IsDIDTiming             :1; /*    bit2 = 1, the timing is from DisplayID Detailed Timing Descriptor */
             CBIOS_U32   RsvdTimingType          :5; /*    bit3:7  for future timing types use   */

@@ -231,7 +231,7 @@ int         disp_cbios_set_hdac_connect_status(disp_info_t *disp_info, int devic
 int         disp_cbios_turn_onoff_screen(disp_info_t *disp_info, int iga, int on);
 int         disp_cbios_turn_onoff_iga(disp_info_t *disp_info, int iga, int on);
 int         disp_cbios_detect_output_status(disp_info_t *disp_info, int device_bit, int full_detect, int* changed);
-int         disp_cbios_set_dpms(disp_info_t *disp_info, int device, int dpms_on);
+int         disp_cbios_set_dpms(disp_info_t *disp_info, int device, int dpms_on, unsigned int flags);
 int         disp_cbios_sync_vbios(disp_info_t *disp_info);
 int         disp_cbios_get_active_devices(disp_info_t *disp_info, int* devices);
 int         disp_cbios_set_gamma(disp_info_t *disp_info, int pipe, void* data);

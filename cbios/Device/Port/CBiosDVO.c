@@ -69,7 +69,7 @@ static CBIOS_BOOL cbDVOPort_InitTX(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DVO_CONT
 }
 
 
-static CBIOS_VOID cbDVOPort_OnOff(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL bOn)
+static CBIOS_VOID cbDVOPort_OnOff(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL bOn, CBIOS_U32 Flags)
 {
     PCBIOS_DVO_CONTEXT pDvoContext = container_of(pDevCommon, PCBIOS_DVO_CONTEXT, Common);
     CBIOS_U32          IGAIndex = pDevCommon->DispSource.ModuleList.IGAModule.Index;
@@ -122,7 +122,7 @@ static CBIOS_VOID cbDVOPort_OnOff(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEVICE_CO
 
 static CBIOS_VOID cbDVOPort_HW_SetMode(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DISP_MODE_PARAMS pModeParams)
 {
-    CBIOS_U8 HVPolarity = pModeParams->TargetTiming.HVPolarity;
+    CBIOS_U8 HVPolarity = (CBIOS_U8)pModeParams->TargetTiming.HVPolarity;
 
     cbDIU_DVO_SetHVSync(pcbe, HVPolarity);
 }
@@ -234,6 +234,7 @@ PCBIOS_DEVICE_COMMON cbDVOPort_Init(PCBIOS_VOID pvcbe, PVCP_INFO pVCP, CBIOS_ACT
     pDvoContext->Common.DeviceType = DeviceType;
     pDvoContext->Common.SupportMonitorType = CBIOS_MONITOR_TYPE_NONE;
     pDvoContext->Common.I2CBus = pVCP->DVOCharByte & I2CBUSMASK;
+    pDvoContext->Common.I2CDelay = pcbe->I2CDelay;
     pDvoContext->Common.pBusLock = cb_CreateLock(CBIOS_OS_MUTEX_LOCK);
     pDvoContext->Common.CurrentMonitorType = CBIOS_MONITOR_TYPE_NONE;
     pDvoContext->Common.PowerState = CBIOS_PM_INVALID;

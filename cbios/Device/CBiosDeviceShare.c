@@ -132,7 +132,7 @@ CBIOS_STATUS cbI2cNormal_ReadEDID(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCo
     CBIOS_MODULE_I2C_PARAMS par = {0};
     CBIOS_U8 I2CAddress = 0xA0, SegAddress = 0x60, j = 0;
     CBIOS_U8  I2CBUSNum = (CBIOS_U8)pDevCommon->I2CBus;
-
+    CBIOS_U8  I2CDelay = pDevCommon->I2CDelay;
     // Sometimes I2C is not stably at begining of start, so edid may be incorrct.
     // Here, we read edid maximum three times if edid sum check failed.
     for(j=1; j<4; j++)
@@ -142,6 +142,7 @@ CBIOS_STATUS cbI2cNormal_ReadEDID(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCo
         {
             par.SlaveAddress = SegAddress;
             par.I2CBusNum = I2CBUSNum;
+            par.I2CDelay = I2CDelay;
             par.Buffer = &nSegNum;
             par.OffSet = 0;
             par.BufferLen = 1;
@@ -157,6 +158,7 @@ CBIOS_STATUS cbI2cNormal_ReadEDID(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCo
 		//get edid
         par.SlaveAddress = I2CAddress;
         par.I2CBusNum = I2CBUSNum;
+        par.I2CDelay = I2CDelay;
         par.Buffer = EDIDData;
         par.OffSet = (CBIOS_UCHAR)ulReadEdidOffset;
         par.BufferLen = ulBufferSize;
@@ -333,6 +335,7 @@ PCBIOS_U8 cbGetFullEdid(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIO
                 {
                     cbFixEdidChecksum(pcbe, EDIDData, EDID_BLK_SIZE);
                     bStatus = CBIOS_TRUE;
+                    bRet = CBIOS_TRUE;
                 }
                 else
                 {
@@ -688,6 +691,7 @@ CBIOS_BOOL cbDualModeDetect(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon)
     CBIOS_U8      byData = 0;
     CBIOS_STATUS  bStatus = CBIOS_ER_INTERNAL;
 
+    pDevCommon->I2CDelay = pcbe->I2CDelay;
     bStatus = cbI2cNormal_ReadEDID(pcbe, pDevCommon, &byData, 0x00, 1, 0);
     //using DP dual mode char byte to see HDMI or DP
     if (bStatus == CBIOS_OK || bStatus == CBIOS_ER_HDCP_USING_I2C)
@@ -696,7 +700,18 @@ CBIOS_BOOL cbDualModeDetect(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon)
     }
     else
     {
-        bIsDualMode = CBIOS_FALSE;
+        //default i2cdelay fail, reduce the frequency
+        pDevCommon->I2CDelay = pcbe->I2CDelay + 4;
+        bStatus = cbI2cNormal_ReadEDID(pcbe, pDevCommon, &byData, 0x00, 1, 0);
+        if (bStatus == CBIOS_OK || bStatus == CBIOS_ER_HDCP_USING_I2C)
+        {
+            bIsDualMode = CBIOS_TRUE;
+        }
+        else
+        {
+            pDevCommon->I2CDelay = pcbe->I2CDelay;
+            bIsDualMode = CBIOS_FALSE;
+        }
     }
     return bIsDualMode;
 }

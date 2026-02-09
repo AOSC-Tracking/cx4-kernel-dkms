@@ -120,7 +120,7 @@ CBIOS_VOID cbDIU_EDP_ControlVDDSignal(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTE
 
         if(Duration < 500)
         {
-            cbDelayMilliSeconds(500 - Duration);
+            cbDelayMilliSeconds(500 - (CBIOS_U32)Duration);
         }
     #endif
 
@@ -303,12 +303,14 @@ CBIOS_BOOL cbDIU_EDP_EDPAuxPowerSeqCtrl(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DP_
             cbDebugPrint((MAKE_LEVEL(DP, ERROR), "%s: can't wait HPD high from sink\n", FUNCTION_NAME));
             return CBIOS_FALSE;
         }
+        pDPMonitorContext->VddStatus = 1;
     }
     else
     {
         // eDP power sequence off for aux channel operation
         // disable vdd
         cbDIU_EDP_ControlVDDSignal(pcbe, pDPMonitorContext, DPModuleIndex, CBIOS_FALSE);
+        pDPMonitorContext->VddStatus = 0;
     }
     return CBIOS_TRUE;
 }
@@ -4237,7 +4239,11 @@ CBIOS_STATUS cbDIU_EDP_SetBacklight(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModu
     pDevCommon = cbGetDeviceCommon(&pcbe->DeviceMgr, Device);
     pDpContext = container_of(pDevCommon, PCBIOS_DP_CONTEXT, Common);
 
-    if(pDpContext->DPMonitorContext.bSupportAuxBl)
+    if (!pDpContext->DPMonitorContext.bSupportAuxBl || pcbe->SysBiosInfo.bBLGfxPwm)
+    {
+        Status = cbDIU_EDP_GPIOSetBacklight(pcbe, BacklightValue, pcbe->SysBiosInfo.bInvertPwmBL ? CBIOS_TRUE : CBIOS_FALSE);
+    }
+    else
     {
         if(!pDpContext->DPMonitorContext.bAuxBlEnabled)
         {
@@ -4255,10 +4261,6 @@ CBIOS_STATUS cbDIU_EDP_SetBacklight(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModu
         {
             Status = cbDIU_EDP_AUXSetBacklight(pcbe, &pDpContext->DPMonitorContext, DPModuleIndex, BacklightValue);
         }
-    }
-    else
-    {
-        Status = cbDIU_EDP_GPIOSetBacklight(pcbe, BacklightValue);
     }
 
     return Status;
@@ -4288,19 +4290,19 @@ CBIOS_STATUS cbDIU_EDP_GetBacklight(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModu
     pDevCommon = cbGetDeviceCommon(&pcbe->DeviceMgr, Device);
     pDpContext = container_of(pDevCommon, PCBIOS_DP_CONTEXT, Common);
 
-    if(pDpContext->DPMonitorContext.bSupportAuxBl)
+    if (!pDpContext->DPMonitorContext.bSupportAuxBl || pcbe->SysBiosInfo.bBLGfxPwm)
     {
-        Status = cbDIU_EDP_AUXGetBacklight(pcbe, &pDpContext->DPMonitorContext, DPModuleIndex, pBacklightValue);
+        Status = cbDIU_EDP_GPIOGetBacklight(pcbe, pBacklightValue, pcbe->SysBiosInfo.bInvertPwmBL ? CBIOS_TRUE : CBIOS_FALSE);
     }
     else
     {
-        Status = cbDIU_EDP_GPIOGetBacklight(pcbe, pBacklightValue);
+        Status = cbDIU_EDP_AUXGetBacklight(pcbe, &pDpContext->DPMonitorContext, DPModuleIndex, pBacklightValue);
     }
 
     return Status;
 }
 
-CBIOS_STATUS cbDIU_EDP_GPIOSetBacklight(PCBIOS_VOID pvcbe, CBIOS_U32 BacklightValue)
+CBIOS_STATUS cbDIU_EDP_GPIOSetBacklight(PCBIOS_VOID pvcbe, CBIOS_U32 BacklightValue, CBIOS_BOOL bInvertValue)
 {
     PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
     CBIOS_STATUS Status = CBIOS_OK;
@@ -4320,6 +4322,11 @@ CBIOS_STATUS cbDIU_EDP_GPIOSetBacklight(PCBIOS_VOID pvcbe, CBIOS_U32 BacklightVa
     if(BlValue < min_backlight_value)
     {
         BlValue = min_backlight_value;
+    }
+
+    if (bInvertValue)
+    {
+        BlValue = max_backlight_value - BlValue + min_backlight_value;
     }
 
     /**
@@ -4359,12 +4366,12 @@ CBIOS_STATUS cbDIU_EDP_GPIOSetBacklight(PCBIOS_VOID pvcbe, CBIOS_U32 BacklightVa
     return Status;
 }
 
-CBIOS_STATUS cbDIU_EDP_GPIOGetBacklight(PCBIOS_VOID pvcbe, CBIOS_U32 *pBacklightValue)
+CBIOS_STATUS cbDIU_EDP_GPIOGetBacklight(PCBIOS_VOID pvcbe, CBIOS_U32 *pBacklightValue, CBIOS_BOOL bInvertValue)
 {
     PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
     CBIOS_STATUS Status = CBIOS_OK;
     REG_MM333D8 RegMM333D8_Value, RegMM333D8_Mask;
-    CBIOS_U32 BlValue = 0, pwm_frequency_counter = 0, max_backlight_value = 0;
+    CBIOS_U32 BlValue = 0, pwm_frequency_counter = 0, max_backlight_value = 0, min_backlight_value = 0;
 
     RegMM333D8_Value.Value = cb_ReadU32(pcbe->pAdapterContext, 0x333D8);
 
@@ -4373,6 +4380,11 @@ CBIOS_STATUS cbDIU_EDP_GPIOGetBacklight(PCBIOS_VOID pvcbe, CBIOS_U32 *pBacklight
     pwm_frequency_counter = (RegMM333D8_Value.PWM_frequency_counter == 0) ? 0xFFFF : RegMM333D8_Value.PWM_frequency_counter + 1;
 
     *pBacklightValue = (BlValue * max_backlight_value) / pwm_frequency_counter;
+
+    if (bInvertValue)
+    {
+        *pBacklightValue = max_backlight_value - *pBacklightValue + min_backlight_value;
+    }
 
     return Status;
 }

@@ -663,6 +663,127 @@ check_done:
 
 #endif
 
+#if defined(CONFIG_DRM_PANIC)
+static int zx_plane_get_scanout_buffer(struct drm_plane *plane, struct drm_scanout_buffer *sb)
+{
+    struct drm_device *dev = plane->dev;
+    struct drm_fb_helper *fb_helper = dev->fb_helper;
+    struct drm_crtc *crtc = NULL;
+    struct drm_framebuffer *fb = NULL,*plane_fb = NULL;
+
+    zx_create_allocation_info_t alloc_info = {0, };
+    struct drm_zx_gem_object *obj = NULL;
+    krnl_map_gpu_va_t map_gpu = {0};
+
+    zx_card_t *card = dev->dev_private;
+    zx_plane_t *zx_plane = to_zx_plane(plane);
+    struct drm_zx_framebuffer *zxfb = NULL, *plane_zxfb = NULL;
+    struct drm_gem_object *gem = NULL;
+
+    zx_crtc_flip_t arg = {.src_w = 300,.src_h = 300};
+    unsigned int cur_width, cur_height;
+    unsigned long long temp_gpu_va = 0;
+    unsigned int  compress_format = 0;
+    int ret = -EINVAL;
+
+    if (!plane->state || !plane->state->fb || zx_plane->is_cursor)
+        return -EINVAL;
+
+    crtc = plane->state->crtc;
+    plane_fb = plane->state->fb;
+    plane_zxfb = to_zxfb(plane_fb);
+
+    cur_width = plane_fb->width;
+    cur_height = plane_fb->height;
+
+    if (!plane_zxfb->panic_gpu_virt_addr || !plane_zxfb->panic_obj)
+    {
+        alloc_info.size                 = (plane_fb->pitches[0] * plane_fb->height);
+        alloc_info.alignment            = 4096;
+        alloc_info.flags.pool_type      = ZX_POOL_LOCALVIDMEM;
+        alloc_info.flags.cache_type     = ZX_CACHE_UNCACHABLE;
+        alloc_info.flags.unpagable      = 1;
+        alloc_info.flags.share          = 1;
+        alloc_info.flags.cpu_visible    = 1;
+
+        obj = zx_drm_gem_create_object(card, &alloc_info);
+        if (obj)
+        {
+            map_gpu.allocation = obj->priv;
+            map_gpu.size       = alloc_info.size;
+            ret = zx_core_interface->map_gpu_virtual_address(card->adapter, &map_gpu);
+            if(ret == S_OK)
+            {
+                plane_zxfb->panic_gpu_virt_addr = map_gpu.gpu_va;
+                plane_zxfb->panic_obj = obj;
+            }
+        }
+    }
+
+    if (plane_zxfb->panic_gpu_virt_addr && plane_zxfb->panic_obj)
+    {
+        fb   = plane_fb;
+        zxfb = plane_zxfb;
+        compress_format = zxfb->obj->info.compress_format;
+        zxfb->obj->info.compress_format = 0;
+        temp_gpu_va = zxfb->gpu_virt_addr;
+        zxfb->gpu_virt_addr = zxfb->panic_gpu_virt_addr ;
+        gem = &zxfb->panic_obj->base;
+        arg.src_w = cur_width;
+        arg.src_h = cur_height;
+    }
+    else
+    {
+        if (!fb_helper || !fb_helper->fb || !plane->state->crtc)
+            return -EINVAL;
+        fb   = fb_helper->fb;
+        zxfb = to_zxfb(fb);
+
+        if (!zxfb->obj)
+            return -EINVAL;
+        gem = &zxfb->obj->base;
+    }
+
+#if DRM_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
+    ret = drm_gem_vmap(gem, &sb->map[0]);
+#else
+    ret = drm_gem_vmap_unlocked(gem, &sb->map[0]);
+#endif
+    if (plane_zxfb->panic_gpu_virt_addr && plane_zxfb->panic_obj)
+    {
+        zx_memset(sb->map[0].vaddr, 0, plane_fb->pitches[0] * plane_fb->height);
+    }
+
+    arg.fb = fb;
+    arg.crtc = to_zx_crtc(crtc)->pipe;
+    arg.stream_type = zx_plane->plane_type;
+    arg.crtc_x = 0;
+    arg.crtc_y = 0;
+    arg.crtc_w = cur_width;
+    arg.crtc_h = cur_height;
+    arg.src_x = 0;
+    arg.src_y = 0;
+
+    disp_cbios_crtc_flip(card->disp_info, &arg);
+
+    cur_width = arg.src_w;
+    cur_height = arg.src_h;
+
+    sb->format = fb->format;
+    sb->height = cur_height;
+    sb->width = cur_width;
+    sb->pitch[0] = fb->pitches[0];
+
+    if (plane_zxfb->panic_gpu_virt_addr && plane_zxfb->panic_obj)
+    {
+        plane_zxfb->obj->info.compress_format = compress_format;
+        plane_zxfb->gpu_virt_addr = temp_gpu_va;
+    }
+
+    return ret;
+}
+#endif
+
 #if DRM_VERSION_CODE < KERNEL_VERSION(4, 20, 0)
 static int zx_plane_create_blend_mode_property(struct drm_plane *plane, unsigned int supported_modes)
 {
@@ -820,6 +941,9 @@ static  const struct drm_plane_helper_funcs zx_plane_helper_funcs = {
     .atomic_check = zx_plane_atomic_check,
     .atomic_update = zx_plane_atomic_update,
     .atomic_disable = zx_plane_atomic_disable,
+#if defined(CONFIG_DRM_PANIC)
+    .get_scanout_buffer = zx_plane_get_scanout_buffer,
+#endif
 };
 
 #if DRM_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)

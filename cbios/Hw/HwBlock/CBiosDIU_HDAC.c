@@ -164,10 +164,6 @@ static CBIOS_VOID cbDIU_HDAC_SetHDACSettings(PCBIOS_EXTENSION_COMMON pcbe, CBIOS
 #ifdef __LINUX__
     //This patch will cause a black screen when playing audio
     HDACChStatusCtrlRegValue.Always_Output_Audio = 0;
-    if((pcbe->SVID == 0x206E) && (pcbe->SSID == 0x1028))
-    {
-        HDACChStatusCtrlRegValue.Always_Output_Audio = 1;
-    }
 #else
     HDACChStatusCtrlRegValue.Always_Output_Audio = 1;
 #endif
@@ -237,8 +233,8 @@ static CBIOS_VOID cbDIU_HDAC_SetHDAudioCapability(PCBIOS_EXTENSION_COMMON pcbe,
     REG_MM82EC HDACConvertCapRegValue, HDACConvertCapRegMask;
     REG_MM82F0 HDACPinWidgetCapRegValue, HDACPinWidgetCapRegMask;
 
-    pAudioInfo = pDevCommon->EdidStruct.HDMIAudioFormat;
-    AudioFmtNum = pDevCommon->EdidStruct.TotalHDMIAudioFormatNum;
+    pAudioInfo = pDevCommon->EdidStruct.HDAudioFormat;
+    AudioFmtNum = pDevCommon->EdidStruct.HDAudioFormatNum;
 
     if (HDACModuleIndex >= HDAC_MODU_NUM)
     {
@@ -330,8 +326,7 @@ static CBIOS_VOID cbDIU_HDAC_SetHDAudioCapability(PCBIOS_EXTENSION_COMMON pcbe,
     HDACConvertCapRegValue.Stereo = bSupportStero? 1 : 0;
     HDACConvertCapRegMask.Value = 0xFFFFFFFF;
     HDACConvertCapRegMask.Stereo = 0;
-    if (((pcbe->SVID == 0x3A05) && (pcbe->SSID == 0x2001)) ||
-        ((pcbe->SVID == 0x206E) && (pcbe->SSID == 0x1028))) //patch for cvte,hardcode max number of channels that widgets support to 2
+    if ((pcbe->SVID == 0x3A05) && (pcbe->SSID == 0x2001))//patch for cvte,hardcode max number of channels that widgets support to 2
     {
         HDACConvertCapRegValue.Chan_Count_Ext = 0;
         HDACConvertCapRegMask.Chan_Count_Ext = 0;
@@ -492,10 +487,11 @@ CBIOS_VOID cbDIU_HDAC_SetHDACodecPara(PCBIOS_VOID pvcbe, PCBIOS_HDAC_PARA pCbios
         return;
     }
 
-    if ((pDevCommon->CurrentMonitorType != CBIOS_MONITOR_TYPE_HDMI)
+    if (((pDevCommon->CurrentMonitorType != CBIOS_MONITOR_TYPE_HDMI)
         && (pDevCommon->CurrentMonitorType != CBIOS_MONITOR_TYPE_DP))
+        || !pDevCommon->EdidStruct.Attribute.IsCEA861Audio)
     {
-        cbDebugPrint((MAKE_LEVEL(DP, ERROR), "%s: Invalid monitor type 0x%x for codec#%d!\n",
+        cbDebugPrint((MAKE_LEVEL(DP, ERROR), "%s: Invalid monitor type 0x%x for codec#%d, or this monitor not support audio!\n",
             FUNCTION_NAME, pDevCommon->CurrentMonitorType, HDACModuleIndex));
         return;
     }
@@ -1075,6 +1071,39 @@ static CBIOS_VOID cbDIU_HDAC_UpdateEldMemory(PCBIOS_EXTENSION_COMMON pcbe, PCBIO
     cb_FreePool(pEld);
 }
 
+CBIOS_VOID cbDIU_HDAC_DisableAudioSamples(PCBIOS_VOID pvcbe, PCBIOS_HDAC_PARA pCbiosHDACPara)
+{
+    PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
+    CBIOS_ACTIVE_TYPE  Device = (CBIOS_ACTIVE_TYPE)pCbiosHDACPara->DeviceId;
+    PCBIOS_DEVICE_COMMON pDevCommon = cbGetDeviceCommon(&pcbe->DeviceMgr, Device);
+    CBIOS_BOOL           bHDMIDevice = (pDevCommon->CurrentMonitorType & CBIOS_MONITOR_TYPE_HDMI);
+    CBIOS_MODULE_INDEX HDACModuleIndex = CBIOS_MODULE_INDEX_INVALID;
+    REG_MM82AC HDACChStatusCtrlRegValue, HDACChStatusCtrlRegMask;
+    REG_MM829C HDACPacket2RegValue, HDACPacket2RegMask;
+
+    HDACModuleIndex = cbGetModuleIndex(pcbe, Device, CBIOS_MODULE_TYPE_HDAC);
+    if (HDACModuleIndex >= HDAC_MODU_NUM)
+    {
+        cbDebugPrint((MAKE_LEVEL(DP, ERROR), "%s: Invalid HDAC module index!\n", FUNCTION_NAME));
+        return;
+    }
+
+    HDACChStatusCtrlRegValue.Value = 0;
+    HDACChStatusCtrlRegValue.Always_Output_Audio = 0;
+    HDACChStatusCtrlRegMask.Value = 0xFFFFFFFF;
+    HDACChStatusCtrlRegMask.Always_Output_Audio = 0;
+    cbMMIOWriteReg32(pcbe, HDAC_REG_CHSTATUS_CTRL[HDACModuleIndex], HDACChStatusCtrlRegValue.Value, HDACChStatusCtrlRegMask.Value);
+
+    if(bHDMIDevice)
+    {
+        HDACPacket2RegValue.Value = 0;
+        HDACPacket2RegValue.CODEC1_ACR_ENABLE = 0;
+        HDACPacket2RegMask.Value = 0xFFFFFFFF;
+        HDACPacket2RegMask.CODEC1_ACR_ENABLE = 0;
+        cbMMIOWriteReg32(pcbe, HDAC_REG_PACKET2[HDACModuleIndex], HDACPacket2RegValue.Value, HDACPacket2RegMask.Value);
+    }
+}
+
 CBIOS_VOID cbDIU_HDAC_SetConnectStatus(PCBIOS_VOID pvcbe, PCBIOS_HDAC_PARA pCbiosHDACPara)
 {
     PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
@@ -1092,5 +1121,10 @@ CBIOS_VOID cbDIU_HDAC_SetConnectStatus(PCBIOS_VOID pvcbe, PCBIOS_HDAC_PARA pCbio
     }
 
     cbDIU_HDAC_UpdateEldStatus(pcbe, pCbiosHDACPara);
+
+    if(pCbiosHDACPara->bPresent == CBIOS_FALSE)
+    {
+        cbDIU_HDAC_DisableAudioSamples(pcbe, pCbiosHDACPara);
+    }
 }
 

@@ -2777,12 +2777,12 @@ CBIOS_VOID cbDumpModeInfo(PCBIOS_VOID pvcbe)
         cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "------------ IGA%d Mode INFO ------------\n", IGAIndex));
         cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "Source Mode: XRes = %d  YRes = %d\n", pSrcPara->XRes, pSrcPara->YRes));
         
-        cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "Target Mode: XRes = %d  YRes = %d  RefRate = %d  bInterlace = %d  AspectRatioFlag = %d  OutputSignal = %d\n", 
-        pTargetPara->XRes, pTargetPara->YRes, pTargetPara->RefRate, pTargetPara->bInterlace, pTargetPara->AspectRatioFlag, pTargetPara->OutputSignal));
+        cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "Target Mode: XRes = %d  YRes = %d  RefRate = %d  bInterlace = %d  OutputSignal = %d\n", 
+        pTargetPara->XRes, pTargetPara->YRes, pTargetPara->RefRate, pTargetPara->bInterlace, pTargetPara->OutputSignal));
 
 
-        cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "Target Timing: XRes = %d  YRes = %d  RefreshRate = %d  PixelClock = %x  AspectRatio = %x  HVPolarity = %x\n", 
-        pTiming->XRes, pTiming->YRes, pTiming->RefreshRate, pTiming->PixelClock, pTiming->AspectRatio, pTiming->HVPolarity));
+        cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "Target Timing: XRes = %d  YRes = %d  RefreshRate = %d  PixelClock = %x HVPolarity = %x\n", 
+        pTiming->XRes, pTiming->YRes, pTiming->RefreshRate, pTiming->PixelClock, pTiming->HVPolarity));
         cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "Target Timing: HorTotal = %d  HorDisEnd = %d  HorBStart = %d  HorBEnd = %d  HorSyncStart = %d  HorSyncEnd = %d\n", 
         pTiming->HorTotal, pTiming->HorDisEnd, pTiming->HorBStart, pTiming->HorBEnd, pTiming->HorSyncStart, pTiming->HorSyncEnd));
         cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "Target Timing: VerTotal = %d  VerDisEnd = %d  VerBStart = %d  VerBEnd = %d  VerSyncStart = %d  VerSyncEnd = %d\n", 

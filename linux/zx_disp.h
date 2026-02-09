@@ -20,6 +20,10 @@
 #include <drm/drm_blend.h>
 #endif
 
+#if defined(CONFIG_DRM_PANIC)
+#include <drm/drm_panic.h>
+#endif
+
 /* same to  CBIOS_REGISTER_TYPE */
 enum
 {

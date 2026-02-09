@@ -234,7 +234,7 @@ static CBIOS_VOID cbDstTimingRegSetting(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DIS
 
     cbSetSRTimingReg(pcbe, pTiming, IGAIndex, &TimingFlags);
 
-    cbProgramDclk(pcbe, (CBIOS_U8)IGAIndex, pTiming->PLLClock);
+    cbProgramDclk(pcbe, (CBIOS_U8)IGAIndex, pModeParams->PLLClock);
 
     //reset h/v counter to avoid wait vblank timeout
     cbBiosMMIOWriteReg(pcbe, CR_23, 0, 0, IGAIndex);
@@ -369,7 +369,6 @@ static  CBIOS_VOID cbSetDacRegisters(PCBIOS_EXTENSION_COMMON pcbe)
 static CBIOS_VOID cbSetSrcTiming(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DISP_MODE_PARAMS pModeParams, CBIOS_U32 IGAIndex)
 {
     CBIOS_U32 ulDevices = pcbe->DispMgr.ActiveDevices[IGAIndex];
-    CBiosDestModeParams ModeParams = {0};
     CBIOS_TIMING_ATTRIB Timing = {0};
     CBIOS_TIMING_FLAGS  TimingFlags = {0};
     REG_SR47 SR47Value = {0}, SR47Mask = {0xff};
@@ -399,17 +398,12 @@ static CBIOS_VOID cbSetSrcTiming(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DISP_MODE_
 
     cbModeEnvSetup(pcbe, (CBIOS_U8)IGAIndex);
 
-    ModeParams.AspectRatioFlag = 0;
-    ModeParams.XRes = pModeParams->SrcModePara.XRes;
-    ModeParams.YRes = pModeParams->SrcModePara.YRes;
-    ModeParams.RefreshRate = pModeParams->TargetModePara.RefRate;
-    ModeParams.InterlaceFlag = CBIOS_FALSE;
-
+    //get source timing
     cbMode_GetHVTiming(pcbe,
-                       ModeParams.XRes,
-                       ModeParams.YRes,
-                       ModeParams.RefreshRate,
-                       ModeParams.InterlaceFlag,
+                       pModeParams->SrcModePara.XRes,
+                       pModeParams->SrcModePara.YRes,
+                       pModeParams->TargetModePara.RefRate,
+                       0,
                        ulDevices,
                        &Timing);
 

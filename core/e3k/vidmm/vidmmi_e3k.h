@@ -82,7 +82,6 @@ extern int  vidmm_clear_bl_buffer_e3k(void *dma, unsigned int dma_size, unsigned
 extern unsigned int  vidmm_alloc_bl_slot_e3k(adapter_t *adapter, vidmm_allocation_t *allocation);
 extern int  vidmm_free_bl_slot_e3k(adapter_t *adapter, vidmm_allocation_t *allocation);
 extern int  vidmm_build_page_buffer_e3k(adapter_t*, vidmm_private_build_paging_buffer_arg_t*);
-extern int  vidmm_prepare_and_check_compress_e3k(adapter_t *adapter, vidmm_allocation_t *allocation);
 
 #endif
 

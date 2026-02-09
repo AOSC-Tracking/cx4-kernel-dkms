@@ -471,8 +471,7 @@ CBIOS_VOID cbDIU_HDMI_SetCTSN(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon
         break;
     }
 
-    if(((pcbe->SVID == 0x3A05) && (pcbe->SSID == 0x2001)) ||
-        ((pcbe->SVID == 0x206E) && (pcbe->SSID == 0x1028))) //patch for cvte, use SW CTS/N
+    if((pcbe->SVID == 0x3A05) && (pcbe->SSID == 0x2001))//patch for cvte, use SW CTS/N
     {
         if(TMDS_Clock)
         {

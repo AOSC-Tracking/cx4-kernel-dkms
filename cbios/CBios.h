@@ -82,6 +82,10 @@
 #define CBIOS_COLORDEPTH2101010ABGR                            0x20
 #define CBIOS_COLORDEPTH16161616ABGRF                          0x40
 
+#define DEVICE_MODE_DEPTH_CAPS  (CBIOS_COLORDEPTH16 | CBIOS_COLORDEPTH32XRGB | \
+                              CBIOS_COLORDEPTH32ARGB | CBIOS_COLORDEPTH32ABGR | CBIOS_COLORDEPTH2101010ARGB | \
+                              CBIOS_COLORDEPTH2101010ABGR | CBIOS_COLORDEPTH16161616ABGRF)
+
 
 /* Clock Type */
 typedef  enum  _CBIOS_CLOCK_TYPE
@@ -111,7 +115,7 @@ typedef  enum  _CBIOS_CLOCK_TYPE
 #define CBIOS_YCBCR420OUTPUT     8
 #define CBIOS_NONDIGITALOUTPUT   9
 
-
+#define SKIP_VDD_OFF             0x10000
 
 #ifndef CBIOS_FALSE
 #define CBIOS_FALSE   0
@@ -489,14 +493,13 @@ typedef struct _CBIOS_VIP_CTRL_DATA
 
 typedef struct _CBIOS_TIMING_ATTRIB
 {
-    CBIOS_U32    Size;
-    CBIOS_U32    FormatNum;
+    CBIOS_U16    Size;
+    CBIOS_U16    FormatVIC;
     CBIOS_U16    XRes;
     CBIOS_U16    YRes;
     CBIOS_U16    RefreshRate;
+    CBIOS_U16    HVPolarity;     /* Hor/Ver Sync Polarity(MISC:11000000B)*/
     CBIOS_U32    PixelClock;     /* pixel clock value */
-    CBIOS_UCHAR  AspectRatio;    /* 0 means default, 1 means 4:3, 2 means 16:9*/
-    CBIOS_UCHAR  HVPolarity;     /* Hor/Ver Sync Polarity(MISC:11000000B)*/
     CBIOS_U16    HorTotal;       /* CR5F_1-0+CR5D_0+CR0=Round(Value/8)-5 */
     CBIOS_U16    HorDisEnd;      /* CR5F_3-2+CR5D_1+CR1=Round(Value/8)-1 */
     CBIOS_U16    HorBStart;      /* CR5F_5-4+CR5D_2+CR2=Round(Value/8) */
@@ -509,7 +512,6 @@ typedef struct _CBIOS_TIMING_ATTRIB
     CBIOS_U16    VerBEnd;        /* CR16 */
     CBIOS_U16    VerSyncStart;   /* CR5E_4+CR7_7+CR7_2+CR10 */
     CBIOS_U16    VerSyncEnd;     /* CR11_3-0 */
-    CBIOS_U32    PLLClock;       /* DIU PLL value */
 }CBIOS_TIMING_ATTRIB, *PCBIOS_TIMING_ATTRIB;
 
 
@@ -522,44 +524,25 @@ typedef struct _CBios_Mode_Info_Ext
     CBIOS_U32    XRes;
     CBIOS_U32    YRes;
     CBIOS_U32    RefreshRate;
-    CBIOS_U32    InterlaceProgressiveCaps;      /* Bit0: Progressive Caps Bit1:Interlace Caps */
-    CBIOS_U32    AdapterDeviceFlags;            /* 0: Means adapter mode, 1:Means device mode */
-    CBIOS_U32    DeviceFlags;                   /* Bit definition same as device bit definitions */
     CBIOS_U32    ColorDepthCaps;                /* Bit0: 32Bits ARGB color depth capability*/
                                                 /* Bit1: 16Bits color depth capability*/
                                                 /* Bit2: 8Bits color depth capability*/
                                                 /* Bit3: ABGR888 capability */
                                                 /* Bit4: ARGB 2101010 capability */ 
                                                 /* Bit5: ABGR 2101010 capability */
-    CBIOS_U32    AspectRatioCaps;               /* Bit0: 4:3 capability */
-                                                /* Bit1: 16:9 capability */
-    CBIOS_U32    NativeModeFlags;               /* =0: Means normal mode */
-                                                /* =1: Means native mode */
+    CBIOS_U32    XTotal;
+    CBIOS_U32    YTotal;
+    CBIOS_U32    PixelClock;
     union
     {
         CBIOS_U32       ModeFlags;      
         struct
         {
-            CBIOS_U32   isCEAMode           :1; /* Bit0 = 1, Means is a CE mode */
-                                                /*      = 0, Means is a PC normal mode */
-            CBIOS_U32   isAddedDevMode      :1; /* Bit1 = 1, Means is a added device mode */
-                                                /*           In modes whose XRes x YRes is 1920x1080, 1280x720, or 720x480, we should make */
-                                                /*           mode having RefreshRate 6000(3000) and mode having RefreshRate between 5900(2900) and */
-                                                /*           5999(2999) paried with each other  */
-                                                /*      = 0, Means is a normal mode */
-                                                /* Bit2:15  14 bits for different timing types, 5 types at present*/
-            CBIOS_U32   isEstablishedTiming :1; /*    bit2 = 1, the mode is from Established timing block */
-            CBIOS_U32   isStandardTiming    :1; /*    bit3 = 1, the mode is from Standard timing block */
-            CBIOS_U32   isDetailedTiming    :1; /*    bit4 = 1, the mode is from Detailed timing block */
-            CBIOS_U32   isSVDTiming         :1; /*    bit5 = 1, the mode is from Short Video Descriptor */
-            CBIOS_U32   isDTDTiming         :1; /*    bit6 = 1, the mode is from Detailed Timing Descriptor */
-            CBIOS_U32   isDispIdTiming      :1;
-            CBIOS_U32   RsvdModeType        :8; /*    bit7:15  for future mode types use   */
-            CBIOS_U32   Reserved            :2; /* Bit 17-16 2 bits reserved */
             CBIOS_U32   isPreferredMode     :1; /* Bit 18: Preferred mode flag*/
                                                 /*    bit18 = 1: preferred mode*/
                                                 /*    bit18 = 0: not preferred mode*/
-            CBIOS_U32   RsvdModeFlags       :13;/* Other bits reserved for future use */
+            CBIOS_U32   isInterlaceMode     :1; 
+            CBIOS_U32   RsvdModeFlags       :30;/* Other bits reserved for future use */
             
         };
     };
@@ -652,13 +635,11 @@ typedef struct _CBios_Dest_Mode_Params
     CBIOS_U32    YRes;
     CBIOS_U32    RefreshRate;
     CBIOS_U32    InterlaceFlag;     /* =0, Set noninterlace mode; = 1, Set interlace mode; */
-    CBIOS_U32    AspectRatioFlag;   /* =0, Default aspect ratio */
-                                        /* =1, 4:3 aspect ratio*/
-                                        /* =2, 16:9 aspect ratio */
     CBIOS_U32    OutputSignal;  /* =0x1; RGB signal */
                                                     /* =0x2; YCbCr422 signal */
                                                    /* =0x4; YCbCr444 signal */
                                                   /* DP device will also use this attribute, and is called Color format */
+    CBIOS_U32    PixelClock;
 }CBiosDestModeParams, *PCBiosDestModeParams;
 
 typedef struct _CBios_ScalerSize_Params
@@ -2711,7 +2692,7 @@ DLLEXPORTS CBIOS_STATUS
 CBiosSetIgaOnOffState(CBIOS_VOID* pcbe, CBIOS_S32 status, CBIOS_UCHAR IGAIndex);
 
 DLLEXPORTS CBIOS_STATUS
-CBiosSetDisplayDevicePowerState(CBIOS_VOID* pcbe, CBIOS_U32 DevicesId, CBIOS_BOOL bPowerOn);
+CBiosSetDisplayDevicePowerState(CBIOS_VOID* pcbe, CBIOS_U32 DevicesId, CBIOS_BOOL bPowerOn, CBIOS_U32 Flags);
 
 DLLEXPORTS CBIOS_STATUS
 CBiosGetDisplayDevicePowerState(CBIOS_VOID* pcbe, CBIOS_U32 DevicesId, PCBIOS_BOOL pIsPowerOn);

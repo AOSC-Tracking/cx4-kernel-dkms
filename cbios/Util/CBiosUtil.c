@@ -253,31 +253,25 @@ CBIOS_VOID cbConvertEdidTimingToTableTiming(CBIOS_IN PCBIOS_EXTENSION_COMMON pcb
     cb_memset(pTiming, 0, sizeof(CBIOS_TIMING_ATTRIB));
 
     // Fill in the timing structure
-    pTiming->XRes = (CBIOS_U16)pEDIDDetailTiming->XResolution;
-    pTiming->YRes = (CBIOS_U16)pEDIDDetailTiming->YResolution;
-    pTiming->RefreshRate = (CBIOS_U16)pEDIDDetailTiming->Refreshrate;
-    pTiming->PixelClock = (CBIOS_U32)pEDIDDetailTiming->PixelClock;
+    pTiming->XRes = pEDIDDetailTiming->XResolution;
+    pTiming->YRes = pEDIDDetailTiming->YResolution;
+    pTiming->RefreshRate = pEDIDDetailTiming->Refreshrate;
+    pTiming->PixelClock = pEDIDDetailTiming->PixelClock;
     pTiming->HVPolarity = pEDIDDetailTiming->HSync+pEDIDDetailTiming->VSync;
     
-    pTiming->HorTotal = pEDIDDetailTiming->HActive+pEDIDDetailTiming->HBlank;
-    pTiming->HorDisEnd = pEDIDDetailTiming->HActive;
-    pTiming->HorBStart = pEDIDDetailTiming->HActive;
+    pTiming->HorTotal = pEDIDDetailTiming->XResolution + pEDIDDetailTiming->HBlank;
+    pTiming->HorDisEnd = pEDIDDetailTiming->XResolution;
+    pTiming->HorBStart = pEDIDDetailTiming->XResolution;
+    pTiming->HorBEnd = pEDIDDetailTiming->XResolution + pEDIDDetailTiming->HBlank;        
+    pTiming->HorSyncStart = pEDIDDetailTiming->XResolution + pEDIDDetailTiming->HSyncOffset;
+    pTiming->HorSyncEnd = pTiming->HorSyncStart + pEDIDDetailTiming->HSyncPulseWidth;    
     
-    pTiming->HorBEnd = pEDIDDetailTiming->HActive+pEDIDDetailTiming->HBlank;    
-    
-    pTiming->HorSyncStart = pEDIDDetailTiming->HActive + pEDIDDetailTiming->HSyncOffset;
-    pTiming->HorSyncEnd = pEDIDDetailTiming->HActive + 
-                                     pEDIDDetailTiming->HSyncOffset + 
-                                     pEDIDDetailTiming->HSyncPulseWidth;    
-    
-    pTiming->VerTotal = (CBIOS_U16)(pEDIDDetailTiming->VActive+pEDIDDetailTiming->VBlank);
-    pTiming->VerDisEnd = (CBIOS_U16)(pEDIDDetailTiming->VActive);
-    pTiming->VerBStart = (CBIOS_U16)(pEDIDDetailTiming->VActive);
-    pTiming->VerBEnd = (CBIOS_U16)(pEDIDDetailTiming->VActive+pEDIDDetailTiming->VBlank);
-    pTiming->VerSyncStart = (CBIOS_U16)(pEDIDDetailTiming->VActive+pEDIDDetailTiming->VSyncOffset);
-    pTiming->VerSyncEnd = (CBIOS_U16)(pTiming->VerSyncStart+pEDIDDetailTiming->VSyncPulseWidth);
-
-
+    pTiming->VerTotal = pEDIDDetailTiming->YResolution + pEDIDDetailTiming->VBlank;
+    pTiming->VerDisEnd = pEDIDDetailTiming->YResolution;
+    pTiming->VerBStart = pEDIDDetailTiming->YResolution;
+    pTiming->VerBEnd = pEDIDDetailTiming->YResolution + pEDIDDetailTiming->VBlank;
+    pTiming->VerSyncStart = pEDIDDetailTiming->YResolution + pEDIDDetailTiming->VSyncOffset;
+    pTiming->VerSyncEnd = pTiming->VerSyncStart+pEDIDDetailTiming->VSyncPulseWidth;
 }
 
 CBIOS_U32 cbConvertCBiosDevBit2VBiosDevBit(CBIOS_U32 CBiosDevices)

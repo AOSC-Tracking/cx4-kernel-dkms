@@ -200,9 +200,9 @@ int vidsch_wait_prepare_event(vidsch_mgr_t *sch_mgr, task_desc_t *task_desc, uns
 
             /* use wait_task_type to distinguish between vm_prepare_task and page_table_set_task */
             if (wait_task_type == task_type_vm_prepare)
-                zx_info("sch_mgr->engine_index %d is waitting for vm_prepare_task more than %d x 100 ms\n", sch_mgr->engine_index, timeout_cnt);
+                zx_debug("sch_mgr->engine_index %d is waitting for vm_prepare_task more than %d x 100 ms\n", sch_mgr->engine_index, timeout_cnt);
             else if (wait_task_type == task_type_page_table_set)
-                zx_info("sch_mgr->engine_index %d is waitting for page_table_set_task more than %d x 100 ms\n", sch_mgr->engine_index, timeout_cnt);
+                zx_debug("sch_mgr->engine_index %d is waitting for page_table_set_task more than %d x 100 ms\n", sch_mgr->engine_index, timeout_cnt);
         }
 
     }while(force_wait && e_status != ZX_EVENT_BACK);
