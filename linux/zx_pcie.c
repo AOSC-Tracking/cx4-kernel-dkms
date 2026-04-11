@@ -960,6 +960,9 @@ static void zx_shutdown(struct pci_dev *pdev)
 #else
     zx_disp_suspend_helper(dev);
 #endif
+
+    zx_disp_post_shutdown(dev);
+
     zx_info("pci device(vendor:0x%X, device:0x%X) already shut down.\n", pdev->vendor, pdev->device);
 }
 

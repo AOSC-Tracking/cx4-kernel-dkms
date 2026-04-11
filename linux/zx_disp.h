@@ -460,6 +460,8 @@ void disp_vblank_restore(struct drm_device* dev);
 void  zx_disp_suspend_helper(struct drm_device *dev);
 #endif
 
+void zx_disp_post_shutdown(struct drm_device *dev);
+
 void disp_pre_resume(struct drm_device *dev);
 void disp_post_resume(struct drm_device *dev);
 #if ENABLE_RUNTIME_PM

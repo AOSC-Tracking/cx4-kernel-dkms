@@ -996,7 +996,7 @@ CBIOS_VOID cbPHY_DP_DualModeOnOff(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModule
 
             DPEphyMiscRegValue_cx4.Value = 0;
             DPEphyMiscRegValue_cx4.RTNBIST = 3;
-            DPEphyMiscRegValue_cx4.CKHLD = 0;
+            DPEphyMiscRegValue_cx4.CKHLD = 1;
             DPEphyMiscRegValue_cx4.TT = 0;
             DPEphyMiscRegValue_cx4.TX_High_Impedance_Lane0 = 0;
             DPEphyMiscRegValue_cx4.TX_High_Impedance_Lane1 = 0;

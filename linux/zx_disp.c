@@ -380,6 +380,35 @@ void  zx_disp_suspend_helper(struct drm_device *dev)
 
 #endif
 
+void zx_disp_post_shutdown(struct drm_device *dev)
+{
+    zx_card_t  *zx = dev->dev_private;
+    disp_info_t *disp_info = (disp_info_t *)zx->disp_info;
+    struct drm_connector* connector = NULL;
+    zx_connector_t*  zx_connector = NULL;
+    int has_edp = 0;
+
+    zx_info("Enter zx_disp_post_shutdown().\n");
+
+    list_for_each_entry(connector, &dev->mode_config.connector_list, head)
+    {
+        zx_connector = to_zx_connector(connector);
+        if(zx_connector->conn_type == CBIOS_EDP_CONN)
+        {
+            has_edp = 1;
+            break;
+        }
+    }
+
+    if(disp_info->adp_info->sub_sys_id == 0x350E && 
+       disp_info->adp_info->sub_sys_vendor_id == 0x17AA &&
+       has_edp)
+    {
+        zx_info("Delay 210ms to patch VDD issue.\n");
+        zx_msleep(210);
+    }
+}
+
 int disp_suspend(struct drm_device *dev)
 {
     zx_card_t  *zx = dev->dev_private;
