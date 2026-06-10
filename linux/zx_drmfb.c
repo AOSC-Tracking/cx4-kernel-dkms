@@ -87,6 +87,11 @@ __zx_framebuffer_create(struct drm_device *dev,
 
     zxfb->obj = obj;
 
+#if (DRM_VERSION_CODE >= KERNEL_VERSION(6, 19, 0))
+    if (zxfb->obj)
+        zxfb->base.obj[0] = &zxfb->obj->base;
+#endif
+
     // map gpuva
     map_va.allocation = obj->priv;
     map_va.size = obj->info.size;
