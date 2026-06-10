@@ -60,7 +60,11 @@
 #endif
 #endif
 #include <drm/drm_fb_helper.h>
+#if DRM_VERSION_CODE >= KERNEL_VERSION(7, 0, 0)
+#include <linux/sysfb.h>
+#else
 #include <linux/screen_info.h>
+#endif
 
 #ifndef  container_of
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)

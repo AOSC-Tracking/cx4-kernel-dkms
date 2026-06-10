@@ -61,13 +61,24 @@ static void disp_info_pre_init(disp_info_t*  disp_info)
     adapter_info_t*  adapter_info = disp_info->adp_info;
     unsigned long long scrn_base = 0;
 
+#if (DRM_VERSION_CODE >= KERNEL_VERSION(7, 0, 0))
+    scrn_base = sysfb_primary_display.screen.lfb_base;
+#else
     scrn_base = screen_info.lfb_base;
-    
+#endif
+
 #ifdef VIDEO_CAPABILITY_64BIT_BASE
+#if (DRM_VERSION_CODE >= KERNEL_VERSION(7, 0, 0))
+    if(sysfb_primary_display.screen.capabilities & VIDEO_CAPABILITY_64BIT_BASE)
+    {
+        scrn_base |= (unsigned long long)sysfb_primary_display.screen.ext_lfb_base << 32;
+    }
+#else
     if(screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE)
     {
         scrn_base |= (unsigned long long)screen_info.ext_lfb_base << 32;
     }
+#endif
 #endif
 
     zx_info("Screen info base = 0x%lx.\n", scrn_base);
