@@ -630,6 +630,57 @@ zx_connector_mode_valid(struct drm_connector *connector, struct drm_display_mode
     return MODE_OK;
 }
 
+static int zx_connector_atomic_set_property(struct drm_connector *connector,
+                                            struct drm_connector_state *state,
+                                            struct drm_property *property,
+                                            uint64_t val)
+{
+    int ret = -1;
+    zx_connector_t *zx_connetor = to_zx_connector(connector);
+    struct drm_device *dev = connector->dev;
+    zx_card_t *zx_card = dev->dev_private;
+    disp_info_t *disp_info = (disp_info_t *)zx_card->disp_info;
+
+    if (property == disp_info->prefer_signal_prop)
+    {
+
+        zx_connetor->prefer_signal = val;
+        ret = 0;
+    }
+
+    if (ret)
+    {
+        DRM_ERROR("Invalid driver-provate property '%s'", property->name);
+    }
+
+    return ret;
+}
+
+static int zx_connector_atomic_get_property(struct drm_connector *connector,
+                                            const struct drm_connector_state *state,
+                                            struct drm_property *property,
+                                            uint64_t *val)
+{
+    int ret = -1;
+    zx_connector_t *zx_connetor = to_zx_connector(connector);
+    struct drm_device *dev = connector->dev;
+    zx_card_t *zx_card = dev->dev_private;
+    disp_info_t *disp_info = (disp_info_t *)zx_card->disp_info;
+
+    if (property == disp_info->prefer_signal_prop)
+    {
+        *val = zx_connetor->prefer_signal;
+        ret = 0;
+    }
+
+    if (ret)
+    {
+        DRM_ERROR("Invalid driver-provate property '%s'", property->name);
+    }
+
+    return ret;
+}
+
 static void zx_connector_destroy(struct drm_connector *connector)
 {
     zx_connector_t *zx_connector = to_zx_connector(connector);
@@ -925,6 +976,8 @@ static const struct drm_connector_funcs zx_connector_funcs =
 #if DRM_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
     .atomic_destroy_state = zx_connector_destroy_state,
     .atomic_duplicate_state = zx_connector_duplicate_state,
+    .atomic_set_property = zx_connector_atomic_set_property,
+    .atomic_get_property = zx_connector_atomic_get_property,
 #endif
 };
 
@@ -943,6 +996,12 @@ static void disp_create_connector_property(disp_info_t* disp_info, zx_connector_
     zx_card_t*  zx_card = disp_info->zx_card;
     adapter_info_t*  adapter_info = disp_info->adp_info;
     unsigned int primary = 0, pci_id = 0, internal_id = 0; //pci_id = (vend << 16) | device, internal_id = (bdf << 16) + internal_output_id
+    static const struct drm_prop_enum_list prefer_signal_props[] = {
+        { OUTPUT_SIGNAL_RGB, "RGB" },
+        { OUTPUT_SIGNAL_Y422, "YUV422" },
+        { OUTPUT_SIGNAL_Y444, "YUV444" },
+        { OUTPUT_SIGNAL_Y420, "YUV420" },
+    };
 
     if(vga_default_device() == zx_card->pdev)
     {
@@ -1025,6 +1084,16 @@ static void disp_create_connector_property(disp_info_t* disp_info, zx_connector_
     if(disp_info->conn_conflict_event)
     {
         drm_object_attach_property(&zx_connector->base_connector.base, disp_info->conn_conflict_event, NO_CONFLICT);
+    }
+
+    if(!disp_info->prefer_signal_prop)
+    {
+        disp_info->prefer_signal_prop = drm_property_create_enum(zx_card->drm_dev, 0, "prefer-signal", prefer_signal_props, ARRAY_SIZE(prefer_signal_props));
+    }
+
+    if ((zx_connector->output_type & DISP_OUTPUT_DP_TYPES) && disp_info->prefer_signal_prop)
+    {
+        drm_object_attach_property(&zx_connector->base_connector.base, disp_info->prefer_signal_prop, OUTPUT_SIGNAL_RGB);
     }
 }
 

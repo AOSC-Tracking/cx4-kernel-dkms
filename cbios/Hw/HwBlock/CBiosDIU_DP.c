@@ -4107,6 +4107,18 @@ CBIOS_STATUS cbDIU_Aux_I2c_Access(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModule
             goto ExitI2cAccess;
         }
     }
+    //If Aux read, start 0 byte, adress transaction only
+    if(!bMerge && Request == CBIOS_AUX_REQUEST_I2C_READ)
+    {
+        AUX.Function = CBIOS_AUX_REQUEST_I2C_READ | CBIOS_AUX_REQUEST_I2C_MOT;
+        AUX.Buffer = CBIOS_NULL;
+        AUX.Length = 0;
+        AUX.Offset = 0;
+        if(!cbDIU_DP_Auxtransfer(pcbe, DPModuleIndex, &AUX))
+        {
+            goto ExitI2cAccess;
+        }
+    }
     //AUX I2C write/read
     if(!bMerge)
     {
@@ -4149,10 +4161,6 @@ CBIOS_STATUS cbDIU_Aux_I2c_Access(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModule
     Status = CBIOS_OK;
 
 ExitI2cAccess:
-    if(Status == CBIOS_ER_INVALID_PARAMETER)
-    {
-        cbDebugPrint((MAKE_LEVEL(GENERIC, WARNING), "%s: Aux access fail  for DP index:%d!\n", FUNCTION_NAME, DPModuleIndex));
-    }
 
     cb_ReleaseLock(pBusLock, CBIOS_OS_MUTEX_LOCK, 0);
 

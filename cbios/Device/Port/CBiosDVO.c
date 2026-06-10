@@ -191,7 +191,7 @@ static CBIOS_BOOL cbDVOPort_DeviceDetect(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DE
                 pDvoContext->Common.CurrentMonitorType = CBIOS_MONITOR_TYPE_DVI;
             }
             
-            cbMode_GenerateDeviceModeList(pcbe, pDevCommon->DeviceType);
+            cbMode_MakeDeviceModeList(pcbe, pDevCommon->DeviceType);
         }
 
         //update monitor type

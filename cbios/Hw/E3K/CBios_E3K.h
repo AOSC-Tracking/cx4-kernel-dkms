@@ -136,7 +136,8 @@ typedef struct _SYSBIOSInfo_CX4
         CBIOS_U32   bLgaChip              :1;
         CBIOS_U32   bBLGfxPwm             :1;
         CBIOS_U32   bInvertPwmBL          :1;
-        CBIOS_U32   Reserved11            :21;
+        CBIOS_U32   bBgaPatchChip         :1;
+        CBIOS_U32   Reserved11            :20;
     };
     CBIOS_U32   ECLK;
     CBIOS_U32   VCLK;

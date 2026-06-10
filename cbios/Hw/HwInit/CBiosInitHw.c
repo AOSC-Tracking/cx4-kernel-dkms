@@ -1963,6 +1963,11 @@ CBIOS_STATUS cbInitChip(PCBIOS_VOID pvcbe)
        }
     }
 
+    if ((pcbe->ChipID == CHIPID_CNE001) && (pcbe->SysBiosInfo.bBgaPatchChip || pcbe->DriverFlags.bBgaPatchCPU))
+    {
+        pcbe->bNeedBgaPatch = cbDevNeedBgaPatch(pcbe, pcbe->DeviceMgr.SupportDevices);
+    }
+
     //Enable linear address access.
     cbMMIOWriteReg(pcbe,CR_C_A0,0x10, ~0x10);
 

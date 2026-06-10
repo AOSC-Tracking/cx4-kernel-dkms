@@ -47,7 +47,7 @@ static CBIOS_VOID cbHDMIMonitor_GenerateAVIInfoFrameData(PCBIOS_EXTENSION_COMMON
     if ((VICCode > 0) && (VICCode <= CBIOS_HDMIFORMATCOUNTS))
     {
         bIsCEAMode = CBIOS_TRUE;
-        pCurrentFormat = &(pcbe->pHDMIFormatTable[VICCode - 1]);
+        pCurrentFormat = &(pcbe->pCEAVideoTable[VICCode - 1]);
     }
     else
     {
@@ -183,12 +183,12 @@ static CBIOS_VOID cbHDMIMonitor_GenerateAVIInfoFrameData(PCBIOS_EXTENSION_COMMON
         {
             if(pModeParams->IsxvYCC)
             {
-                if(pCurrentFormat->YRes < 720 && pModeParams->ColorimetryCaps.IsSupportxvYCC601) //SDTV, use BT601
+                if(pModeParams->TargetModePara.YRes < 720 && pModeParams->ColorimetryCaps.IsSupportxvYCC601) //SDTV, use BT601
                 {
                     pAVIInfoFrameData->Colorimetry = 0x03; 
                     pAVIInfoFrameData->ExtendedColorimetry = 0x00;  //xvYCC601
                 }
-                else if(pCurrentFormat->YRes >= 720 && pModeParams->ColorimetryCaps.IsSupportxvYCC709)
+                else if(pModeParams->TargetModePara.YRes >= 720 && pModeParams->ColorimetryCaps.IsSupportxvYCC709)
                 {
                     pAVIInfoFrameData->Colorimetry = 0x03; 
                     pAVIInfoFrameData->ExtendedColorimetry = 0x01;  //xvYCC709
@@ -1377,7 +1377,7 @@ CBIOS_BOOL cbHDMIMonitor_Detect(PCBIOS_VOID pvcbe, PCBIOS_HDMI_MONITOR_CONTEXT p
                 pDevCommon->CurrentMonitorType = CBIOS_MONITOR_TYPE_DVI;
             }
 
-            cbMode_GenerateDeviceModeList(pcbe, pDevCommon->DeviceType);
+            cbMode_MakeDeviceModeList(pcbe, pDevCommon->DeviceType);
         }
 
         if (pDetectFlag->FullDetect && CBIOS_PM_ON == pDevCommon->PowerState &&
@@ -1739,4 +1739,6 @@ CBIOS_VOID cbHDMIMonitor_SetHDRInfo(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDev
         cbHDMIMonitor_SetInfoFrame(pcbe, &(pDpContext->HDMIMonitorContext.HDMIInfoFrame), pDevCommon->DeviceType);
     }
 }
+
+
 

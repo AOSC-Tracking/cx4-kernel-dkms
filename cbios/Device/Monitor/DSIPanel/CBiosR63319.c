@@ -32,6 +32,7 @@
 
 
 #include "CBiosDSIPanel.h"
+#include "../../CBiosChipShare.h"
 #include "../../Port/CBiosDSI.h"
 
 static CBIOS_U8 EnterSleepBuf[0x01] =
@@ -460,13 +461,17 @@ CBIOS_DSI_PANEL_DESC R63319_Panel_Desc =
         /*.OutBpp = */24,
         /*.PanelTiming =*/
         {
-            /*.XResolution = */1536,
-            /*.YResolution = */2048,
+            /*.Size = */TIMING_ATTRIB_SIZE,
+            /*.FormatVIC = */0,
+            /*.XRes = */1536,
+            /*.YRes = */2048,
+            /*.RefreshRate = */0,  //ignore
+            /*.HVPolarity = */VerPOSITIVE + HorPOSITIVE,
 #ifdef ELT2K_DIU_FPGA
-            /*.DCLK = */5400, //540000,   54MHz
+            /*.PixelClock = */5400, //540000,   54MHz
 #else
 
-            /*.DCLK = */24775,    // 247.75MHz
+            /*.PixelClock = */24775,    // 247.75MHz
 #endif
             /*.HorTotal = */1536 + 300 + 76 + 80,
             /*.HorDisEnd = */1536,
@@ -480,7 +485,6 @@ CBIOS_DSI_PANEL_DESC R63319_Panel_Desc =
             /*.VerBEnd = */2068,
             /*.VerSyncStart = */(2048 + 12),
             /*.VerSyncEnd = */(2048 + 12 + 4),
-            /*.HVPolarity = */DSI_HPOSITIVE + DSI_VPOSITIVE,
         },
     },
     /*.PowerOnCmdListSize = */sizeofarray(R63319_PowerOn_CmdList),

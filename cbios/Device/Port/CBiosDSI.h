@@ -74,12 +74,6 @@
 #define DSI_IRQ_OTHER_TRIGGER         (1 << 15)
 #define DSI_IRQ_HOST_BUS_TIMEOUT      (1 << 24)
 
-// the Hsync Vsync signal polarity
-#define DSI_HPOSITIVE                 0x02
-#define DSI_HNEGATIVE                 0x00
-#define DSI_VPOSITIVE                 0x04
-#define DSI_VNEGATIVE                 0x00
-
 /* DSI Registers Begin */
 typedef union   _REG_MM3294_MM32AC
 {

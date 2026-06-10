@@ -289,7 +289,6 @@ CBIOS_U32 cbRound(CBIOS_U32 Dividend, CBIOS_U32 Divisor, CBIOS_ROUND_METHOD Roun
 
 CBIOS_BOOL cbCopyBuffer2EdidData(PCBIOS_EDID_DATA pEdidData, PCBIOS_U8 Buffer, CBIOS_U32 BufferSize)
 {
-    CBIOS_BOOL bRet = CBIOS_FALSE;
     PCBIOS_U8 pTmpBuffer = CBIOS_NULL;
 
     if (!pEdidData || !Buffer || !BufferSize)

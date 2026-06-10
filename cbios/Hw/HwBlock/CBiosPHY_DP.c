@@ -1388,7 +1388,14 @@ CBIOS_VOID cbPHY_DP_DualModeOnOff(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModule
                     DPSwingRegValue.DP1_SW_swing = 0x37;
                     DPSwingRegValue.DP1_SW_pp= 0x7;
                 }
-                
+
+                // patch: zhiwei KX7000BGA+UDIMM DDR4, HDMI 4k@60
+                if(bCne001 && (pcbe->SVID == 0x206E && pcbe->SSID == 0x1041) && ClockFreq >= 5330000)
+                {
+                    DPSwingRegValue.DP1_SW_swing = 0x2E;
+                    DPSwingRegValue.DP1_SW_pp = 0x4;
+                }
+
                 DPSwingRegMask.Value = 0xFFFFFFFF;
                 DPSwingRegMask.enable_SW_swing_pp = 0;
                 DPSwingRegMask.SW_swing_SW_PP_SW_post_cursor_load_index = 0;
@@ -1406,7 +1413,13 @@ CBIOS_VOID cbPHY_DP_DualModeOnOff(PCBIOS_VOID pvcbe, CBIOS_MODULE_INDEX DPModule
                 {
                     DPSwingRegValue.DP1_SW_swing = 0x30;
                 }
-                
+
+                if(bCne001 && (pcbe->SVID == 0x206E && pcbe->SSID == 0x1041) && ClockFreq >= 5330000)
+                {
+                    DPSwingRegValue.DP1_SW_swing = 0x35;
+                    DPSwingRegValue.DP1_SW_pp = 0x1;
+                }
+
                 DPSwingRegMask.Value = 0xFFFFFFFF;
                 DPSwingRegMask.SW_swing_SW_PP_SW_post_cursor_load_index = 0;
                 DPSwingRegMask.DP1_SW_swing = 0;

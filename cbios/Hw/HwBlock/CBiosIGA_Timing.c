@@ -376,6 +376,7 @@ static CBIOS_VOID cbSetSrcTiming(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DISP_MODE_
     REG_MM33720_E3K CursorBaseAddrRegValue = {0};
     CBIOS_U32 CursorControl1Index[CBIOS_IGACOUNTS] = {0x33718, 0x33bb4, 0x342b4, 0x349b4};
     CBIOS_U32 CursorBaseAddrIndex[CBIOS_IGACOUNTS] = {0x33720, 0x33bbc, 0x342bc, 0x349bc};
+    CBIOS_MODE_TARGET_PARA  TimingMode = {0};
 
     cbTraceEnter(GENERIC);
     
@@ -398,14 +399,12 @@ static CBIOS_VOID cbSetSrcTiming(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DISP_MODE_
 
     cbModeEnvSetup(pcbe, (CBIOS_U8)IGAIndex);
 
+    TimingMode.XRes = pModeParams->SrcModePara.XRes;
+    TimingMode.YRes = pModeParams->SrcModePara.YRes;
+    TimingMode.RefRate = pModeParams->TargetModePara.RefRate;
+
     //get source timing
-    cbMode_GetHVTiming(pcbe,
-                       pModeParams->SrcModePara.XRes,
-                       pModeParams->SrcModePara.YRes,
-                       pModeParams->TargetModePara.RefRate,
-                       0,
-                       ulDevices,
-                       &Timing);
+    cbMode_GetHVTiming(pcbe, &TimingMode, ulDevices, &Timing);
 
     cbSetCRTimingReg(pcbe, &Timing, IGAIndex, &TimingFlags);
 

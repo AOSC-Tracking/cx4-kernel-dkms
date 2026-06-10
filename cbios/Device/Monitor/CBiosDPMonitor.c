@@ -658,73 +658,6 @@ CBIOS_BOOL cbDPMonitor_GetTrainingData(PCBIOS_VOID pvcbe,
     return CBIOS_TRUE;
 }
 
-CBIOS_BOOL cbDPMonitor_ReadEDID(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, PCBIOS_UCHAR pEDIDBuffer,
-                                   CBIOS_U32 ulBufferSize, CBIOS_U32 ulReadEdidOffset,CBIOS_U8  nSegNum)
-{
-    PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
-    CBIOS_BOOL              bRet = CBIOS_FALSE;
-    CBIOS_STATUS            bStatus = CBIOS_ER_INVALID_PARAMETER;
-    CBIOS_ACTIVE_TYPE       Device = pDevCommon->DeviceType;
-    CBIOS_PARAM_AUX_DATA    ParamAuxData = {0};
-    PCBIOS_DP_MONITOR_CONTEXT  pDPMonitorContext = cbGetDPMonitorContext(pcbe, pDevCommon);
-
-    cbTraceEnter(DP);
-
-    if(!pDPMonitorContext)
-    {
-        return CBIOS_FALSE;
-    }
-
-    if (pDPMonitorContext->DpAuxWorkingStatus & AUX_WORKING_STATUS_DATA_READING)
-    {
-        cbDebugPrint((MAKE_LEVEL(DP, ERROR), "%s: this routine re-rentered!!!\n", FUNCTION_NAME));
-        return CBIOS_FALSE;
-    }
-    else if (pDPMonitorContext->DpAuxWorkingStatus & AUX_WORKING_STATUS_LINKTRAINING)
-    {
-        cbDebugPrint((MAKE_LEVEL(DP, WARNING), "%s: AUX CHANNEL IS BUSY LINKTRAINING!!!\n", FUNCTION_NAME));
-    }
-
-    pDPMonitorContext->DpAuxWorkingStatus |= AUX_WORKING_STATUS_DATA_READING;
-
-    ParamAuxData.DeviceId = Device;
-    ParamAuxData.Write = 0;
-    ParamAuxData.BytesRequested = ulBufferSize;
-    ParamAuxData.Address = 0xA0;
-    ParamAuxData.Buffer = pEDIDBuffer;
-    ParamAuxData.Offset = (CBIOS_UCHAR)ulReadEdidOffset;
-    ParamAuxData.EDDCMode = (nSegNum != 0) ? 1 : 0;
-    ParamAuxData.SegNum = nSegNum;
-
-    bStatus = cbDevAux_DataAccess(pcbe, &ParamAuxData);
-
-    if(bStatus != CBIOS_OK)
-    {
-         cbDebugPrint((MAKE_LEVEL(DP, ERROR),"%s: Aux read edid failed for device 0x%x!\n", FUNCTION_NAME, Device));
-         goto ExitFunc;
-    }
-
-    if((ulReadEdidOffset % 128) == 0 && (ulBufferSize % 128) == 0
-        && !cbIsEdidChecksumValid(pEDIDBuffer, ulBufferSize))
-    {
-        cbDebugPrint((MAKE_LEVEL(DP, WARNING),"%s: Edid checksum of device 0x%x is wrong!\n", FUNCTION_NAME, Device));
-        goto ExitFunc;
-    }
-
-    bRet = CBIOS_TRUE;
-
-ExitFunc:
-    pDPMonitorContext->DpAuxWorkingStatus &= ~AUX_WORKING_STATUS_DATA_READING;
-
-    if (!bRet)
-    {
-        // Corrupted EDID, zero it to avoid be analyzed elsewhere without check corruption.
-        cbDumpBuffer(pcbe, pEDIDBuffer, ulBufferSize);
-    }
-
-    return bRet;
-}
-
 static CBIOS_BOOL cbDPMonitor_GetDPCDVersion(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMonitorContext)
 {    
     CBIOS_MODULE_INDEX  DPModuleIndex = cbGetModuleIndex(pcbe, pDPMonitorContext->pDevCommon->DeviceType, CBIOS_MODULE_TYPE_DP);
@@ -1611,7 +1544,7 @@ CBIOS_BOOL cbDPMonitor_Detect(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMo
             }
             cbDPMonitor_GetMonitorParamsFromEdid(pcbe, pDPMonitorContext);
 
-            cbMode_GenerateDeviceModeList(pcbe, pDevCommon->DeviceType);
+            cbMode_MakeDeviceModeList(pcbe, pDevCommon->DeviceType);
         }
 
         /*cbDebugPrint((MAKE_LEVEL(DP, INFO), "DP/eDP monitor is detected on port 0x%x, FullDetect:%d!\n", 
@@ -1773,6 +1706,7 @@ CBIOS_VOID cbDPMonitor_OnOff(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMon
     CBIOS_MODULE_INDEX      DPModuleIndex = cbGetModuleIndex(pcbe, pDevCommon->DeviceType, CBIOS_MODULE_TYPE_DP);
     PCBIOS_EDP_PANEL_DESC   pEDPPanelDesc = &(pDevCommon->DeviceParas.EDPPanelDevice.EDPPanelDesc);
     CBIOS_BOOL              bEDPMode      = cbDIU_EDP_IsEDPSupported(pcbe, DPModuleIndex);
+    CBIOS_U32               BacklightVal  = 0;
 
     if (bOn)
     {
@@ -1828,14 +1762,10 @@ CBIOS_VOID cbDPMonitor_OnOff(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMon
         {
             cbDelayMilliSeconds(80);
             cbDIU_EDP_ControlVEESignal(pcbe, pDPMonitorContext, DPModuleIndex, bOn);
-
-            if(pcbe->SysBiosInfo.bBLGfxMode && pDPMonitorContext->bBlEverSetByOS) //default set to max(255)
+            if (pcbe->SysBiosInfo.bBLGfxMode)
             {
-                cbEDPPanel_OnOff(pcbe, DPModuleIndex, bOn, pDPMonitorContext->BrightnessSetByOS, pEDPPanelDesc);
-            }
-            else
-            {
-                cbEDPPanel_OnOff(pcbe, DPModuleIndex, bOn, 255, pEDPPanelDesc);
+                BacklightVal = pDPMonitorContext->bBlEverSetByOS ? pDPMonitorContext->BrightnessSetByOS : 255;
+                cbEDPPanel_OnOff(pcbe, DPModuleIndex, bOn, BacklightVal , pEDPPanelDesc);
             }
         }
 
@@ -1855,7 +1785,10 @@ CBIOS_VOID cbDPMonitor_OnOff(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMon
         // 1. turn off EDP panel back light
         if (bEDPMode)
         {
-            cbEDPPanel_OnOff(pcbe, DPModuleIndex, bOn, 0, pEDPPanelDesc);
+            if (pcbe->SysBiosInfo.bBLGfxMode)
+            {
+                cbEDPPanel_OnOff(pcbe, DPModuleIndex, bOn, 0, pEDPPanelDesc);
+            }
             cbDIU_EDP_ControlVEESignal(pcbe, pDPMonitorContext, DPModuleIndex, bOn);
             cbDelayMilliSeconds(50);
         }
@@ -1873,10 +1806,10 @@ CBIOS_VOID cbDPMonitor_OnOff(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CONTEXT pDPMon
         cbDIU_DP_ResetLinkTraining(pcbe, DPModuleIndex);
         pDPMonitorContext->LT_Status = 0;
 
-        if(bEDPMode)
+        if (bEDPMode)
         {
             //disable aux backlight if it is enabled
-            if(pDPMonitorContext->bAuxBlEnabled)
+            if (pcbe->SysBiosInfo.bBLGfxMode && pDPMonitorContext->bAuxBlEnabled)
             {
                 cbDIU_EDP_AUXDisableBacklight(pcbe, DPModuleIndex);
                 pDPMonitorContext->bAuxBlEnabled = CBIOS_FALSE;
@@ -3002,4 +2935,6 @@ CBIOS_VOID cbDPMonitor_TestEDIDCheckSum(PCBIOS_VOID pvcbe, PCBIOS_DP_MONITOR_CON
 
 
 #endif
+
+
 

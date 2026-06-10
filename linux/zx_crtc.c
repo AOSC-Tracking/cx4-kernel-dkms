@@ -166,10 +166,11 @@ static void zx_crtc_helper_set_mode(struct drm_crtc *crtc)
     struct drm_device *  drm_dev = crtc->dev;
     zx_card_t*  zx_card = drm_dev->dev_private;
     disp_info_t*  disp_info = (disp_info_t *)zx_card->disp_info;
+    struct drm_connector* connector = NULL;
     struct drm_crtc_state * crtc_state = crtc->state;
     struct drm_display_mode* mode = &crtc->state->mode;
     struct drm_display_mode* adj_mode = &crtc_state->adjusted_mode;
-    int flag = 0;
+    update_mode_para_t para = {0};
     struct task_struct *cur_task = current;
 
     DRM_DEBUG_KMS("crtc=%d\n", crtc->index);
@@ -181,9 +182,17 @@ static void zx_crtc_helper_set_mode(struct drm_crtc *crtc)
 
     zx_update_active_connector(crtc);
 
-    flag |= UPDATE_CRTC_MODE_FLAG;
+    para.set_crtc = 1;
 
-    disp_cbios_set_mode(disp_info, drm_crtc_index(crtc), mode, adj_mode, flag);
+    list_for_each_entry(connector, &drm_dev->mode_config.connector_list, head)
+    {
+        if((crtc->state->connector_mask & (1 << drm_connector_index(connector))) && (connector->state->crtc == crtc))
+        {
+            para.output_signal = to_zx_connector(connector)->prefer_signal;
+        }
+    }
+
+    disp_cbios_set_mode(disp_info, drm_crtc_index(crtc), mode, adj_mode, para);
 }
 
 static void zx_crtc_helper_disable(struct drm_crtc *crtc)
@@ -543,8 +552,6 @@ static int zx_crtc_cursor_set(struct drm_crtc *crtc,
     disp_info_t*  disp_info = (disp_info_t *)zx_card->disp_info;
     zx_crtc_t *zx_crtc = to_zx_crtc(crtc);
     zx_cursor_update_t arg = {0, };
-    zx_map_argu_t  map = {0};
-    int ret;
 
     arg.crtc        = to_zx_crtc(crtc)->pipe;
 
@@ -1110,11 +1117,13 @@ static int zx_crtc_mode_set(struct drm_crtc *crtc, struct drm_display_mode *mode
     disp_info_t*  disp_info = (disp_info_t *)zx_card->disp_info;
     zx_crtc_t* zx_crtc = to_zx_crtc(crtc);
     zx_crtc_flip_t arg = {0};
-    int flag = UPDATE_CRTC_MODE_FLAG;
+    update_mode_para_t para = {0};
 
-    disp_cbios_set_mode(disp_info, zx_crtc->pipe, mode, adjusted_mode, flag);
+    para.set_crtc = 1;
 
-    arg.crtc = to_zx_crtc(crtc)->pipe;
+    disp_cbios_set_mode(disp_info, zx_crtc->pipe, mode, adjusted_mode, para);
+
+    arg.crtc = zx_crtc->pipe;
     arg.stream_type = ZX_PLANE_PS;
     arg.oldfb = old_fb;
     arg.fb = drm_get_crtc_primary_fb(crtc);

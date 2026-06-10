@@ -162,129 +162,6 @@ static CBIOS_STATUS cbValidateSettingModeParam(PCBIOS_VOID pvcbe, PCBIOS_DISP_MO
     return csRet;
 }
 
-#define cbGetDiff(a, b)   ((a) > (b) ? (a - b) : (b - a))
-
-static CBIOS_BOOL cbHDMIFormatTableSetRefRateIndex(PCBIOS_EXTENSION_COMMON pcbe, 
-                                          CBIOS_U16 RefRate, 
-                                          CBIOS_U32 FormatIndex,
-                                          CBIOS_U8 *pIndex)
-{
-    CBIOS_BOOL bStatus = CBIOS_FALSE;
-    CBIOS_U32 Difference = 0;
-    CBIOS_U16 NearestRefRate = 0, LeftRefRate = 0, RightRefRate = 0;
-
-    if (FormatIndex >= CBIOS_HDMIFORMATCOUNTS)
-    {
-        cbDebugPrint((MAKE_LEVEL(HDMI, ERROR),"cbHDMIFormatTableSetRefRateIndex: invalid format!\n"));
-        bStatus = CBIOS_FALSE;
-    }
-    else
-    {
-        LeftRefRate = pcbe->pHDMIFormatTable[FormatIndex].RefRate[1];
-        RightRefRate = pcbe->pHDMIFormatTable[FormatIndex].RefRate[0];
-
-        if ((LeftRefRate == 0) || (RefRate > ((LeftRefRate + RightRefRate) / 2)))
-        {
-            NearestRefRate = RightRefRate;
-        }
-        else
-        {
-            NearestRefRate = LeftRefRate;
-        }
-
-        Difference = cbGetDiff(RefRate, NearestRefRate);
-
-        if ((Difference * 1000 / NearestRefRate) <= 5)//0.5%
-        {
-            *pIndex = (NearestRefRate == RightRefRate) ? 0 : 1;
-            
-            bStatus = CBIOS_TRUE;
-        }
-        else
-        {
-            cbDebugPrint((MAKE_LEVEL(HDMI, DEBUG),"cbHDMIFormatTableSetRefRateIndex: RefreshRate is invalid!\n"));
-            bStatus = CBIOS_FALSE;
-        }
-    }
-
-    return bStatus;
-}
-
-static CBIOS_BOOL cbGetModeVICCode(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DISP_MODE_PARAMS pModeParams, CBIOS_U32 IGAIndex, CBIOS_U32 *Descindex)
-{
-    PCBIOS_MODE_TARGET_PARA pTargetModePara = &pModeParams->TargetModePara;
-    PCBIOS_DEVICE_COMMON    pDevCommon = CBIOS_NULL;
-    PCBIOS_HDMI_FORMAT_DESC pHDMIFormat = CBIOS_NULL;
-    CBIOS_U8                RefRateIndex = 0;
-    CBIOS_U32               Device = 0, i = 0;
-    CBIOS_BOOL              bHDMIDevice = CBIOS_FALSE;
-
-    Device = cbDevGetPrimaryDevice((CBIOS_U32)pcbe->DispMgr.ActiveDevices[IGAIndex]);
-    pDevCommon = cbGetDeviceCommon(&pcbe->DeviceMgr, Device);
-    bHDMIDevice = pDevCommon->EdidStruct.Attribute.IsCEA861HDMI;
-    pHDMIFormat = pDevCommon->EdidStruct.pHDMIFormat;
-    
-    pModeParams->VICCode = 0;
-
-    if(!pHDMIFormat || !bHDMIDevice)
-    {
-        return CBIOS_FALSE;
-    }
-
-    if(pDevCommon->EdidStruct.Attribute.VSDBData.HDMIVICLen > 0)
-    {
-        for(i = 0; i < pDevCommon->EdidStruct.HDMIFmtNum; i++)
-        {
-            CBIOS_U16 FmtIndex = pHDMIFormat[i].FormatIndex;
-            if(pHDMIFormat[i].FormatVIC >= CBIOS_HDMI_NORMAL_VIC_COUNTS &&
-                pHDMIFormat[i].FormatVIC < CBIOS_HDMIFORMATCOUNTS)
-            {
-                if((pTargetModePara->XRes == pcbe->pHDMIFormatTable[FmtIndex].XRes) &&
-                   (pTargetModePara->YRes == pcbe->pHDMIFormatTable[FmtIndex].YRes) &&
-                   (pTargetModePara->bInterlace== pcbe->pHDMIFormatTable[FmtIndex].Interlace) &&
-                   cbHDMIFormatTableSetRefRateIndex(pcbe, (CBIOS_U16)pTargetModePara->RefRate, FmtIndex, &RefRateIndex))
-                {
-                    pModeParams->VICCode = (CBIOS_U8)pHDMIFormat[i].FormatVIC;
-                    break;
-                }
-            } 
-        }
-    }
-
-    if(pModeParams->VICCode)
-    {
-        if(Descindex)
-        {
-            *Descindex = i;
-        }
-        return CBIOS_TRUE;
-    }
-
-    for(i = 0; i < pDevCommon->EdidStruct.HDMIFmtNum; i++)
-    {
-        CBIOS_U16 FmtIndex = pHDMIFormat[i].FormatIndex;
-        if(pHDMIFormat[i].FormatVIC < CBIOS_HDMI_NORMAL_VIC_COUNTS)
-        {
-            if((pTargetModePara->XRes == pcbe->pHDMIFormatTable[FmtIndex].XRes) &&
-               (pTargetModePara->YRes == pcbe->pHDMIFormatTable[FmtIndex].YRes) &&
-               (pTargetModePara->bInterlace == (CBIOS_BOOL)pcbe->pHDMIFormatTable[FmtIndex].Interlace) &&
-               cbHDMIFormatTableSetRefRateIndex(pcbe, (CBIOS_U16)pTargetModePara->RefRate, FmtIndex, &RefRateIndex))
-            {
-                pModeParams->VICCode = (CBIOS_U8)pHDMIFormat[i].FormatVIC;
-                break;
-            }
-        }
-    }
-
-    if(pModeParams->VICCode && Descindex)
-    {
-        *Descindex = i;
-    }
-
-    return (pModeParams->VICCode)? CBIOS_TRUE : CBIOS_FALSE;
-}
-
-
 static CBIOS_VOID cb3DVideoTimingAdjust(PCBIOS_EXTENSION_COMMON pcbe, CBIOS_3D_STRUCTURE Video3DStruct, PCBIOS_TIMING_ATTRIB pTiming)
 {
     switch (Video3DStruct)
@@ -322,7 +199,7 @@ static CBIOS_STATUS cbUpdateIGAModeInfo(PCBIOS_VOID pvcbe, PCBIOS_DISP_MODE_PARA
     PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
     CBIOS_U32 IGAIndex = pSettingModeParams->IGAIndex;
     CBIOS_TIMING_ATTRIB Timing = {0};
-    CBIOS_U32 Device = 0, DescIndex = 0;
+    CBIOS_U32 Device = 0;
     PCBIOS_DEVICE_COMMON pDevCommon  = CBIOS_NULL;
     PCBIOS_MONITOR_MISC_ATTRIB pMonitorAttr = CBIOS_NULL;
 
@@ -346,78 +223,36 @@ static CBIOS_STATUS cbUpdateIGAModeInfo(PCBIOS_VOID pvcbe, PCBIOS_DISP_MODE_PARA
     pModeParams->SrcModePara.XRes = pSettingModeParams->SourcModeParams.XRes;
     pModeParams->SrcModePara.YRes = pSettingModeParams->SourcModeParams.YRes;
 
-    pModeParams->TargetModePara.XRes = pSettingModeParams->DestModeParams.XRes;
-    pModeParams->TargetModePara.YRes = pSettingModeParams->DestModeParams.YRes;
-    pModeParams->TargetModePara.PixelClock = pSettingModeParams->DestModeParams.PixelClock;
-
     pModeParams->ScalerPara.XRes = pSettingModeParams->ScalerSizeParams.XRes;
     pModeParams->ScalerPara.YRes = pSettingModeParams->ScalerSizeParams.YRes;
 
-    // Update refresh rate setting
-    if(pSettingModeParams->DestModeParams.RefreshRate == 1)
+    pModeParams->TargetModePara.XRes = pSettingModeParams->DestModeParams.XRes;
+    pModeParams->TargetModePara.YRes = pSettingModeParams->DestModeParams.YRes;
+    pModeParams->TargetModePara.XTotal = pSettingModeParams->DestModeParams.XTotal;
+    pModeParams->TargetModePara.YTotal = pSettingModeParams->DestModeParams.YTotal;
+    pModeParams->TargetModePara.PixelClock = pSettingModeParams->DestModeParams.PixelClock;
+    pModeParams->TargetModePara.RefRate = pSettingModeParams->DestModeParams.RefreshRate;
+    if(pModeParams->TargetModePara.RefRate <= 1000)
     {
         pModeParams->TargetModePara.RefRate = 6000;
     }
-    else if(pSettingModeParams->DestModeParams.RefreshRate != 0)
-    {
-        pModeParams->TargetModePara.RefRate = pSettingModeParams->DestModeParams.RefreshRate; 
-    }
-
     pModeParams->TargetModePara.bInterlace = pSettingModeParams->DestModeParams.InterlaceFlag;
-    if (pSettingModeParams->DestModeParams.OutputSignal)
-    {
-        pModeParams->TargetModePara.OutputSignal = pSettingModeParams->DestModeParams.OutputSignal;
-    }
-    else
-    {
-        cbDebugPrint((MAKE_LEVEL(GENERIC, WARNING), "no output signal type assigned, default to RGB\n"));
-        pModeParams->TargetModePara.OutputSignal = CBIOS_RGBOUTPUT;
-    }
 
     pModeParams->IGAOutColorSpace = CSC_FMT_RGB;//hardcode IGA output color space to RGB
-
     pModeParams->TargetModePara.DevInColorSpace = pModeParams->IGAOutColorSpace;
 
-    if(cbGetModeVICCode(pcbe, pModeParams, IGAIndex, &DescIndex))//convert output signal to YCbCr420 for 420 only mode
-    {
-        if(pDevCommon->EdidStruct.pHDMIFormat[DescIndex].IsSupportYCbCr420 &&
-            !pDevCommon->EdidStruct.pHDMIFormat[DescIndex].IsSupportOtherFormats)
-        {
-            pModeParams->TargetModePara.OutputSignal = CBIOS_YCBCR420OUTPUT;
-
-            cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "convert output signal to YCbCr420 as %s only support YCbCr420 for %d x %d @ %d\n",
-                            pMonitorAttr->MonitorName, pSettingModeParams->DestModeParams.XRes, pSettingModeParams->DestModeParams.YRes, 
-                            pSettingModeParams->DestModeParams.RefreshRate));
-        }
-
-        if((pcbe->SVID == 0x206E) && (pcbe->SSID == 0x1028))
-        {
-            if(pDevCommon->EdidStruct.pHDMIFormat[DescIndex].IsSupportYCbCr420 &&
-                (pModeParams->TargetModePara.XRes >= 3840) && (pModeParams->TargetModePara.YRes >= 2160) && (pModeParams->TargetModePara.RefRate > 5900))
-            {
-                pModeParams->TargetModePara.OutputSignal = CBIOS_YCBCR420OUTPUT;
-                cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "Set output signal to YCbCr420 for customer\n"));
-            }
-        }
-    }
-
-    cb_memcpy(&pModeParams->ColorimetryCaps, &pMonitorAttr->ExtDataBlock[COLORIMETRY_DATA_BLOCK_TAG].ColorimetryData,
-                sizeof(CBIOS_COLORIMETRY_DATA));
-    cb_memcpy(&pModeParams->VideoCapability, &pMonitorAttr->ExtDataBlock[VIDEO_CAPABILITY_DATA_BLOCK_TAG].VideoCapabilityData,
-                sizeof(CBIOS_VIDEO_CAPABILITY_DATA));
-
-    cbMode_GetHVTiming(pcbe,
-                       pModeParams->TargetModePara.XRes,
-                       pModeParams->TargetModePara.YRes,
-                       pModeParams->TargetModePara.RefRate,
-                       pModeParams->TargetModePara.bInterlace,
-                       Device,
-                       &Timing);
-    //pcbe->SpecifyDestTimingSrc[IGAIndex].Flag = 0;
-
+    cbMode_GetHVTiming(pcbe, &pModeParams->TargetModePara, Device, &Timing);
     if (pModeParams->IsEnable3DVideo)
     {
         cb3DVideoTimingAdjust(pcbe, pModeParams->Video3DStruct, &Timing);
+    }
+
+    pModeParams->VICCode = (CBIOS_U8)Timing.FormatVIC;
+    pModeParams->TargetModePara.OutputSignal = cbMode_GetTimingSignal(pcbe, Device, 
+                                                pSettingModeParams->DestModeParams.OutputSignal, &Timing);
+    if (!pSettingModeParams->SkipDeviceMode)
+    {
+        cbDebugPrint((MAKE_LEVEL(GENERIC, INFO),  "ModeVIC = %d, Signal = %d!\n", Timing.FormatVIC, pModeParams->TargetModePara.OutputSignal));
     }
 
     //check pixel repetition
@@ -431,6 +266,11 @@ static CBIOS_STATUS cbUpdateIGAModeInfo(PCBIOS_VOID pvcbe, PCBIOS_DISP_MODE_PARA
     pModeParams->PLLClock = Timing.PixelClock;
     
     cb_memcpy(&(pModeParams->TargetTiming), &Timing, sizeof(CBIOS_TIMING_ATTRIB));
+
+    cb_memcpy(&pModeParams->ColorimetryCaps, &pMonitorAttr->ExtDataBlock[COLORIMETRY_DATA_BLOCK_TAG].ColorimetryData,
+                sizeof(CBIOS_COLORIMETRY_DATA));
+    cb_memcpy(&pModeParams->VideoCapability, &pMonitorAttr->ExtDataBlock[VIDEO_CAPABILITY_DATA_BLOCK_TAG].VideoCapabilityData,
+                sizeof(CBIOS_VIDEO_CAPABILITY_DATA));
 
     return CBIOS_OK;
 }
@@ -451,8 +291,8 @@ static CBIOS_STATUS cbDispMgrPrepareToSetMode(PCBIOS_EXTENSION_COMMON pcbe, PCBI
         cbDebugPrint((MAKE_LEVEL(GENERIC, INFO),  "DestMode:   %d x %d @ %d!\n", pSettingModeParams->DestModeParams.XRes, pSettingModeParams->DestModeParams.YRes, 
                              pSettingModeParams->DestModeParams.RefreshRate)); 
         cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "ScalerMode: %d x %d!\n", pSettingModeParams->ScalerSizeParams.XRes, pSettingModeParams->ScalerSizeParams.YRes));
-        cbDebugPrint((MAKE_LEVEL(GENERIC, INFO),  "Interlace=%d, Signal=%d, Bpc=%d!\n", pSettingModeParams->DestModeParams.InterlaceFlag,
-                             pSettingModeParams->DestModeParams.OutputSignal, pSettingModeParams->BitPerComponent));
+        cbDebugPrint((MAKE_LEVEL(GENERIC, INFO),  "Interlace=%d, Bpc=%d!\n", pSettingModeParams->DestModeParams.InterlaceFlag,
+                             pSettingModeParams->BitPerComponent));
     }
     
     // Validate the input parameter.
@@ -619,6 +459,9 @@ CBIOS_STATUS cbDispMgrGetMode(PCBIOS_VOID pvcbe, PCBIOS_DISPLAY_MANAGER pDispMgr
     pModeParams->DestModeParams.RefreshRate = pDispModeParams->TargetModePara.RefRate;
     pModeParams->DestModeParams.OutputSignal = pDispModeParams->TargetModePara.OutputSignal;
     pModeParams->DestModeParams.InterlaceFlag = pDispModeParams->TargetModePara.bInterlace;
+    pModeParams->DestModeParams.XTotal = pDispModeParams->TargetModePara.XTotal;
+    pModeParams->DestModeParams.YTotal = pDispModeParams->TargetModePara.YTotal;
+    pModeParams->DestModeParams.PixelClock = pDispModeParams->TargetModePara.PixelClock;
     //scaler size
     pModeParams->ScalerSizeParams.XRes = pDispModeParams->ScalerPara.XRes;
     pModeParams->ScalerSizeParams.YRes = pDispModeParams->ScalerPara.YRes;
@@ -652,6 +495,9 @@ CBIOS_STATUS cbDispMgrGetModeFromReg(PCBIOS_VOID pvcbe, PCBIOS_DISPLAY_MANAGER p
     pModeParams->DestModeParams.YRes = TargetTimingAttr.YRes;
     pModeParams->DestModeParams.RefreshRate = TargetTimingAttr.RefreshRate;
     pModeParams->DestModeParams.InterlaceFlag = Flags.IsInterlace;
+    pModeParams->DestModeParams.XTotal = TargetTimingAttr.HorTotal;
+    pModeParams->DestModeParams.YTotal = TargetTimingAttr.VerTotal;
+    pModeParams->DestModeParams.PixelClock = TargetTimingAttr.PixelClock;
     //scaler size
     pModeParams->ScalerSizeParams.XRes = TargetTimingAttr.XRes;
     pModeParams->ScalerSizeParams.YRes = TargetTimingAttr.YRes;

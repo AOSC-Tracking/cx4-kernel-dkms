@@ -59,43 +59,13 @@ int zx_backlight_init(void* data, zx_card_t *zx)
     struct drm_connector* connector = NULL;
     zx_connector_t*  zx_connector = NULL;
     int has_edp = 0;
-    bool skip_register = false;
+    bool skip_vendor = true;
 
 #if IS_ENABLED(CONFIG_BACKLIGHT_CLASS_DEVICE)
     struct backlight_properties zx_backlight_props = {0};
-    zx_brightness_caps_t caps = {0};
     int max_brightness = 0xFF;
     bool  auto_detect = false;
     enum acpi_backlight_type type = acpi_backlight_none;
-
-#if DRM_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
-    skip_register = true;
-    type = __acpi_video_get_backlight_type(false, &auto_detect);
-    zx_info("Backlight auto_detect : %d, type : %d.\n", auto_detect, type);
-    if(auto_detect && type == acpi_backlight_video && !disp_info->bl_gfx_mode)
-    {
-        zx_info("To register acpi video backlight.\n");
-        acpi_video_register_backlight();
-    }
-    else if((!auto_detect && type == acpi_backlight_vendor && disp_info->bl_gfx_mode)
-                 ||  (auto_detect && disp_info->bl_gfx_mode))
-    {
-        skip_register = false;
-    }
-#elif DRM_VERSION_CODE >= KERNEL_VERSION(4, 2, 0)
-    skip_register = true;
-    if(acpi_video_get_backlight_type() == acpi_backlight_vendor)
-    {
-        skip_register = false;
-    }
-#endif
-
-    if(skip_register)
-    {
-        return ret;
-    }
-
-    zx_info("To register acpi vendor backlight.\n");
 
     list_for_each_entry(connector, &drm->mode_config.connector_list, head)
     {
@@ -107,22 +77,53 @@ int zx_backlight_init(void* data, zx_card_t *zx)
         }
     }
 
-    if(has_edp)
+    if(!has_edp)
     {
-        zx_memset(&zx_backlight_props, 0, sizeof(struct backlight_properties));
-        zx_backlight_props.type = BACKLIGHT_PLATFORM;
-        zx_backlight_props.max_brightness = max_brightness;
+        zx_info("Skip register backlight as none edp found.\n");
+        return ret;
+    }
 
-        zx->backlight_dev = backlight_device_register("zx_backlight",
-            &pdev->dev,
-            zx,
-            &zx_backlight_ops,
-            &zx_backlight_props);
+#if DRM_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+    type = __acpi_video_get_backlight_type(false, &auto_detect);
+    zx_info("Backlight auto_detect : %d, type : %d.\n", auto_detect, type);
+    if(auto_detect && type == acpi_backlight_video && !disp_info->bl_gfx_mode)
+    {
+        zx_info("To register acpi video backlight.\n");
+        skip_vendor = true;
+        acpi_video_register_backlight();
+    }
+    else if(((!auto_detect && type == acpi_backlight_vendor) || auto_detect) && disp_info->bl_gfx_mode)
+    {
+        skip_vendor = false;
+    }
+    else
+    {
+        skip_vendor = true;
+    }
+#elif DRM_VERSION_CODE >= KERNEL_VERSION(4, 2, 0)
+    skip_vendor = (disp_info->bl_gfx_mode)? false : true;
+#endif
 
-        if(!zx->backlight_dev)
-        {
-            zx_info("register backlight device fail\n");
-        }
+    if(skip_vendor)
+    {
+        return ret;
+    }
+
+    zx_info("To register acpi vendor backlight.\n");
+
+    zx_memset(&zx_backlight_props, 0, sizeof(struct backlight_properties));
+    zx_backlight_props.type = BACKLIGHT_PLATFORM;
+    zx_backlight_props.max_brightness = max_brightness;
+
+    zx->backlight_dev = backlight_device_register("zx_backlight",
+        &pdev->dev,
+        zx,
+        &zx_backlight_ops,
+        &zx_backlight_props);
+
+    if(!zx->backlight_dev)
+    {
+        zx_info("register backlight device fail\n");
     }
 #else
     zx_warning("kernel not support backlight device\n");

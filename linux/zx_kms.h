@@ -91,6 +91,22 @@
 
 #define COLOR_LEGACY_LUT_LENGTH  256
 
+typedef enum _OUTPUT_SIGNAL
+{
+    OUTPUT_SIGNAL_RGB = 0,
+    OUTPUT_SIGNAL_Y422,
+    OUTPUT_SIGNAL_Y444,
+    OUTPUT_SIGNAL_Y420,
+}OUTPUT_SIGNAL;
+
+typedef struct
+{
+    unsigned int set_crtc         :1;
+    unsigned int set_encoder      :1;
+    unsigned int output_signal    :2; // bit num must equel with OUTPUT_SIGNAL
+    unsigned int reserverd        :28;
+}update_mode_para_t;
+
 typedef struct
 {
     struct drm_crtc    base_crtc;
@@ -143,6 +159,7 @@ typedef struct
     int                   hda_codec_index;
     unsigned long long    hpd_int_bit;
     int                   hpd_enable;
+    OUTPUT_SIGNAL         prefer_signal;
 #if DRM_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
     zx_encoder_t*  new_encoder;
 #endif

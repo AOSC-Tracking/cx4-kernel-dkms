@@ -138,12 +138,9 @@
 typedef struct _CBIOS_HDMI_FORMAT_MTX
 {
    CBIOS_U16   FormatVIC;
-   CBIOS_U16   XRes;
-   CBIOS_U16   YRes;
-   CBIOS_UCHAR Interlace;
-   CBIOS_U16   RefRate[2];
-   CBIOS_UCHAR AspectRatio;
-   CBIOS_UCHAR DefRateIdx; 
+   CBIOS_U8    AspectRatio;
+   CBIOS_U8    Interlace;
+   CBIOS_U8    Supported;
 }CBIOS_HDMI_FORMAT_MTX, *PCBIOS_HDMI_FORMAT_MTX;
 
 typedef struct _CBIOS_EXTENSION_COMMON
@@ -162,7 +159,8 @@ typedef struct _CBIOS_EXTENSION_COMMON
         CBIOS_U32       bRunOnQT    :1;
         CBIOS_U32       bDriverLoadQTiming  :1;
         CBIOS_U32       bRunHDCPCTS :1;
-        CBIOS_U32       Reserved    :29;
+        CBIOS_U32       bBgaPatchCPU :1;
+        CBIOS_U32       Reserved    :28;
     }DriverFlags;
     //---------------------------------------------------
     // CBIOS Chip Related Speciality
@@ -207,7 +205,7 @@ typedef struct _CBIOS_EXTENSION_COMMON
     CBIOS_U8     SliceNum;
     
     /* data tables */
-    PCBIOS_HDMI_FORMAT_MTX pHDMIFormatTable;
+    PCBIOS_HDMI_FORMAT_MTX pCEAVideoTable;
 
     CBIOS_UCHAR        SavedReg[128];
     
@@ -246,18 +244,20 @@ typedef struct _CBIOS_EXTENSION_COMMON
     // Flag to indicate whether use default VCP data or the VCP get from uboot
     CBIOS_BOOL   bUseDefaultVCP;
 
-    CBIOS_DEVICE_MANAGER       DeviceMgr;
+    CBIOS_BOOL   bNeedBgaPatch;
 
+    CBIOS_DEVICE_MANAGER       DeviceMgr;
     CBIOS_DISPLAY_MANAGER      DispMgr;
+
+    PCBIOS_TIMING_ATTRIB       pHDMITimingTable;
 } CBIOS_EXTENSION_COMMON, *PCBIOS_EXTENSION_COMMON;
 
 
 //************************* CBios sw utility functions ***************************//
-CBIOS_BOOL cbCalcCustomizedTiming(PCBIOS_EXTENSION_COMMON pcbe, CBIOS_U32 XRes, CBIOS_U32 YRes, CBIOS_U32 RefreshRate, PCBIOS_TIMING_ATTRIB pTimingReg);
-CBIOS_VOID cbConvertEdidTimingToTableTiming(PCBIOS_EXTENSION_COMMON pcbe, CBIOS_DETAILED_TIMING_INFO* pEDIDDetailTiming, PCBIOS_TIMING_ATTRIB pTimingReg);
+CBIOS_BOOL cbCalcCustomizedTiming(CBIOS_U32 XRes, CBIOS_U32 YRes, CBIOS_U32 RefreshRate, PCBIOS_TIMING_ATTRIB pTimingReg);
 CBIOS_U32  cbConvertCBiosDevBit2VBiosDevBit(CBIOS_U32 CBiosDevices);
 CBIOS_U32  cbConvertVBiosDevBit2CBiosDevBit(CBIOS_U32 VBiosDevices);
-CBIOS_U16  cbCalcRefreshRate(CBIOS_U32 PixelClock, CBIOS_U16 HActive, CBIOS_U16 HBlank, CBIOS_U16 VActive, CBIOS_U16 VBlank);
+CBIOS_U16  cbCalcRefreshRate(CBIOS_U32 PixelClock, CBIOS_U16 HTotal, CBIOS_U16 VTotal);
 CBIOS_U32  cbGetHwDacMode(PCBIOS_EXTENSION_COMMON pcbe, CBIOS_FORMAT Format);
 CBIOS_U32  cbGetHw3DVideoMode(CBIOS_3D_STRUCTURE VideoFormat);
 CBIOS_VOID cbGetStreamAttribute(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_STREAM_ATTRIBUTE pStreamAttr);

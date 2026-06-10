@@ -1076,7 +1076,7 @@ CBIOS_VOID cbDIU_HDAC_DisableAudioSamples(PCBIOS_VOID pvcbe, PCBIOS_HDAC_PARA pC
     PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
     CBIOS_ACTIVE_TYPE  Device = (CBIOS_ACTIVE_TYPE)pCbiosHDACPara->DeviceId;
     PCBIOS_DEVICE_COMMON pDevCommon = cbGetDeviceCommon(&pcbe->DeviceMgr, Device);
-    CBIOS_BOOL           bHDMIDevice = (pDevCommon->CurrentMonitorType & CBIOS_MONITOR_TYPE_HDMI);
+    CBIOS_BOOL           bHdmiOrDviMonitor = (pDevCommon->CurrentMonitorType & (CBIOS_MONITOR_TYPE_HDMI | CBIOS_MONITOR_TYPE_DVI));
     CBIOS_MODULE_INDEX HDACModuleIndex = CBIOS_MODULE_INDEX_INVALID;
     REG_MM82AC HDACChStatusCtrlRegValue, HDACChStatusCtrlRegMask;
     REG_MM829C HDACPacket2RegValue, HDACPacket2RegMask;
@@ -1094,7 +1094,7 @@ CBIOS_VOID cbDIU_HDAC_DisableAudioSamples(PCBIOS_VOID pvcbe, PCBIOS_HDAC_PARA pC
     HDACChStatusCtrlRegMask.Always_Output_Audio = 0;
     cbMMIOWriteReg32(pcbe, HDAC_REG_CHSTATUS_CTRL[HDACModuleIndex], HDACChStatusCtrlRegValue.Value, HDACChStatusCtrlRegMask.Value);
 
-    if(bHDMIDevice)
+    if(bHdmiOrDviMonitor)
     {
         HDACPacket2RegValue.Value = 0;
         HDACPacket2RegValue.CODEC1_ACR_ENABLE = 0;

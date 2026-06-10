@@ -36,7 +36,7 @@
 #define CBIOS_TRNAS_VER(CBIOS_VER) TO_BASE16(CBIOS_VER)
 
 
-static CBIOS_U32 cbGetVsyncWidth(PCBIOS_EXTENSION_COMMON pcbe, CBIOS_U32 XRes, CBIOS_U32 YRes)
+static CBIOS_U32 cbGetVsyncWidth(CBIOS_U32 XRes, CBIOS_U32 YRes)
 {
     CBIOS_U32 ulRet = 10;
     CBIOS_U32 ulTemp = 0;
@@ -44,7 +44,7 @@ static CBIOS_U32 cbGetVsyncWidth(PCBIOS_EXTENSION_COMMON pcbe, CBIOS_U32 XRes, C
     // Prevent being divided by zero
     if (YRes == 0)
     {
-        cbDebugPrint((MAKE_LEVEL(GENERIC, ERROR), "cbCalcCustomizedTiming: fata error -- YRes is ZERO!!!\n"));
+        cbDebugPrint((MAKE_LEVEL(GENERIC, ERROR), "cbGetVsyncWidth: fata error -- YRes is ZERO!!!\n"));
         return ulRet;
     }
     ulTemp = XRes*100/YRes;
@@ -100,8 +100,7 @@ CBIOS_STATUS cbGetVersion(PCBIOS_EXTENSION_COMMON pcbe,
 // Calculate the detailed timing according to the CVT algrithm
 // Input X resolution, Y resolution, Refresh.
 // Output the CBIOS_TIMING_ATTRIB stucture
-CBIOS_BOOL cbCalcCustomizedTiming(PCBIOS_EXTENSION_COMMON pcbe,
-                                CBIOS_U32 XRes,
+CBIOS_BOOL cbCalcCustomizedTiming(CBIOS_U32 XRes,
                                 CBIOS_U32 YRes,
                                 CBIOS_U32 RefreshRate,
                                 PCBIOS_TIMING_ATTRIB pTiming)
@@ -136,7 +135,7 @@ CBIOS_BOOL cbCalcCustomizedTiming(PCBIOS_EXTENSION_COMMON pcbe,
 
     // For recuced blanking middle temopary variable.
 
-    VerticalSyncWidth = cbGetVsyncWidth(pcbe, XRes, YRes);
+    VerticalSyncWidth = cbGetVsyncWidth(XRes, YRes);
 
     // For standard CRT timing calculation
     // Estimate the horizontal period that is multiplied by 100
@@ -245,35 +244,6 @@ CBIOS_BOOL cbCalcCustomizedTiming(PCBIOS_EXTENSION_COMMON pcbe,
     return CBIOS_TRUE;
 }
 
-
-CBIOS_VOID cbConvertEdidTimingToTableTiming(CBIOS_IN PCBIOS_EXTENSION_COMMON pcbe,
-                                          CBIOS_IN CBIOS_DETAILED_TIMING_INFO* pEDIDDetailTiming,
-                                          CBIOS_OUT PCBIOS_TIMING_ATTRIB pTiming)
-{
-    cb_memset(pTiming, 0, sizeof(CBIOS_TIMING_ATTRIB));
-
-    // Fill in the timing structure
-    pTiming->XRes = pEDIDDetailTiming->XResolution;
-    pTiming->YRes = pEDIDDetailTiming->YResolution;
-    pTiming->RefreshRate = pEDIDDetailTiming->Refreshrate;
-    pTiming->PixelClock = pEDIDDetailTiming->PixelClock;
-    pTiming->HVPolarity = pEDIDDetailTiming->HSync+pEDIDDetailTiming->VSync;
-    
-    pTiming->HorTotal = pEDIDDetailTiming->XResolution + pEDIDDetailTiming->HBlank;
-    pTiming->HorDisEnd = pEDIDDetailTiming->XResolution;
-    pTiming->HorBStart = pEDIDDetailTiming->XResolution;
-    pTiming->HorBEnd = pEDIDDetailTiming->XResolution + pEDIDDetailTiming->HBlank;        
-    pTiming->HorSyncStart = pEDIDDetailTiming->XResolution + pEDIDDetailTiming->HSyncOffset;
-    pTiming->HorSyncEnd = pTiming->HorSyncStart + pEDIDDetailTiming->HSyncPulseWidth;    
-    
-    pTiming->VerTotal = pEDIDDetailTiming->YResolution + pEDIDDetailTiming->VBlank;
-    pTiming->VerDisEnd = pEDIDDetailTiming->YResolution;
-    pTiming->VerBStart = pEDIDDetailTiming->YResolution;
-    pTiming->VerBEnd = pEDIDDetailTiming->YResolution + pEDIDDetailTiming->VBlank;
-    pTiming->VerSyncStart = pEDIDDetailTiming->YResolution + pEDIDDetailTiming->VSyncOffset;
-    pTiming->VerSyncEnd = pTiming->VerSyncStart+pEDIDDetailTiming->VSyncPulseWidth;
-}
-
 CBIOS_U32 cbConvertCBiosDevBit2VBiosDevBit(CBIOS_U32 CBiosDevices)
 {
     CBIOS_U32 temp = 0;
@@ -364,20 +334,19 @@ CBIOS_U32 cbConvertVBiosDevBit2CBiosDevBit(CBIOS_U32 VBiosDevices)
 // Function description: calculate refresh rate from DClock and HActive, HBlank, VActive and VBlank
 // Input: DClock -- (0, 65536) * 100; See detailed timing descriptor part of EDID spec.
 //        HActive, HBlank, VActive and VBlank -- (0, 65536)
-CBIOS_U16 cbCalcRefreshRate(CBIOS_U32 PixelClock, CBIOS_U16 HActive, CBIOS_U16 HBlank, CBIOS_U16 VActive, CBIOS_U16 VBlank)
+CBIOS_U16 cbCalcRefreshRate(CBIOS_U32 PixelClock, CBIOS_U16 HTotal, CBIOS_U16 VTotal)
 {
     CBIOS_U32    Temp = PixelClock;
 
-    if (((HActive + HBlank) == 0) ||
-        ((VActive + VBlank) == 0))
+    if (HTotal == 0 || VTotal == 0)
     {
         cbDebugPrint((MAKE_LEVEL(GENERIC, ERROR),"cbCalcRefreshRate: fatal error, divisor is zero!\n"));
         return 0;
     }
     else
     {
-        Temp = (Temp * 100) / (HActive + HBlank);
-        Temp = (Temp * 100) / (VActive + VBlank);
+        Temp = (Temp * 100) / HTotal;
+        Temp = (Temp * 100) / VTotal;
     }
 
     return (CBIOS_U16)Temp;

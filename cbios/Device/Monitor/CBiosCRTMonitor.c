@@ -64,7 +64,7 @@ CBIOS_BOOL cbCRTMonitor_Detect(PCBIOS_VOID pvcbe, PCBIOS_CRT_MONITOR_CONTEXT pCr
 
             pDevCommon->CurrentMonitorType = CBIOS_MONITOR_TYPE_CRT;
             
-            cbMode_GenerateDeviceModeList(pcbe, pDevCommon->DeviceType);
+            cbMode_MakeDeviceModeList(pcbe, pDevCommon->DeviceType);
         }
         
         bConnected = CBIOS_TRUE;

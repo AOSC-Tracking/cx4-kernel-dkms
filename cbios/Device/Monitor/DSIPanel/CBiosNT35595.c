@@ -33,6 +33,7 @@
 
 
 #include "CBiosDSIPanel.h"
+#include "../../CBiosChipShare.h"
 #include "../../Port/CBiosDSI.h"
 
 
@@ -522,12 +523,16 @@ CBIOS_DSI_PANEL_DESC NT35595_Panel_Desc =
         /*.OutBpp = */24,
         /*.PanelTiming = */
         {
-            /*.XResolution = */1080,
-            /*.YResolution = */1920,
+            /*.Size = */TIMING_ATTRIB_SIZE,
+            /*.FormatVIC = */0,
+            /*.XRes = */1080,
+            /*.YRes = */1920,
+            /*.RefreshRate = */0,  //ignore
+            /*.HVPolarity = */VerNEGATIVE + HorNEGATIVE,
 #ifdef ELT2K_DIU_FPGA
-            /*.DCLK = */5400,
+            /*.PixelClock = */5400,
 #else
-            /*.DCLK = */15550, //14040,
+            /*.PixelClock = */15550, //14040,
 #endif
             /*.HorTotal = */1200 + 128,
             /*.HorDisEnd = */1080,
@@ -541,7 +546,6 @@ CBIOS_DSI_PANEL_DESC NT35595_Panel_Desc =
             /*.VerBEnd = */1950,
             /*.VerSyncStart = */(1920+16),
             /*.VerSyncEnd = */(1920+16+2),
-            /*.HVPolarity = */DSI_VNEGATIVE + DSI_HNEGATIVE,
         },
     },
     /*.PowerOnCmdListSize = */sizeofarray(NT35595_PowerOn_CmdList),

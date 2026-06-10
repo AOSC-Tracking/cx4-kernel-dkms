@@ -98,31 +98,11 @@ typedef struct _CBIOS_DSI_CONFIG
     };
 }CBIOS_DSI_CONFIG, *PCBIOS_DSI_CONFIG;
 
-typedef struct _CBIOS_DSI_TIMING
-{
-    CBIOS_U32    XResolution;
-    CBIOS_U32    YResolution;
-    CBIOS_U32    DCLK;
-    CBIOS_U32    HorTotal;
-    CBIOS_U32    HorDisEnd;
-    CBIOS_U32    HorBStart;
-    CBIOS_U32    HorBEnd;
-    CBIOS_U32    HorSyncStart;
-    CBIOS_U32    HorSyncEnd;
-    CBIOS_U32    VerTotal;
-    CBIOS_U32    VerDisEnd;
-    CBIOS_U32    VerBStart;
-    CBIOS_U32    VerBEnd;
-    CBIOS_U32    VerSyncStart;
-    CBIOS_U32    VerSyncEnd;
-    CBIOS_U32    HVPolarity;
-}CBIOS_DSI_TIMING, *PCBIOS_DSI_TIMING;
-
 typedef struct _CBIOS_DSI_PANEL_TABLE
 {
     CBIOS_U32           LaneNum;
     CBIOS_U32           OutBpp;
-    CBIOS_DSI_TIMING    PanelTiming;
+    CBIOS_TIMING_ATTRIB   PanelTiming;
 } CBIOS_DSI_PANEL_TABLE, *PCBIOS_DSI_PANEL_TABLE;
 
 typedef struct _CBIOS_DSI_CMD_DESC

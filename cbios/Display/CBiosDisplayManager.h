@@ -63,13 +63,13 @@ typedef struct _CBIOS_MODE_TARGET_PARA{
     CBIOS_U32    YRes;
     CBIOS_U32    RefRate;
     CBIOS_U32    bInterlace;         /* =0, Set noninterlace mode; = 1, Set interlace mode; */
-                                     /* =1, 4:3 aspect ratio*/
-                                     /* =2, 16:9 aspect ratio */
     CSC_FORMAT   DevInColorSpace;    /* device csc input color sapce*/
     CBIOS_U32    OutputSignal;       /* =0x1; RGB signal */
                                      /* =0x2; YCbCr422 signal */
                                      /* =0x4; YCbCr444 signal */
                                      /* DP device will also use this attribute, and is called Color format */
+    CBIOS_U32    XTotal;
+    CBIOS_U32    YTotal;
     CBIOS_U32    PixelClock;
 }CBIOS_MODE_TARGET_PARA, *PCBIOS_MODE_TARGET_PARA;
 

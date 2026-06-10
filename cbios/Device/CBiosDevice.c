@@ -102,17 +102,11 @@ CBIOS_VOID cbDeInitDeviceArray(PCBIOS_VOID pvcbe)
     {
         if (pcbe->DeviceMgr.pDeviceArray[i] != CBIOS_NULL)
         {
-            if(pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pDisplayIdDtlTimings)
+            if(pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pDeviceTimingList)
             {
-                cb_FreePool(pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pDisplayIdDtlTimings);
-                pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pDisplayIdDtlTimings = CBIOS_NULL;
+                cb_FreePool(pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pDeviceTimingList);
+                pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pDeviceTimingList = CBIOS_NULL;
             }
-            if(pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pHDMIFormat)
-            {
-                cb_FreePool(pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pHDMIFormat);
-                pcbe->DeviceMgr.pDeviceArray[i]->EdidStruct.pHDMIFormat = CBIOS_NULL;
-            }
-            
             if(pcbe->DeviceMgr.pDeviceArray[i]->pDeviceModeList)
             {
                 cb_FreePool(pcbe->DeviceMgr.pDeviceArray[i]->pDeviceModeList);
@@ -194,6 +188,7 @@ CBIOS_STATUS cbDevGetModeTiming(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevComm
     PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
     PCBIOS_TIMING_ATTRIB      pTiming = CBIOS_NULL;
     CBIOS_STATUS              Status = CBIOS_ER_INTERNAL;
+    CBIOS_MODE_TARGET_PARA  TargetMode = {0};
 
     if (CBIOS_NULL == pGetModeTiming)
     {
@@ -213,14 +208,16 @@ CBIOS_STATUS cbDevGetModeTiming(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevComm
 
     cb_memset(pTiming, 0, sizeof(CBIOS_TIMING_ATTRIB));
 
+    TargetMode.XRes = pGetModeTiming->pMode->XRes;
+    TargetMode.YRes = pGetModeTiming->pMode->YRes;
+    TargetMode.XTotal = pGetModeTiming->pMode->XTotal;
+    TargetMode.YTotal = pGetModeTiming->pMode->YTotal;
+    TargetMode.RefRate = pGetModeTiming->pMode->RefreshRate;
+    TargetMode.PixelClock = pGetModeTiming->pMode->PixelClock;
+    TargetMode.bInterlace = pGetModeTiming->pMode->isInterlaceMode;
+
     // 2. Get detail timing
-    cbMode_GetHVTiming(pcbe,
-                       pGetModeTiming->pMode->XRes,
-                       pGetModeTiming->pMode->YRes,
-                       pGetModeTiming->pMode->RefreshRate,
-                       pGetModeTiming->pMode->isInterlaceMode,
-                       pGetModeTiming->DeviceId, 
-                       pTiming);
+    cbMode_GetHVTiming(pcbe, &TargetMode, pGetModeTiming->DeviceId, pTiming);
 
     Status = CBIOS_OK;
 
@@ -522,6 +519,12 @@ CBIOS_U32 cbDevGetHDAFormatList(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevComm
 CBIOS_STATUS cbDevSetDisplayDevicePowerState(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL bPowerOn, CBIOS_U32 Flags)
 {
     PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
+
+    if (pcbe->bNeedBgaPatch && bPowerOn)
+    {
+        cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "%s: Need BGA Patch, skip device power on.\n", FUNCTION_NAME));
+        return CBIOS_OK;
+    }
 
     if (pDevCommon->pfncbDeviceOnOff)
     {
@@ -1122,4 +1125,64 @@ CBIOS_U8 cbDevHDACGetCAValue(PCBIOS_VOID pvcbe, CBIOS_ACTIVE_TYPE DeviceType)
     }
 
     return CA_Value;
+}
+
+CBIOS_BOOL cbDevNeedBgaPatch(PCBIOS_VOID pvcbe, CBIOS_U32 SupportDevices)
+{
+    PCBIOS_EXTENSION_COMMON pcbe = (PCBIOS_EXTENSION_COMMON)pvcbe;
+    PCBIOS_DEVICE_COMMON    pDevCommon = CBIOS_NULL;
+    PCBIOS_DP_CONTEXT       pDpContext = CBIOS_NULL;
+    CBIOS_MODULE_INDEX      DPModuleIndex = CBIOS_MODULE_INDEX_INVALID;
+    CBIOS_DETECT_FLAG       DetectFlag;
+    DP_EPHY_MODE            EphyMode;
+    CBIOS_U8  Buffer[3] = {0};
+    CBIOS_U8  DPCD00070 = 0;
+    CBIOS_U32 DevList[] = {CBIOS_TYPE_DP1, CBIOS_TYPE_DP2, CBIOS_TYPE_DP3};
+    CBIOS_U32 HImageSize = 0, VImageSize = 0, i;
+    CBIOS_BOOL bRet = CBIOS_FALSE;
+
+    for(i = 0; i < sizeofarray(DevList); i++)
+    {
+        if(SupportDevices & DevList[i])
+        {
+            pDevCommon = cbGetDeviceCommon(&pcbe->DeviceMgr, DevList[i]);
+            pDpContext = container_of(pDevCommon, PCBIOS_DP_CONTEXT, Common);
+            DPModuleIndex = cbGetModuleIndex(pcbe, DevList[i], CBIOS_MODULE_TYPE_DP);
+            DetectFlag.Value = 0;
+            
+            EphyMode = cbPHY_DP_GetEphyMode(pcbe, DPModuleIndex);
+            cbPHY_DP_SelectEphyMode(pcbe, DPModuleIndex, DP_EPHY_DP_MODE);
+
+            if (cbDPMonitor_Detect(pcbe, &pDpContext->DPMonitorContext, &DetectFlag))
+            {
+                cbI2cOverAux_ReadEDID(pcbe, pDevCommon, Buffer, sizeof(Buffer), 0x42, 0);
+                
+                HImageSize = (((CBIOS_U16)Buffer[2] & 0xF0) << 4) + Buffer[0];
+                VImageSize = (((CBIOS_U16)Buffer[2] & 0x0F) << 8) + Buffer[1];
+                cbDebugPrint((MAKE_LEVEL(GENERIC, DEBUG), "%s: get image size %d x %d mm.\n", FUNCTION_NAME, HImageSize, VImageSize));
+
+                if ((HImageSize == 0) || (VImageSize == 0))
+                {
+                    cbDIU_Aux_Dpcd_Read(pcbe, DPModuleIndex, 0x70, &DPCD00070, 1);
+
+                    if (DPCD00070 & 0x03)
+                    {
+                        cbDebugPrint((MAKE_LEVEL(GENERIC, DEBUG), "%s: read DPCD 00070 = %d, need patch.\n", FUNCTION_NAME, DPCD00070));
+                        bRet = CBIOS_TRUE;
+                    }
+                }
+                else if ((HImageSize <= 312) || (VImageSize <= 195))
+                {
+                    cbDebugPrint((MAKE_LEVEL(GENERIC, DEBUG), "%s: panel size is small, need patch.\n", FUNCTION_NAME));
+                    bRet = CBIOS_TRUE;
+                }
+            }
+            else
+            {
+                cbPHY_DP_SelectEphyMode(pcbe, DPModuleIndex, EphyMode);
+            }
+        }
+    }
+
+    return bRet;
 }

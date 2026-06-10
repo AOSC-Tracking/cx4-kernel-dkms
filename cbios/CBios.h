@@ -159,6 +159,8 @@ typedef unsigned long    CBIOS_ULONG_PTR, *PCBIOS_ULONG_PTR;
 
 #define CBIOS_MAX_DEVICE_BITS    32
 
+#define TIMING_ATTRIB_SIZE    sizeof(CBIOS_TIMING_ATTRIB)
+
 typedef enum _CBIOS_MONITOR_TYPE   {
     CBIOS_MONITOR_TYPE_NONE     = 0x00,
     CBIOS_MONITOR_TYPE_CRT      = 0x01,
@@ -296,7 +298,8 @@ typedef struct _CBIOS_PARAM_INIT
         CBIOS_U32       bRunOnQT    :1;
         CBIOS_U32       bDriverLoadQTiming  :1;
         CBIOS_U32       bRunHDCPCTS :1;
-        CBIOS_U32       Reserved   :29;
+        CBIOS_U32       bBgaPatchCPU :1;
+        CBIOS_U32       Reserved   :28;
     }DriverFlags;
 } CBIOS_PARAM_INIT, *PCBIOS_PARAM_INIT;
 
@@ -639,6 +642,8 @@ typedef struct _CBios_Dest_Mode_Params
                                                     /* =0x2; YCbCr422 signal */
                                                    /* =0x4; YCbCr444 signal */
                                                   /* DP device will also use this attribute, and is called Color format */
+    CBIOS_U32    XTotal;
+    CBIOS_U32    YTotal;
     CBIOS_U32    PixelClock;
 }CBiosDestModeParams, *PCBiosDestModeParams;
 
@@ -1435,11 +1440,12 @@ typedef struct _CBIOS_PARAM_SET_EDID{
 
 typedef enum _CBIOS_TIMING_TYPE{  //can extend to support 14 different types  
     CBIOS_NONEDID_TIMING = 0x0000,    //The mode is not from EDID
-    CBIOS_EST_TIMING = 0x0001,
-    CBIOS_STD_TIMING = 0x0002,
-    CBIOS_DTL_TIMING = 0x0004,
-    CBIOS_DTD_TIMING = 0x0008,        //Detailed timing descriptor
-    CBIOS_SVD_TIMING = 0x0010         //CBIOS_S16 video descriptor
+    CBIOS_EST_TIMING     = 0x0001,
+    CBIOS_STD_TIMING     = 0x0002,
+    CBIOS_DTL_TIMING     = 0x0004,    //Detail timing block
+    CBIOS_DTD_TIMING     = 0x0008,    //CEA Detailed timing descriptor
+    CBIOS_SVD_TIMING     = 0x0010,    //Short video descriptor
+    CBIOS_DISP_ID_TIMING = 0x0020,    //Display id timing
 }CBIOS_TIMING_TYPE, *PCBIOS_TIMING_TYPE;
 
 

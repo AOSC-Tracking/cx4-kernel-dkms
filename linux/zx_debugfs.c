@@ -1093,9 +1093,15 @@ zx_debugfs_device_t* zx_debugfs_create(zx_card_t *zx, struct dentry *minor_root)
     dev->psr.priv_data  = dev->zx->adapter;
     dev->psr.dev        = dev;
 
-    zx_vsprintf(dev->displayinfo.name, "psr");
+    zx_vsprintf(dev->psr.name, "psr");
 
-    dev->displayinfo.node_dentry = debugfs_create_file(dev->displayinfo.name, 0664, dev->debug_root, &(dev->psr), &debugfs_node_psr_fops);
+    dev->psr.node_dentry = debugfs_create_file(dev->psr.name, 0664, dev->debug_root, &(dev->psr), &debugfs_node_psr_fops);
+
+    if (dev->psr.node_dentry == NULL)
+    {
+        zx_error("Failed to create debugfs node %s\n", dev->psr.name);
+        return NULL;
+    }
 
     dev->debugbus.type      = DEBUGFS_NODE_DEBUGBUS;
     dev->debugbus.priv_data = dev->zx->adapter;

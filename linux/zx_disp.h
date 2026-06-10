@@ -366,6 +366,7 @@ typedef struct
     struct drm_property *global_id_proph;
     struct drm_property *global_id_propl;
     struct drm_property *conn_conflict_event;
+    struct drm_property *prefer_signal_prop;
 }disp_info_t;
 
 static __inline__ unsigned char read_reg_exc(unsigned char *mmio, int type, unsigned char index)

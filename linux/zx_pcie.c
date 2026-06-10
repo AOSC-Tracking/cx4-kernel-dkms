@@ -511,7 +511,7 @@ static void zx_drm_postclose(struct drm_device *dev, struct drm_file *file)
     pm_runtime_put_autosuspend(dev->dev);
 #endif
 }
-
+#if DRM_VERSION_CODE < KERNEL_VERSION(6, 12, 0)
 void  zx_drm_last_close(struct drm_device* dev)
 {
 #if DRM_VERSION_CODE < KERNEL_VERSION(4, 19, 0)
@@ -521,6 +521,7 @@ void  zx_drm_last_close(struct drm_device* dev)
     drm_fb_helper_lastclose(dev);
 #endif
 }
+#endif
 
 #if DRM_VERSION_CODE < KERNEL_VERSION(4,11,0)
 static int zx_drm_device_is_agp(struct drm_device * dev)

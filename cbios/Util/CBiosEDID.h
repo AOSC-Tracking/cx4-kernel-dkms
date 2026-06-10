@@ -179,20 +179,6 @@ typedef struct _CBIOS_EDID_DETAILEDTIMING_TABLE
     CBIOS_U8   mask;
 }DETAILEDTIMING_TABLE;
 
-typedef struct _CBIOS_HDMI_FORMAT_DESC
-{
-    CBIOS_U16               FormatVIC;
-    CBIOS_U16               FormatIndex;               //index in table CEAVideoFormatTable
-    CBIOS_U16               Video3DSupportCaps;
-    struct
-    {
-        CBIOS_U16    IsNative                :1;
-        CBIOS_U16    IsSupportYCbCr420       :1;
-        CBIOS_U16    IsSupportOtherFormats   :1; /* RGB, YCbCr4:4:4, YCbCr4:2:2 */
-        CBIOS_U16    RsvdBits                :13;
-    };
-}CBIOS_HDMI_FORMAT_DESC, *PCBIOS_HDMI_FORMAT_DESC;
-
 typedef struct _CBIOS_HDMI_3D_FORMAT
 {
     struct  
@@ -547,13 +533,15 @@ typedef struct _CBIOS_SVR_DESC
 
 typedef struct _CBIOS_FAKE_EDID_PARAMS
 {
-    CBIOS_DETAILED_TIMING_INFO DtlTiming;
+    CBIOS_TIMING_ATTRIB DtlTiming;
     CBIOS_BOOL          bProvideDtlTimingEDID;
     CBIOS_U8            DtlTimingEDID[16];
 }CBIOS_FAKE_EDID_PARAMS, *PCBIOS_FAKE_EDID_PARAMS;
 
 // for filter invalid timing
 #define CBIOS_MIN_PIXEL_CLK 200000
+#define CBIOS_MIN_TIMING_X 640
+#define CBIOS_MIN_TIMING_Y 480
 
 typedef struct _CBIOS_MONITOR_MISC_ATTRIB
 {
@@ -572,7 +560,7 @@ typedef struct _CBIOS_MONITOR_MISC_ATTRIB
         };
         CBIOS_U32     CEA861MonitorCaps;
     };  
-    CBIOS_U32                       TotalNumberOfNativeFormat;
+    CBIOS_U32                       NativeFormatNum;
     CBIOS_U8                        Tag;
     CBIOS_U8                        RevisionNumber;
     CBIOS_U8                        OffsetOfDetailedTimingBlock;
@@ -600,26 +588,38 @@ typedef struct _CBIOS_MONITOR_MISC_ATTRIB
     CBIOS_MRL                       MRLData;
 }CBIOS_MONITOR_MISC_ATTRIB, *PCBIOS_MONITOR_MISC_ATTRIB;
 
-#define  CBIOS_DTDTIMING_BLOCK_CNT  (CBIOS_DTDTIMINGCOUNTS*2)
+typedef struct _CBIOS_DEVICE_TIMING_INFO
+{
+    CBIOS_U32            TimingType;
+    CBIOS_TIMING_ATTRIB  FullTiming;
+    CBIOS_U16            AspectRatio;
+    union
+    {
+        CBIOS_U16 TimingFlags;
+        struct
+        {
+            CBIOS_U16   IsSupportMono           :1; // bit0 = 1, the timing is support 2D display
+            CBIOS_U16   IsSupportStereo         :1; // bit1 = 1, the timing is support 3D display 
+            CBIOS_U16   IsNativeMode            :1; // bit2 = 1, the timing is a native mode's timing 
+            CBIOS_U16   IsPreferMode            :1; // bit3 = 1, the timing can be used for prefer mode 
+            CBIOS_U16   IsInterLaced            :1; // bit4 = 1, the timing is an interlated mode
+            CBIOS_U16   IsSupportYCbCr420       :1; // bit5 = 1, the timing is support ycbcr420, used by svd and displayid 
+            CBIOS_U16   IsSupportOtherFormats   :1; // bit6 = 1, support other such as rgb/ycbcr444/ycbcr420, used by svd 
+            CBIOS_U16   RsvdTimingFlags         :8;// Other bits reserved for future use 
+            CBIOS_U16   Merged                  :1; // used to merge modes, DO NOT use it outside MakeDeviceModeList function
+        };
+    };
+}CBIOS_DEVICE_TIMING_INFO, *PCBIOS_DEVICE_TIMING_INFO;
 
 typedef struct _CBIOS_EDID_STRUCTURE_DATA {
     CBIOS_U8                      Version;
-    CBIOS_MODE_INFO               EstTimings[CBIOS_ESTABLISHMODECOUNT];
-    CBIOS_MODE_INFO               StdTimings[CBIOS_STDMODECOUNT];
-    CBIOS_DETAILED_TIMING_INFO    DtlTimings[CBIOS_DTLMODECOUNT];
+    CBIOS_U8                      NativeNumUsed;
     CBIOS_MONITOR_MISC_ATTRIB     Attribute;
     CBIOS_U32                     HDAudioFormatNum; // valid number of hdmi audio formats in HDMIAudioFormat
     CBIOS_HDMI_AUDIO_INFO         HDAudioFormat[CBIOS_HDMI_AUDIO_FORMAT_COUNTS];
-    CBIOS_U32                     HDMIFmtNum;
-    CBIOS_U32                     HDMIFmtArraySize;
-    PCBIOS_HDMI_FORMAT_DESC       pHDMIFormat;
-    CBIOS_U32                     DtdTimingNum;  //valid timing number in DTDTimings
-    CBIOS_DETAILED_TIMING_INFO    DTDTimings[CBIOS_DTDTIMING_BLOCK_CNT]; //may meet two CEA data block(edid has 4 block)
-    CBIOS_U32                     DispIdTimingNum; //valid timing number in pDisplayIdDtlTimings
-    CBIOS_U32                     DispIdArraySize; //malloc size in pDisplayIdDtlTimings
-    PCBIOS_DETAILED_TIMING_INFO   pDisplayIdDtlTimings;
-    CBIOS_U32                     TotalTimingNum;    // total valid number of mode/timing in above struct, some of which is duplicated. 
-                                                    //Merged modes is stored in pDevCommon->pDeviceModeList
+    CBIOS_U32                     TimingNum;
+    CBIOS_U32                     TimingArraySize;
+    PCBIOS_DEVICE_TIMING_INFO     pDeviceTimingList;
 } CBIOS_EDID_STRUCTURE_DATA, *PCBIOS_EDID_STRUCTURE_DATA;
 
 CBIOS_U32 cbEDIDModule_GetExtBlockNum(CBIOS_U8 *pEDID);
@@ -633,15 +633,10 @@ CBIOS_BOOL cbEDIDModule_IsEDIDHeaderValid(CBIOS_U8  *pEDIDBuffer, CBIOS_U32 ulBu
 CBIOS_BOOL cbEDIDModule_IsEDIDValid(CBIOS_EDID_DATA *pEdidData);
 CBIOS_BOOL cbEDIDModule_ParseEDID(CBIOS_EDID_DATA *pEDID, PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct);
 CBIOS_VOID cbEDIDModule_SADPatch(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct);
-
-
-CBIOS_BOOL cbEDIDModule_SearchTmInEdidStruct(CBIOS_U32 XResolution,
-                                             CBIOS_U32 YResolution,
-                                             CBIOS_U32 RefreshRate,
-                                             CBIOS_U32 InterlaceFlag,
-                                             PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct,
-                                             PCBIOS_U32 pTmType,
-                                             PCBIOS_U32 pTmIndex);
 CBIOS_BOOL cbEDIDModule_FakePanelEDID(PCBIOS_FAKE_EDID_PARAMS pFakeEdidParam, PCBIOS_U8 pEdid, const CBIOS_U32 EdidBufferLength);
+CBIOS_BOOL cbEdidModule_IsEquivalentModeExist(CBIOS_U16 VIC, CBIOS_U32 *pRefresh, CBIOS_U32 *pClock);
+CBIOS_BOOL cbEDIDModule_GetXYRTiming(PCBIOS_EDID_STRUCTURE_DATA pEDIDStruct, 
+                                  CBIOS_U16 XRes, CBIOS_U16 YRes, CBIOS_U16 RefreshRate, CBIOS_TIMING_ATTRIB *pTiming);
+CBIOS_BOOL cbEdidModule_IsRefreshInCEARange(CBIOS_U16 RefrashRate, CBIOS_U16 FormatVIC, CBIOS_U16 *pFixRefresh, CBIOS_U32 *pFixClock);
 
 #endif

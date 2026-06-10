@@ -530,6 +530,25 @@ int disp_wait_for_vblank(disp_info_t* disp_info, int pipe, int timeout)
     return  ret;
 }
 
+static int is_bga_patch_cpu(disp_info_t *disp_info)
+{
+    adapter_info_t*  adapter_info = disp_info->adp_info;
+    unsigned int lo, hi;
+    int ret = 0;
+
+    if (adapter_info->chip_id == CHIP_CNE001)
+    {
+        rdmsr(0x112, lo, hi);
+        zx_info("read msr 0x112 hi = 0x%x, lo = 0x%x.\n", hi, lo);
+        if ((hi == 0) && (lo == 0x25))
+        {
+            ret = 1;
+        }
+    }
+
+    return ret;
+}
+
 /*CBIOS Initialization sequence:
  * 1) set Call back function
  * 2) Set Mmio Endian Mode
@@ -621,6 +640,11 @@ int disp_init_cbios(disp_info_t *disp_info)
     if (adapter_info->run_on_qt)
     {
         CBParamInit.DriverFlags.bRunOnQT = 0x1;
+    }
+
+    if (is_bga_patch_cpu(disp_info))
+    {
+        CBParamInit.DriverFlags.bBgaPatchCPU = 0x1;
     }
 
     CBiosInit(pcbe, &CBParamInit);
@@ -877,6 +901,11 @@ CBiosModeInfoExt* disp_cbios_get_preferred_mode(CBiosModeInfoExt *dev_mode_list,
     CBiosModeInfoExt *pcbios_mode = NULL;
     int i = 0;
 
+    if(!dev_mode_list || !mode_num)
+    {
+        return NULL;
+    }
+
     for (i = 0; i < mode_num; i++)
     {
         pcbios_mode = dev_mode_list + i;
@@ -887,17 +916,33 @@ CBiosModeInfoExt* disp_cbios_get_preferred_mode(CBiosModeInfoExt *dev_mode_list,
         }
     }
 
+    if(i >= mode_num)
+    {
+        pcbios_mode = dev_mode_list; //not find prefer, use mode[0]
+    }
+
     return pcbios_mode;
 }
 
-CBiosModeInfoExt* disp_cbios_get_maxium_mode(CBiosModeInfoExt *dev_mode_list)
+static int is_adapter_mode_valid(CBiosModeInfoExt *pmode, CBiosModeInfoExt *prefer_mode)
 {
-    return &dev_mode_list[0];
+    if(pmode->XRes == prefer_mode->XRes && pmode->YRes == prefer_mode->YRes)
+    {
+        return 0;
+    }
+    
+    if (pmode->XRes <= prefer_mode->XRes && pmode->YRes <= prefer_mode->YRes)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
-
-int disp_cbios_merge_modes(CBiosModeInfoExt* merge_mode_list, CBiosModeInfoExt * adapter_mode_list, unsigned int const adapter_mode_num,
-    CBiosModeInfoExt const * dev_mode_list, unsigned int const dev_mode_num)
+int disp_cbios_merge_modes(CBiosModeInfoExt* merge_mode_list, CBiosModeInfoExt * adapter_mode_list, const unsigned int adapter_mode_num,
+    const CBiosModeInfoExt * dev_mode_list, const unsigned int dev_mode_num)
 {
     CBiosModeInfoExt    tmpBuf;
     unsigned int        i = 0;
@@ -905,10 +950,7 @@ int disp_cbios_merge_modes(CBiosModeInfoExt* merge_mode_list, CBiosModeInfoExt *
     unsigned int        dev_index          = 0;
     unsigned int        mode_index         = 0;
     unsigned int        num_mode           = 0;
-    unsigned int        *valid_adapter_mode_flag = NULL;
-
-
-    valid_adapter_mode_flag = zx_calloc(adapter_mode_num * sizeof(unsigned int ));
+    CBiosModeInfoExt* prefer_mode = NULL;
 
     // reverse adapter modelist
     for (i = 0; i < adapter_mode_num/2; i++)
@@ -918,25 +960,7 @@ int disp_cbios_merge_modes(CBiosModeInfoExt* merge_mode_list, CBiosModeInfoExt *
         zx_memcpy(&adapter_mode_list[adapter_mode_num - i -1], &tmpBuf, sizeof(CBiosModeInfoExt));
     }
 
-    //make sure all the adapter modes is smaller than the largest device mode.
-    //adapter mode is not strict sorted from small to large .
-    //adatper modes : 640x480 800x600 1024x768 1280x720 1280x1024 1680x1050 1920x1080
-    //1024x768 is not smaller than 1280x720 strictly.
-
-    // mark adapter mode whether it's bigger than the largest device mode or not
-    for (i = 0; i < adapter_mode_num; i++)
-    {
-        if ((adapter_mode_list[i].XRes <= dev_mode_list[0].XRes) &&
-         (adapter_mode_list[i].YRes <= dev_mode_list[0].YRes) &&
-         (adapter_mode_list[i].RefreshRate <= dev_mode_list[0].RefreshRate))
-        {
-            valid_adapter_mode_flag[i] = 1;
-        }
-        else
-        {
-            valid_adapter_mode_flag[i] = 0;
-        }
-    }
+    prefer_mode = disp_cbios_get_preferred_mode((PCBiosModeInfoExt)dev_mode_list, dev_mode_num);
 
     // merge
     dev_index  = 0;
@@ -945,17 +969,15 @@ int disp_cbios_merge_modes(CBiosModeInfoExt* merge_mode_list, CBiosModeInfoExt *
     adapter_index = 0;
     while ((dev_index < dev_mode_num) && (adapter_index < adapter_mode_num))
     {
-        if(valid_adapter_mode_flag[adapter_index] == 0)
+        if(!is_adapter_mode_valid(&adapter_mode_list[adapter_index], prefer_mode))
         {
             adapter_index++;
             continue;
         }
+        
         if ((dev_mode_list[dev_index].XRes > adapter_mode_list[adapter_index].XRes) ||
             ((dev_mode_list[dev_index].XRes == adapter_mode_list[adapter_index].XRes) &&
-             (dev_mode_list[dev_index].YRes > adapter_mode_list[adapter_index].YRes)) ||
-            ((dev_mode_list[dev_index].XRes == adapter_mode_list[adapter_index].XRes) &&
-             (dev_mode_list[dev_index].YRes == adapter_mode_list[adapter_index].YRes) &&
-             (dev_mode_list[dev_index].RefreshRate > adapter_mode_list[adapter_index].RefreshRate)))
+             (dev_mode_list[dev_index].YRes > adapter_mode_list[adapter_index].YRes)))
         {
             zx_memcpy(&merge_mode_list[mode_index], &dev_mode_list[dev_index], sizeof(CBiosModeInfoExt));
             mode_index++;
@@ -963,8 +985,7 @@ int disp_cbios_merge_modes(CBiosModeInfoExt* merge_mode_list, CBiosModeInfoExt *
             num_mode++;
         }
         else if ((dev_mode_list[dev_index].XRes == adapter_mode_list[adapter_index].XRes) &&
-                 (dev_mode_list[dev_index].YRes == adapter_mode_list[adapter_index].YRes) &&
-                 (dev_mode_list[dev_index].RefreshRate == adapter_mode_list[adapter_index].RefreshRate))
+                 (dev_mode_list[dev_index].YRes == adapter_mode_list[adapter_index].YRes))
         {
             zx_memcpy(&merge_mode_list[mode_index], &dev_mode_list[dev_index], sizeof(CBiosModeInfoExt));
             merge_mode_list[mode_index].ColorDepthCaps |= adapter_mode_list[adapter_index].ColorDepthCaps;
@@ -986,7 +1007,7 @@ int disp_cbios_merge_modes(CBiosModeInfoExt* merge_mode_list, CBiosModeInfoExt *
     {
         while(adapter_index < adapter_mode_num)
         {
-            if(valid_adapter_mode_flag[adapter_index] == 1)
+            if(is_adapter_mode_valid(&adapter_mode_list[adapter_index], prefer_mode))
             {
                 zx_memcpy(&merge_mode_list[mode_index], &adapter_mode_list[adapter_index], sizeof(CBiosModeInfoExt));
                 num_mode++;
@@ -1001,12 +1022,6 @@ int disp_cbios_merge_modes(CBiosModeInfoExt* merge_mode_list, CBiosModeInfoExt *
         zx_memcpy(&merge_mode_list[mode_index], &dev_mode_list[dev_index],
                    sizeof(CBiosModeInfoExt)*(dev_mode_num - dev_index));
         num_mode += (dev_mode_num - dev_index);
-    }
-
-    if(valid_adapter_mode_flag)
-    {
-        zx_free(valid_adapter_mode_flag);
-        valid_adapter_mode_flag = NULL;
     }
 
     return num_mode;
@@ -1033,7 +1048,7 @@ int disp_cbios_cbmode_to_drmmode(disp_info_t *disp_info, int output, void* cbmod
     }
 
     drm_mode->clock = timing_attrib.PixelClock / 10;
-    drm_mode->hdisplay = timing_attrib.XRes;
+    drm_mode->hdisplay = timing_attrib.XRes;    
     drm_mode->hsync_start = timing_attrib.HorSyncStart;
     drm_mode->hsync_end = timing_attrib.HorSyncEnd;
     drm_mode->htotal = timing_attrib.HorTotal;
@@ -1211,27 +1226,19 @@ int disp_cbios_get_3dmodes(disp_info_t *disp_info, int output, void* buffer, int
     return  real_num;
 }
 
-int disp_cbios_get_mode_timing(disp_info_t *disp_info, int output, struct drm_display_mode *drm_mode)
+int disp_cbios_get_mode_timing(disp_info_t *disp_info, int output, void* cb_mode, struct drm_display_mode *drm_mode)
 {
     void                *pcbe = disp_info->cbios_ext;
     CBIOS_GET_MODE_TIMING_PARAM   get_timing = {0};
     CBIOS_TIMING_ATTRIB    timing_attrib = {0};
-    CBiosModeInfoExt  cbios_mode = {0};
-    int temp = 0;
 
-    if(!drm_mode)
+    if(!cb_mode || !drm_mode)
     {
         return  DISP_FAIL;
     }
 
-    cbios_mode.XRes = drm_mode->hdisplay;
-    cbios_mode.YRes = drm_mode->vdisplay;
-    temp = drm_mode->clock * 1000/drm_mode->htotal;
-    cbios_mode.RefreshRate = temp * 100/drm_mode->vtotal;
-    cbios_mode.isInterlaceMode = (drm_mode->flags & DRM_MODE_FLAG_INTERLACE) ? 1 : 0;
-
     get_timing.DeviceId = output;
-    get_timing.pMode = &cbios_mode;
+    get_timing.pMode = (PCBiosModeInfoExt)cb_mode;
     get_timing.pTiming = &timing_attrib;
     if(CBIOS_OK != CBiosGetModeTiming(pcbe, &get_timing))
     {
@@ -1412,7 +1419,8 @@ int disp_cbios_set_hdac_connect_status(disp_info_t *disp_info, int device , int 
     return DISP_OK;
 }
 
-int disp_cbios_set_mode(disp_info_t *disp_info, int crtc, struct drm_display_mode* mode, struct drm_display_mode* adjusted_mode, int flag)
+static CBIOS_U32 disp_output_siganl_map[] = {CBIOS_RGBOUTPUT, CBIOS_YCBCR422OUTPUT, CBIOS_YCBCR444OUTPUT, CBIOS_YCBCR420OUTPUT};
+int disp_cbios_set_mode(disp_info_t *disp_info, int crtc, struct drm_display_mode* mode, struct drm_display_mode* adjusted_mode, update_mode_para_t update_para)
 {
     void*                   pcbe = disp_info->cbios_ext;
     CBIOS_STATUS            cb_status;
@@ -1421,24 +1429,27 @@ int disp_cbios_set_mode(disp_info_t *disp_info, int crtc, struct drm_display_mod
     CBiosSettingModeParams  mode_param = {0};
 
     temp = adjusted_mode->clock * 1000/adjusted_mode->htotal;
-    mode_param.DestModeParams.RefreshRate = temp * 100/adjusted_mode->vtotal;
+    mode_param.DestModeParams.RefreshRate = DIV_ROUND_CLOSEST(temp * 100, adjusted_mode->vtotal);
 
     mode_param.SourcModeParams.XRes = mode->hdisplay;
     mode_param.SourcModeParams.YRes = mode->vdisplay;
 
     mode_param.DestModeParams.XRes = adjusted_mode->hdisplay;
     mode_param.DestModeParams.YRes = adjusted_mode->vdisplay;
+    mode_param.DestModeParams.XTotal = adjusted_mode->htotal;
+    mode_param.DestModeParams.YTotal = adjusted_mode->vtotal;
+    mode_param.DestModeParams.PixelClock = adjusted_mode->clock * 10;
 
-    mode_param.DestModeParams.InterlaceFlag = (adjusted_mode->flags & DRM_MODE_FLAG_INTERLACE)? 1 : 0;;
-    mode_param.DestModeParams.OutputSignal = CBIOS_RGBOUTPUT;
+    mode_param.DestModeParams.InterlaceFlag = (adjusted_mode->flags & DRM_MODE_FLAG_INTERLACE)? 1 : 0;
+    mode_param.DestModeParams.OutputSignal = disp_output_siganl_map[update_para.output_signal];
 
     mode_param.ScalerSizeParams.XRes = adjusted_mode->hdisplay;
     mode_param.ScalerSizeParams.YRes = adjusted_mode->vdisplay;
 
     mode_param.IGAIndex = crtc;
     mode_param.BitPerComponent = 8;
-    mode_param.SkipIgaMode = (flag & UPDATE_CRTC_MODE_FLAG)? 0 : 1;
-    mode_param.SkipDeviceMode = (flag & UPDATE_ENCODER_MODE_FLAG)? 0 : 1;
+    mode_param.SkipIgaMode = update_para.set_crtc ? 0 : 1;
+    mode_param.SkipDeviceMode = update_para.set_encoder ? 0 : 1;
 
     if(mode_param.SkipIgaMode == 0)
     {

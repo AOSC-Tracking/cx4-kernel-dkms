@@ -32,6 +32,7 @@
 
 
 #include "CBiosDSIPanel.h"
+#include "../../CBiosChipShare.h"
 #include "../../Port/CBiosDSI.h"
 
 static CBIOS_U8 PasswordBuf[0x2] = 
@@ -225,9 +226,13 @@ CBIOS_DSI_PANEL_DESC R63417_Panel_Desc =
         /*.OutBpp = */24,
         /*.PanelTiming = */
         {
+            /*.Size = */TIMING_ATTRIB_SIZE,
+            /*.FormatVIC = */0,
             /*.XResolution = */1080,
             /*.YResolution = */1920,
-            /*.DCLK = */14040,
+            /*.RefreshRate = */0,  //ignore
+            /*.HVPolarity = */VerNEGATIVE + HorNEGATIVE,
+            /*.PixelClock = */14040,
             /*.HorTotal = */1200,
             /*.HorDisEnd = */1080,
             /*.HorBStart = */1080,
@@ -240,7 +245,6 @@ CBIOS_DSI_PANEL_DESC R63417_Panel_Desc =
             /*.VerBEnd = */1950,
             /*.VerSyncStart = */(1920+16),
             /*.VerSyncEnd = */(1920+16+2),
-            /*.HVPolarity = */DSI_VNEGATIVE + DSI_HNEGATIVE,
         },
     },
     /*.PowerOnCmdListSize = */sizeofarray(R63417_PowerOn_CmdList),

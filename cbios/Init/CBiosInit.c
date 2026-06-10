@@ -33,8 +33,8 @@
 #include "CBiosChipShare.h"
 #include "CBiosDevice.h"
 
+extern CBIOS_TIMING_ATTRIB HDMIFormatTimingTbl[CBIOS_HDMIFORMATCOUNTS];
 extern CBIOS_HDMI_FORMAT_MTX CEAVideoFormatTable[CBIOS_HDMIFORMATCOUNTS];
-
 
 static CBIOS_VOID cbCbiosChipCapsInit(PCBIOS_EXTENSION_COMMON pcbe)
 {
@@ -111,11 +111,15 @@ CBIOS_BOOL cbInitialize(PCBIOS_VOID pvcbe, PCBIOS_PARAM_INIT pCBParamInit)
     pcbe->DriverFlags.bRunOnQT = pCBParamInit->DriverFlags.bRunOnQT;
     pcbe->DriverFlags.bDriverLoadQTiming = pCBParamInit->DriverFlags.bDriverLoadQTiming;
     pcbe->DriverFlags.bRunHDCPCTS = pCBParamInit->DriverFlags.bRunHDCPCTS;
+    pcbe->DriverFlags.bBgaPatchCPU = pCBParamInit->DriverFlags.bBgaPatchCPU;
+
+    cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "Get DriverFlags.bBgaPatchCPU = %d!\n", pCBParamInit->DriverFlags.bBgaPatchCPU));
     
     cbHWInitChipAttribute((PCBIOS_VOID)pcbe, pcbe->ChipID);
 
     //init HDMI format table
-    pcbe->pHDMIFormatTable = CEAVideoFormatTable;
+    pcbe->pCEAVideoTable = CEAVideoFormatTable;
+    pcbe->pHDMITimingTable = HDMIFormatTimingTbl;
     
     //init Memory Type
     pcbe->MemoryType = Default_Mem_Type; //It will be reset once when change clocks

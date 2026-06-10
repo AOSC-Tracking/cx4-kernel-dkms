@@ -221,6 +221,8 @@ int zx_enable_vblank(struct drm_device *dev, pipe_t pipe)
 #if DRM_VERSION_CODE >= KERNEL_VERSION(5, 7, 0)
     struct drm_device *dev = crtc->dev;
     unsigned int pipe = crtc->index;
+#else
+    struct drm_crtc *crtc = zx_get_crtc_by_pipe(dev, pipe);
 #endif
 
     zx_card_t*  zx_card = dev->dev_private;
@@ -229,6 +231,12 @@ int zx_enable_vblank(struct drm_device *dev, pipe_t pipe)
     irq_chip_funcs_t* chip_func = (irq_chip_funcs_t*)disp_info->irq_chip_func;
     unsigned long long  intrrpt = 0;
     unsigned long flags = 0;
+
+    if (!crtc->enabled)
+    {
+        DRM_DEBUG_KMS("crtc %d: enable vblank on unconfigured crtc!!\n", pipe);
+        return -EINVAL;
+    }
 
     if(!chip_func || !chip_func->get_intr_enable_mask || !chip_func->set_intr_enable_mask)
     {

@@ -588,7 +588,7 @@ static CBIOS_VOID cbDSI_SetPhyParams(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DSI_PA
         EphyMiscRegIndex    = 0x3580;
     }
 
-    tDclk = khz2ps(pDSIPanelTbl->PanelTiming.DCLK * 10);    // unit: ps, 1ns = 1000ps
+    tDclk = khz2ps(pDSIPanelTbl->PanelTiming.PixelClock * 10);    // unit: ps, 1ns = 1000ps
     if (pDSIConfig->isDualChannel)
     {
         tDclk *= 2;
@@ -596,7 +596,7 @@ static CBIOS_VOID cbDSI_SetPhyParams(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DSI_PA
     tEclk = khz2ps(1700000 / 10);    // unit: ps, 1ns = 1000ps
     tBclk = tDclk * pDSIPanelTbl->LaneNum * 8 / pDSIPanelTbl->OutBpp;
     tUI = tBclk / 8;
-    cbDebugPrint((MAKE_LEVEL(DSI, INFO), "cbDSI_SetPhyParams, pDSIPanelTbl->PanelTiming.DCLK:  %d   \n", pDSIPanelTbl->PanelTiming.DCLK));
+    cbDebugPrint((MAKE_LEVEL(DSI, INFO), "cbDSI_SetPhyParams, pDSIPanelTbl->PanelTiming.DCLK:  %d   \n", pDSIPanelTbl->PanelTiming.PixelClock));
     cbDebugPrint((MAKE_LEVEL(DSI, INFO), "cbDSI_SetPhyParams, tDclk:  %d   \n", tDclk));
     cbDebugPrint((MAKE_LEVEL(DSI, INFO), "cbDSI_SetPhyParams, tEclk:  %d   \n", tEclk));
     cbDebugPrint((MAKE_LEVEL(DSI, INFO), "cbDSI_SetPhyParams, tBclk:  %d   \n", tBclk));
@@ -1132,7 +1132,7 @@ CBIOS_STATUS cbDSI_SetTE_BTA(PCBIOS_VOID pvcbe, CBIOS_DSI_INDEX DSIIndex)
     CBIOS_U8     CmdType = 0;
     CBIOS_U8  DataBuf[3]  = {0};
     PCBIOS_DEVICE_COMMON pDevCommon = cbGetDeviceCommon(&pcbe->DeviceMgr, CBIOS_TYPE_DSI);
-    CBIOS_U16 ScanLine = (CBIOS_U16)pDevCommon->DeviceParas.DSIDevice.DSIPanelDesc.DSIPanelTbl.PanelTiming.YResolution;
+    CBIOS_U16 ScanLine = (CBIOS_U16)pDevCommon->DeviceParas.DSIDevice.DSIPanelDesc.DSIPanelTbl.PanelTiming.YRes;
     cbTraceEnter(DSI);
 
     //set TE on
@@ -2254,7 +2254,7 @@ static CBIOS_STATUS cbDSI_DisplayUpdateByDMA(PCBIOS_VOID pvcbe, PCBIOS_DSI_DMAUP
     PCBIOS_DSI_WINDOW  pUpdateWin = CBIOS_NULL;
     PCBIOS_DEVICE_COMMON pDevCommon = cbGetDeviceCommon(&pcbe->DeviceMgr, CBIOS_TYPE_DSI);
     CBIOS_U8    OutBpp = (CBIOS_U8)pDevCommon->DeviceParas.DSIDevice.DSIPanelDesc.DSIPanelTbl.OutBpp;
-    CBIOS_U32  XRes = pDevCommon->DeviceParas.DSIDevice.DSIPanelDesc.DSIPanelTbl.PanelTiming.XResolution;
+    CBIOS_U32  XRes = pDevCommon->DeviceParas.DSIDevice.DSIPanelDesc.DSIPanelTbl.PanelTiming.XRes;
     CBIOS_U32  AlignedXRes = 0;
     CBIOS_U8    VirtualCh = 0; //might need fix
     CBIOS_U32   FBAddr = pUpdateParams->DMABaseAddr;
@@ -2983,7 +2983,7 @@ static CBIOS_BOOL cbDSIPort_PanelDetect(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEV
     //check EDID
     if (!cbEDIDModule_IsEDIDHeaderValid(pDevCommon->EdidData.Buffer, pDevCommon->EdidData.BufferSize))
     {
-        PCBIOS_U8 FakeEdid = cb_AllocateNonpagedPool(128);
+        PCBIOS_U8 FakeEdid = cb_AllocatePagedPool(128);
         if (!FakeEdid)
         {
             cbDebugPrint((MAKE_LEVEL(DSI, ERROR),(" Allocate edid buffer fail!!!\n")));
@@ -2997,31 +2997,7 @@ static CBIOS_BOOL cbDSIPort_PanelDetect(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEV
         pDSIPanelTbl = &(pDSIParams->DSIPanelDesc.DSIPanelTbl);
 
         FakeEdidParams.bProvideDtlTimingEDID = CBIOS_FALSE;
-        FakeEdidParams.DtlTiming.PixelClock = pDSIPanelTbl->PanelTiming.DCLK;
-        FakeEdidParams.DtlTiming.XResolution = (CBIOS_U16)pDSIPanelTbl->PanelTiming.HorDisEnd;
-        FakeEdidParams.DtlTiming.YResolution = (CBIOS_U16)pDSIPanelTbl->PanelTiming.VerDisEnd;
-        FakeEdidParams.DtlTiming.HBlank = pDSIPanelTbl->PanelTiming.HorBEnd - pDSIPanelTbl->PanelTiming.HorBStart;
-        FakeEdidParams.DtlTiming.VBlank = pDSIPanelTbl->PanelTiming.VerBEnd - pDSIPanelTbl->PanelTiming.VerBStart;
-        FakeEdidParams.DtlTiming.HSyncOffset = pDSIPanelTbl->PanelTiming.HorSyncStart - pDSIPanelTbl->PanelTiming.HorBStart;
-        FakeEdidParams.DtlTiming.HSyncPulseWidth = pDSIPanelTbl->PanelTiming.HorSyncEnd - pDSIPanelTbl->PanelTiming.HorSyncStart;
-        FakeEdidParams.DtlTiming.VSyncOffset = pDSIPanelTbl->PanelTiming.VerSyncStart - pDSIPanelTbl->PanelTiming.VerBStart;
-        FakeEdidParams.DtlTiming.VSyncPulseWidth = pDSIPanelTbl->PanelTiming.VerSyncEnd - pDSIPanelTbl->PanelTiming.VerSyncStart;
-        if (pDSIPanelTbl->PanelTiming.HVPolarity & DSI_HPOSITIVE)
-        {
-            FakeEdidParams.DtlTiming.HSync = HorPOSITIVE;
-        }
-        else
-        {
-            FakeEdidParams.DtlTiming.HSync = HorNEGATIVE;
-        }
-        if (pDSIPanelTbl->PanelTiming.HVPolarity & DSI_VPOSITIVE)
-        {
-            FakeEdidParams.DtlTiming.VSync = VerPOSITIVE;
-        }
-        else
-        {
-            FakeEdidParams.DtlTiming.VSync = VerNEGATIVE;
-        }
+        cb_memcpy(&FakeEdidParams.DtlTiming, &pDSIPanelTbl->PanelTiming, TIMING_ATTRIB_SIZE);
 
         cbEDIDModule_FakePanelEDID(&FakeEdidParams, FakeEdid, 128);
         cbClearEdidData(&pDevCommon->EdidData);
@@ -3033,7 +3009,7 @@ static CBIOS_BOOL cbDSIPort_PanelDetect(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_DEV
         //pDevCommon->isFakeEdid = CBIOS_TRUE;
         pDevCommon->CurrentMonitorType = CBIOS_MONITOR_TYPE_PANEL;
 
-        cbMode_GenerateDeviceModeList(pcbe, pDevCommon->DeviceType);
+        cbMode_MakeDeviceModeList(pcbe, pDevCommon->DeviceType);
     }
 
     bConnected = CBIOS_TRUE;

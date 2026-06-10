@@ -168,6 +168,7 @@ extern CBIOS_U8 Fake4KEdid[256];
 CBIOS_BOOL cbIsEdidChecksumValid(PCBIOS_UCHAR  pEdidData, CBIOS_U32  ulLength);
 CBIOS_VOID cbFixEdidChecksum(PCBIOS_VOID pvcbe, PCBIOS_UCHAR  pEdidData, CBIOS_U32  ulLength);
 CBIOS_STATUS cbI2cNormal_ReadEDID(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_U8 *EDIDData, CBIOS_U32 ulReadEdidOffset, CBIOS_U32 ulBufferSize, CBIOS_U8 nSegNum);
+CBIOS_BOOL cbI2cOverAux_ReadEDID(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, PCBIOS_UCHAR pEDIDBuffer, CBIOS_U32 ulBufferSize, CBIOS_U32 ulReadEdidOffset,CBIOS_U8  nSegNum);
 CBIOS_BOOL cbGetEdidBytes(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_U8 *EDIDData, CBIOS_U32 ulReadEdidOffset, CBIOS_U32 ulBufferSize);
 PCBIOS_U8 cbGetFullEdid(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_U32 *ReadEdidSize);
 CBIOS_BOOL cbGetDeviceEDID(PCBIOS_VOID pvcbe, PCBIOS_DEVICE_COMMON pDevCommon, CBIOS_BOOL *pIsDevChanged, CBIOS_U32 FullDetect);

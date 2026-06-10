@@ -3157,6 +3157,7 @@ CBIOS_BOOL cbUpdateShadowInfo_CX4(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_PARAM_SHA
                 pcbe->SysBiosInfo.bLgaChip = pSysInfo->bLgaChip;
                 pcbe->SysBiosInfo.bBLGfxPwm = pSysInfo->Header.Version >= 0x12 ? pSysInfo->bBLGfxPwm : 0;
                 pcbe->SysBiosInfo.bInvertPwmBL  = pSysInfo->Header.Version >= 0x12 ? pSysInfo->bInvertPwmBL : 0;
+                pcbe->SysBiosInfo.bBgaPatchChip  = pSysInfo->bBgaPatchChip;
                 pcbe->SysBiosInfo.ECLK = pSysInfo->ECLK;
                 pcbe->SysBiosInfo.VCLK = pSysInfo->VCLK;
                 pcbe->SysBiosInfo.ICLK = pSysInfo->ICLK;
@@ -3206,8 +3207,8 @@ CBIOS_BOOL cbUpdateShadowInfo_CX4(PCBIOS_EXTENSION_COMMON pcbe, PCBIOS_PARAM_SHA
                 }
                 
                 cbGetSysBiosInfo(pcbe);
-                cbDebugPrint((MAKE_LEVEL(GENERIC, INFO),  "ShadowInfo: bBLGfxMode = %d, bBLGfxPwm = %d, bInvertPwmBL = %d, bInvertPanelSignal = %d, bLgaChip = %d\n", 
-                    pcbe->SysBiosInfo.bBLGfxMode, pcbe->SysBiosInfo.bBLGfxPwm, pcbe->SysBiosInfo.bInvertPwmBL, pcbe->SysBiosInfo.bInvertPanelSignal, pcbe->SysBiosInfo.bLgaChip));
+                cbDebugPrint((MAKE_LEVEL(GENERIC, INFO),  "ShadowInfo: bBLGfxMode = %d, bBLGfxPwm = %d, bInvertPwmBL = %d, bInvertPanelSignal = %d, bLgaChip = %d, bBgaPatchChip = %d\n", 
+                    pcbe->SysBiosInfo.bBLGfxMode, pcbe->SysBiosInfo.bBLGfxPwm, pcbe->SysBiosInfo.bInvertPwmBL, pcbe->SysBiosInfo.bInvertPanelSignal, pcbe->SysBiosInfo.bLgaChip, pcbe->SysBiosInfo.bBgaPatchChip));
                 cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "ShadowInfo: FBSize = %dM DRAMMode = %d bSnoopOnly = %d\n", (1 << (pcbe->SysBiosInfo.FBSize & 0x0F)), (pcbe->SysBiosInfo.DRAMMode & BIT0),pcbe->SysBiosInfo.SnoopOnly));
                 cbDebugPrint((MAKE_LEVEL(GENERIC, INFO), "Ver:0x%x, VgaPort:%d, Dp1Port:%d, Dp2Port:%d, Dp3Port:%d.\n", pSysInfo->Header.Version, pcbe->SysBiosInfo.VgaPortConnType, pcbe->SysBiosInfo.Dp1PortConnType, 
                     pcbe->SysBiosInfo.Dp2PortConnType, pcbe->SysBiosInfo.Dp3PortConnType));

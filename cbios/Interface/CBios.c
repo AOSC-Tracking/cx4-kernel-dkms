@@ -187,7 +187,6 @@ CBiosDetectOutputStatus(PCBIOS_VOID pvcbe, PCBIOS_OUTPUT_DETECT_PARAM pOutputDet
     CBIOS_ACTIVE_TYPE CurDevice = CBIOS_TYPE_NONE;
     CBIOS_BOOL bHardcodeDetected = CBIOS_FALSE;
     CBIOS_DETECT_FLAG DetectFlag;
-    CBIOS_U64 irql = 0;
 
     if (pOutputDetect == CBIOS_NULL)
     {

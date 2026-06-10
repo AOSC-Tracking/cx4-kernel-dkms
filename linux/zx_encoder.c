@@ -47,7 +47,6 @@ void zx_encoder_disable(struct drm_encoder *encoder)
     struct drm_device *dev = encoder->dev;
     zx_card_t *zx_card = dev->dev_private;
     disp_info_t *disp_info = (disp_info_t *)zx_card->disp_info;
-    adapter_info_t*  adapter = disp_info->adp_info;
     psr_data_t* psr_data = disp_info->psr_data;
     zx_encoder_t *zx_encoder = to_zx_encoder(encoder);
     zx_connector_t *zx_connector = zx_encoder_get_connector(zx_encoder);
@@ -103,7 +102,6 @@ void zx_encoder_enable(struct drm_encoder *encoder)
     struct drm_device *dev = encoder->dev;
     zx_card_t *zx_card = dev->dev_private;
     disp_info_t *disp_info = (disp_info_t *)zx_card->disp_info;
-    adapter_info_t*  adapter = disp_info->adp_info;
     psr_data_t* psr_data = disp_info->psr_data;
     zx_encoder_t *zx_encoder = to_zx_encoder(encoder);
     zx_connector_t *zx_connector = zx_encoder_get_connector(zx_encoder);
@@ -154,12 +152,11 @@ static bool zx_encoder_mode_fixup(struct drm_encoder *encoder,
     disp_info_t*  disp_info = (disp_info_t *)zx_card->disp_info;
     zx_encoder_t *zx_encoder = to_zx_encoder(encoder);
     int output  = zx_encoder->output_type;
-    struct drm_display_mode tmp_mode = {0};
     unsigned int dev_mode_size = 0, dev_real_num = 0, i = 0;
-    unsigned int adapter_mode_size = 0, adapter_mode_num = 0;
-    void *dev_mode_buf = NULL, *adapter_mode_buf = NULL;
+    void *dev_mode_buf = NULL;
     PCBiosModeInfoExt pcbios_mode = NULL, matched_mode = NULL;
-    PCBiosModeInfoExt ppreferred_mode = NULL, pmaxium_mode = NULL;
+    PCBiosModeInfoExt ppreferred_mode = NULL;
+    bool fixed = FALSE;
 
     if (!adjusted_mode)
     {
@@ -169,108 +166,72 @@ static bool zx_encoder_mode_fixup(struct drm_encoder *encoder,
     dev_mode_size = disp_cbios_get_modes_size(disp_info, output);
     if (!dev_mode_size)
     {
-        goto End;
+        return FALSE;
     }
 
     dev_mode_buf = zx_calloc(dev_mode_size);
     if (!dev_mode_buf)
     {
-        goto End;
+        return FALSE;
     }
 
-    if(dev_mode_buf)
+    dev_real_num = disp_cbios_get_modes(disp_info, output, dev_mode_buf, dev_mode_size);
+    for(i = 0; i < dev_real_num; i++)
     {
-        dev_real_num = disp_cbios_get_modes(disp_info, output, dev_mode_buf, dev_mode_size);
-        for(i = 0; i < dev_real_num; i++)
+        pcbios_mode = (PCBiosModeInfoExt)dev_mode_buf + i;
+        if((pcbios_mode->XRes == mode->hdisplay && pcbios_mode->YRes == mode->vdisplay) &&
+            (pcbios_mode->XTotal == mode->htotal && pcbios_mode->YTotal == mode->vtotal) &&
+            (pcbios_mode->PixelClock/10 == mode->clock) &&
+            ((mode->flags & DRM_MODE_FLAG_INTERLACE) ? (pcbios_mode->isInterlaceMode == 1) : (pcbios_mode->isInterlaceMode == 0)))
         {
-            pcbios_mode = (PCBiosModeInfoExt)dev_mode_buf + i;
-            if((pcbios_mode->XRes == mode->hdisplay) &&
-                (pcbios_mode->YRes == mode->vdisplay) &&
-                (abs(pcbios_mode->RefreshRate - drm_mode_vrefresh(mode) * 100) < 50) &&
-                ((mode->flags & DRM_MODE_FLAG_INTERLACE) ? (pcbios_mode->isInterlaceMode == 1) : (pcbios_mode->isInterlaceMode == 0)))
-            {
-                //hw mode == sw mode
-                goto End;
-            }
+            matched_mode = pcbios_mode;
+            fixed = TRUE;
+            goto End;
         }
     }
 
-
     if (!disp_info->scale_support)
     {
-        goto End;
-    }
-
-    adapter_mode_size = disp_cbios_get_adapter_modes_size(disp_info);
-    if (!adapter_mode_size)
-    {
-        goto End;
-    }
-
-    adapter_mode_buf = zx_calloc(adapter_mode_size);
-    if (!adapter_mode_buf)
-    {
+        fixed = FALSE;
         goto End;
     }
 
     ppreferred_mode = disp_cbios_get_preferred_mode((PCBiosModeInfoExt)dev_mode_buf, dev_real_num);
-    pmaxium_mode = disp_cbios_get_maxium_mode((PCBiosModeInfoExt)dev_mode_buf);
-
-    adapter_mode_num = disp_cbios_get_adapter_modes(disp_info, adapter_mode_buf, adapter_mode_size);
-    for (i = 0; i < adapter_mode_num; i++)
+    if((mode->hdisplay < ppreferred_mode->XRes && mode->vdisplay <= ppreferred_mode->YRes) ||
+        (mode->hdisplay <= ppreferred_mode->XRes && mode->vdisplay < ppreferred_mode->YRes) ||
+        (mode->hdisplay == ppreferred_mode->XRes && mode->vdisplay == ppreferred_mode->YRes
+           && drm_mode_vrefresh(mode) < ppreferred_mode->RefreshRate/100))
     {
-        pcbios_mode = (PCBiosModeInfoExt)adapter_mode_buf + i;
-
-        if (pcbios_mode->XRes == mode->hdisplay &&
-            pcbios_mode->YRes == mode->vdisplay &&
-            pcbios_mode->RefreshRate/100 == drm_mode_vrefresh(mode))
-        {
-            if (ppreferred_mode != NULL &&
-                ppreferred_mode->XRes >= mode->hdisplay &&
-                ppreferred_mode->YRes >= mode->vdisplay &&
-                ppreferred_mode->RefreshRate/100 >= drm_mode_vrefresh(mode))
-            {
-                //perferred as the hw mode
-                matched_mode = ppreferred_mode;
-                break;
-            }
-
-            if (pmaxium_mode != NULL &&
-                pmaxium_mode->XRes >= mode->hdisplay &&
-                pmaxium_mode->YRes >= mode->vdisplay &&
-                pmaxium_mode->RefreshRate/100 >= drm_mode_vrefresh(mode))
-            {
-                //maxium as the hw mode
-                matched_mode = pmaxium_mode;
-                break;
-            }
-        }
-    }
-
-    if (matched_mode)
-    {
+        matched_mode = ppreferred_mode;
         disp_cbios_cbmode_to_drmmode(disp_info, output, matched_mode, 0, adjusted_mode);
+        fixed = TRUE;
+    }
+    else
+    {
+        fixed = FALSE;
     }
 
 End:
 
+    if(fixed)
+    {
 #if DRM_VERSION_CODE < KERNEL_VERSION(5,9,0)
         adjusted_mode->vrefresh = drm_mode_vrefresh(adjusted_mode);
 #endif
-        disp_cbios_get_mode_timing(disp_info, output, adjusted_mode);
+        disp_cbios_get_mode_timing(disp_info, output, matched_mode, adjusted_mode);
+    }
 
     if(dev_mode_buf)
     {
         zx_free(dev_mode_buf);
     }
 
-    if (adapter_mode_buf)
+    if(!fixed)
     {
-        zx_free(adapter_mode_buf);
-        adapter_mode_buf = NULL;
+        zx_info("Mode fixup failed for %dx%d@%d.\n", mode->hdisplay, mode->vdisplay, drm_mode_vrefresh(mode));
     }
 
-    return TRUE;
+    return fixed;
 }
 
 #if  DRM_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
@@ -285,13 +246,22 @@ void zx_encoder_atomic_mode_set(struct drm_encoder *encoder,
     struct drm_display_mode* mode = &crtc_state->mode;
     struct drm_display_mode* adj_mode = &crtc_state->adjusted_mode;
     struct drm_crtc*  crtc = NULL;
-    int  flag = 0;
+    struct drm_connector* connector = NULL;
+    update_mode_para_t  para = {0};
 
     crtc = encoder->crtc;
 
     DRM_DEBUG_KMS("encoder=%d,crtc=%d\n", encoder->index, crtc->index);
-    flag |= UPDATE_ENCODER_MODE_FLAG;
-    disp_cbios_set_mode(disp_info, drm_crtc_index(crtc), mode, adj_mode, flag);
+    para.set_encoder = 1;
+
+    list_for_each_entry(connector, &dev->mode_config.connector_list, head)
+    {
+        if((crtc->state->connector_mask & (1 << drm_connector_index(connector))) && (connector->state->crtc == crtc))
+        {
+            para.output_signal = to_zx_connector(connector)->prefer_signal;
+        }
+    }
+    disp_cbios_set_mode(disp_info, drm_crtc_index(crtc), mode, adj_mode, para);
 }
 
 #else
@@ -304,9 +274,9 @@ void zx_encoder_mode_set(struct drm_encoder *encoder,
     struct drm_crtc* crtc = encoder->crtc;
     zx_card_t*  zx_card = dev->dev_private;
     disp_info_t*  disp_info = (disp_info_t *)zx_card->disp_info;
-    int flag = 0;
+    update_mode_para_t  flag = {0};
 
-    flag = UPDATE_ENCODER_MODE_FLAG;
+    flag.set_encoder = 1;
 
     disp_cbios_set_mode(disp_info, to_zx_crtc(crtc)->pipe, mode, adjusted_mode, flag);
 }

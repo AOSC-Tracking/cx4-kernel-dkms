@@ -31,6 +31,7 @@
 ******************************************************************************/
 
 #include "CBiosDSIPanel.h"
+#include "../../CBiosChipShare.h"
 #include "../../Port/CBiosDSI.h"
 
 static CBIOS_U8 PasswordBuf[0x4] = 
@@ -276,9 +277,13 @@ CBIOS_DSI_PANEL_DESC HX8392A_Panel_Desc =
         /*.OutBpp = */24,
         /*.PanelTiming =*/ 
         {
-            /*.XResolution = */720,
-            /*.YResolution = */1280,
-            /*.DCLK = */5775,
+            /*.Size = */TIMING_ATTRIB_SIZE,
+            /*.FormatVIC = */0,
+            /*.XRes = */720,
+            /*.YRes = */1280,
+            /*.RefreshRate = */0,  //ignore
+            /*.HVPolarity = */VerNEGATIVE + HorNEGATIVE,
+            /*.PixelClock = */5775,
             /*.HorTotal = */880,
             /*.HorDisEnd = */720,
             /*.HorBStart = */720,
@@ -291,7 +296,6 @@ CBIOS_DSI_PANEL_DESC HX8392A_Panel_Desc =
             /*.VerBEnd = */1312,
             /*.VerSyncStart = */(1280+16),
             /*.VerSyncEnd = */(1280+16+4),
-            /*.HVPolarity = */DSI_VNEGATIVE + DSI_HNEGATIVE,
         },
     },
     /*.PowerOnCmdListSize = */sizeofarray(HX8392A_PowerOn_CmdList),
