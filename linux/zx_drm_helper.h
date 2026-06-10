@@ -188,6 +188,16 @@ int zx_drm_crtc_in_use(struct drm_crtc *crtc)
  * old_connector_state.
  */
 #if !defined(for_each_connector_in_state)
+#if (DRM_VERSION_CODE >= KERNEL_VERSION(6, 19, 0))
+#define zx_drm_for_each_connector_in_state(__state, connector,          \
+                                           connector_state, __i)        \
+    for ((__i) = 0;                                                     \
+         (__i) < (__state)->num_connector &&                            \
+         ((connector) = (__state)->connectors[__i].ptr,                 \
+         (connector_state) = (__state)->connectors[__i].state_to_destroy, 1);      \
+         (__i)++)                                                       \
+            for_each_if (connector_state)
+#else
 #define zx_drm_for_each_connector_in_state(__state, connector,          \
                                            connector_state, __i)        \
     for ((__i) = 0;                                                     \
@@ -196,6 +206,7 @@ int zx_drm_crtc_in_use(struct drm_crtc *crtc)
          (connector_state) = (__state)->connectors[__i].state, 1);      \
          (__i)++)                                                       \
             for_each_if (connector_state)
+#endif
 #else
 #define zx_drm_for_each_connector_in_state(__state, connector,          \
                                            connector_state, __i)        \
@@ -209,6 +220,15 @@ int zx_drm_crtc_in_use(struct drm_crtc *crtc)
  * old_crtc_state.
  */
 #if (!defined for_each_crtc_in_state)
+#if (DRM_VERSION_CODE >= KERNEL_VERSION(6, 19, 0))
+#define zx_drm_for_each_crtc_in_state(__state, crtc, crtc_state, __i) \
+    for ((__i) = 0;                                                   \
+         (__i) < (__state)->dev->mode_config.num_crtc &&              \
+         ((crtc) = (__state)->crtcs[__i].ptr,                         \
+         (crtc_state) = (__state)->crtcs[__i].state_to_destroy, 1);              \
+         (__i)++)                                                     \
+            for_each_if (crtc_state)
+#else
 #define zx_drm_for_each_crtc_in_state(__state, crtc, crtc_state, __i) \
     for ((__i) = 0;                                                   \
          (__i) < (__state)->dev->mode_config.num_crtc &&              \
@@ -216,6 +236,7 @@ int zx_drm_crtc_in_use(struct drm_crtc *crtc)
          (crtc_state) = (__state)->crtcs[__i].state, 1);              \
          (__i)++)                                                     \
             for_each_if (crtc_state)
+#endif
 #else
 #define zx_drm_for_each_crtc_in_state(__state, crtc, crtc_state, __i) \
     for_each_crtc_in_state(__state, crtc, crtc_state, __i)
@@ -228,6 +249,15 @@ int zx_drm_crtc_in_use(struct drm_crtc *crtc)
  * old_plane_state.
  */
 #if (!defined for_each_plane_in_state)
+#if (DRM_VERSION_CODE >= KERNEL_VERSION(6, 19, 0))
+#define zx_drm_for_each_plane_in_state(__state, plane, plane_state, __i)   \
+    for ((__i) = 0;                                                        \
+         (__i) < (__state)->dev->mode_config.num_total_plane &&            \
+         ((plane) = (__state)->planes[__i].ptr,                            \
+         (plane_state) = (__state)->planes[__i].state_to_destroy, 1);                 \
+         (__i)++)                                                          \
+            for_each_if (plane)
+#else
 #define zx_drm_for_each_plane_in_state(__state, plane, plane_state, __i)   \
     for ((__i) = 0;                                                        \
          (__i) < (__state)->dev->mode_config.num_total_plane &&            \
@@ -235,6 +265,7 @@ int zx_drm_crtc_in_use(struct drm_crtc *crtc)
          (plane_state) = (__state)->planes[__i].state, 1);                 \
          (__i)++)                                                          \
             for_each_if (plane)
+#endif
 #else
 #define zx_drm_for_each_plane_in_state(__state, plane, plane_state, __i)   \
     for_each_plane_in_state(__state, plane, plane_state, __i)

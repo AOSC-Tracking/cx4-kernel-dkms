@@ -378,7 +378,11 @@ static bool zx_need_wait_vblank(struct drm_crtc *crtc, struct drm_crtc_state *ol
         if(old_crtc_state->state->planes[i].ptr)
         {
             plane = old_crtc_state->state->planes[i].ptr;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0))
+            old_plane_state = old_crtc_state->state->planes[i].state_to_destroy;
+#else
             old_plane_state = old_crtc_state->state->planes[i].state;
+#endif
             if(plane->state->crtc == crtc && (crtc->state->plane_mask & (1 << plane->index)))
             {
                 if(plane->state->fb != old_plane_state->fb)
