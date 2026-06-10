@@ -2595,7 +2595,11 @@ int zx_query_platform_caps(void *pdev, platform_caps_t *caps)
 
 void *zx_pages_memory_swapout(struct os_pages_memory *pages_memory)
 {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(7, 0, 0))
+    struct file          *file_storage = shmem_file_setup("zx gmem", pages_memory->size, EMPTY_VMA_FLAGS);
+#else
     struct file          *file_storage = shmem_file_setup("zx gmem", pages_memory->size, 0);
+#endif
     struct address_space *file_addr_space;
     struct page          **pages;
     struct page          *src_page, *dst_page;
